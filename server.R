@@ -55,9 +55,8 @@ shinyServer(function(input, output) {
   #   return(ret)
   # })
   # 
-  rnew <- eventReactive(input$redraw, {
-    
-    
+  rnew <- reactive({
+     
     runid = which(scenario.names == input$scenario) - 1 
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
@@ -91,7 +90,7 @@ shinyServer(function(input, output) {
       ) %>%
       # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
       
-      addRasterImage(r.default, project = FALSE, colors = aft.pal, opacity = 0.8, maxBytes = 8 * 1024 * 1024) %>%
+      addRasterImage(r.default, project = FALSE, colors = aft.pal, opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
       addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = "AFT")
     
@@ -107,7 +106,7 @@ shinyServer(function(input, output) {
     proxy %>%
       clearImages() %>%
       addRasterImage(dt, project = FALSE, colors =pal.list[[which (input$indicator == indicator.names)]]
-                     , opacity = 0.8, maxBytes = 8 * 1024 * 1024) %>%
+                     , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
     clearControls()
       
     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
