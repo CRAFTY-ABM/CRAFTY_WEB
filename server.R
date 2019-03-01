@@ -61,7 +61,7 @@ shinyServer(function(input, output) {
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
     spdf_changed = getSPDF(fname_changed)
-    rs_changed <- stack(spdf_changed)[[4:22]]
+    rs_changed = stack(spdf_changed)[[4:22]]
     
     # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$Year, "_LL.tif"), 16)
     indicator_idx = which (input$indicator == indicator.names)
@@ -81,11 +81,32 @@ shinyServer(function(input, output) {
   # }, ignoreNULL = FALSE)
   # 
   
+  
+  # Combine the selected variables into a new data frame
+  selectedData <- reactive({
+    
+    runid = which(scenario.names == input$scenario) - 1 
+    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
+    spdf_changed = getSPDF(fname_changed)
+     
+    target_val = spdf_changed[4:22]
+    
+    # hist(as.numeric(target_val$Service.Meat))
+    return(target_val)
+  })
+  
+  
+  output$PlotPane <- renderPlot({
+     par(mar = c(5.1, 4.1, 4, 1))
+     plot(selectedData()@data[, input$indicator], main=input$indicator)
+  })
+   
+  
   output$MapPane <- renderLeaflet({
     
     leaflet() %>%
       #addTiles() %>%
-      addProviderTiles(providers$Stamen.TonerLite,
+      addProviderTiles(providers$ OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%
       # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
@@ -117,13 +138,13 @@ shinyServer(function(input, output) {
       dt.v = getValues(dt)
       dt.rng = range(dt.v, na.rm = T)
       print(dt.rng)
-      pal = colorNumeric("RdYlBu", domain = dt.rng, na.color = "transparent")
+      pal = colorNumeric(input$colors, domain = dt.rng, na.color = "transparent")
       
       proxy %>%
         addRasterImage(dt, project = FALSE, colors =pal
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
         addLegend(pal = pal , values = quantile(dt.v, probs=seq(0, 1, 0.05), na.rm=T) 
-                  , title = input$indicator)
+                  , title = input$indicator, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0.01, 1, 0.33), na.rm=T), decreasing = TRUE)))
     }
     
   })
