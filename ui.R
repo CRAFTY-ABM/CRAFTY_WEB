@@ -13,9 +13,11 @@ library(leaflet)
 library(dplyr)
 library(leaflet.extras)
 library(RColorBrewer)
+library(gplots)
 
-#import data
-# data <- read.csv("worldearthquakes.csv")
+
+source("Functions_CRAFTY_WEB.R")
+
 
 # Define UI for application that draws a histogram
 shinyUI(
@@ -24,24 +26,35 @@ shinyUI(
     # Application title
     titlePanel("CRAFTY-EU"),
     # p(),
-    actionButton("recalc", "Year"),
+    # actionButton("redraw", "Update plot"),
     # Sidebar with a slider input for number of bins
+    actionButton("redraw", "Update plot"),
     
     sidebarLayout(position = "left",
                   leafletOutput("mymap",  width = "100%", height = 500),
                   
                   sidebarPanel(
+                    
                     sliderInput("Year",
                                 "Year:",
                                 min = 2016,
-                                max = 2100,
-                                value = 2100-2016 + 1, step=1, animate = T),
-                    sliderInput("range", "Magnitudes", min(quakes$mag), max(quakes$mag),
-                                value = range(quakes$mag), step = 0.1
+                                max = 2096,
+                                value = 2016, step=10, animate =F),
+                    # sliderInput("range", "Magnitudes (not working now)", min(quakes$mag), max(quakes$mag),
+                    #             value = range(quakes$mag), step = 0.1
+                    # ),
+                    selectInput("paramset", "Paramset",
+                                paramsets, selected = paramsets[1]
                     ),
-                    selectInput("colors", "Color Scheme",
-                                rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+                    selectInput("scenario", "Scenario",
+                                 scenario.names, selected = scenario.names[1]
                     ),
+                    # selectInput("colors", "Color Scheme (not working now)",
+                                # rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+                    # ), 
+                    selectInput("indicator", "Indicator (not working yet)", 
+                                 indicator.names[-c(17:18)], selected=indicator.names[16]
+                    ), 
                     checkboxInput("legend", "Show legend", TRUE)
                   )
                   
