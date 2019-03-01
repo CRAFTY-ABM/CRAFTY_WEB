@@ -56,7 +56,7 @@ shinyServer(function(input, output) {
   # })
   # 
   rnew <- reactive({
-     
+    
     runid = which(scenario.names == input$scenario) - 1 
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
@@ -81,7 +81,7 @@ shinyServer(function(input, output) {
   # }, ignoreNULL = FALSE)
   # 
   
-  output$mymap <- renderLeaflet({
+  output$MapPane <- renderLeaflet({
     
     leaflet() %>%
       #addTiles() %>%
@@ -92,7 +92,7 @@ shinyServer(function(input, output) {
       
       addRasterImage(r.default, project = FALSE, colors = aft.pal, opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-      addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = "AFT")
+      addLegend(colors = (aft.colors), labels = aft.names.fromzero, title = input$indicator)
     
     #%>%
     # addMarkers(data = points())
@@ -102,20 +102,27 @@ shinyServer(function(input, output) {
   # should be managed in its own observer.
   observe({
     dt = rnew()
-    proxy <- leafletProxy("mymap",data =rnew())
-    proxy %>%
-      clearImages() %>%
-      addRasterImage(dt, project = FALSE, colors =pal.list[[which (input$indicator == indicator.names)]]
-                     , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-    clearControls()
-      
-    if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
-      proxy %>%
+    proxy <- leafletProxy("MapPane", data =rnew())
+    proxy %>% clearImages() %>% clearControls() 
+    
+    
+    if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) {
+      proxy %>%  
+        addRasterImage(dt, project = FALSE, colors =aft.colors
+                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
         addLegend(colors = (aft.colors), labels = aft.names.fromzero, title = input$indicator)
     } else {
+      # print(which (input$indicator == indicator.names))
+      # print(pal.list)
+      dt.v = getValues(dt)
+      dt.rng = range(dt.v, na.rm = T)
+      print(dt.rng)
+      pal = colorNumeric("RdYlBu", domain = dt.rng, na.color = "transparent")
       
       proxy %>%
-        addLegend(pal = pal.list[[which (input$indicator == indicator.names)]], values = quantile(dt, probs=seq(0, 1, 0.05)) 
+        addRasterImage(dt, project = FALSE, colors =pal
+                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
+        addLegend(pal = pal , values = quantile(dt.v, probs=seq(0, 1, 0.05), na.rm=T) 
                   , title = input$indicator)
     }
     
@@ -128,7 +135,7 @@ shinyServer(function(input, output) {
   # observe({
   #   pal <- colorpal()
   # 
-  #   leafletProxy("mymap", data = filteredData()) %>%
+  #   leafletProxy("MapPane", data = filteredData()) %>%
   #     clearShapes() %>%
   #     addCircles(radius = ~10^mag/10, weight = 1, color = "#777777",
   #                fillColor = ~pal(mag), fillOpacity = 0.7, popup = ~paste(mag)
@@ -138,28 +145,30 @@ shinyServer(function(input, output) {
   
   #
   # Use a separate observer to recreate the legend as needed.
-  observe({
-    proxy <- leafletProxy("mymap")
-    
-    # Remove any existing legend, and only if the legend is
-    # enabled, create a new one.
-    proxy %>% clearControls()
-    
-    if (input$legend) {
-      #proxy %>% addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = "AFT")
-      
-      if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
-        proxy %>%
-          addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = input$indicator)
-      } else {
-        
-        # proxy %>%
-        #   addLegend(pal = pal.list[[which (input$indicator == indicator.names)]], values = quantile(dt, probs=seq(0, 1, 0.05)) 
-        #             , title = input$indicator)
-      }
-      
-    }
-  })
+  # observe({
+  #   proxy <- leafletProxy("MapPane")
+  #   
+  #   # Remove any existing legend, and only if the legend is
+  #   # enabled, create a new one.
+  #   proxy %>% clearControls()
+  #   
+  #   if (input$legend) {
+  #     #proxy %>% addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = "AFT")
+  #     
+  #     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
+  #       proxy %>%
+  #         addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = input$indicator)
+  #     } else {
+  #       dt.v = getValues(dt)
+  #       dt.rng = range(dt.v, na.rm = T)
+  #        pal = colorNumeric("RdYlBu", domain = dt.rng, na.color = "transparent")
+  #       addLegend(pal = pal , values = quantile(dt.v, probs=seq(0, 1, 0.05), na.rm=T) 
+  #                 , title = input$indicator)
+  #       
+  #     }
+  #     
+  #   }
+  # })
   # # 
   
   

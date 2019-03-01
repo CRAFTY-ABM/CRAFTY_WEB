@@ -51,18 +51,18 @@ shinyUI(
                       # selectInput("colors", "Color Scheme (not working now)",
                       # rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                       # ), 
-                      selectInput("indicator", "Indicator (not working yet)", 
+                      selectInput("indicator", "Indicator", 
                                   indicator.names[-c(17:18)], selected=indicator.names[16]
-                      ), 
-                      checkboxInput("legend", "Show legend", TRUE)
-                    # )
+                      )
+                    # , checkboxInput("legend", "Show legend", TRUE)
+                    # # )
                     
                     # Show a plot of the generated distribution
                     # mainPanel(
                     #     plotOutput("distPlot")
              ),
              column(8,
-                    leafletOutput("mymap",  width = "100%", height = 600))
+                    leafletOutput("MapPane",  width = "100%", height = 600))
              
     )             # )
   )
