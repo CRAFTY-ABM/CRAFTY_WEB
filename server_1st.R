@@ -31,18 +31,6 @@ source("Functions_CRAFTY_WEB.R")
 # [22] "Competitiveness"                "lon"                            "lat"         
 
 
-
-# r.default <- projectRaster( raster(paste0("Data/Maps/", scenarioname.default, "-0-0-EU-Cell-2016_LL.tif"), 16), crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-# [1] "Tick"                           "X"                              "Y"                             
-# [4] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
-# [7] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
-# [10] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   
-# [13] "Capital.Grassland.productivity" "Capital.Financial.capital"      "Capital.Human.capital"         
-# [16] "Capital.Social.capital"         "Capital.Manufactured.capital"   "Capital.Urban.capital"         
-# [19] "LandUse"                        "LandUseIndex"                   "Agent"                         
-# [22] "Competitiveness"                "lon"                            "lat"         
-
-
 accessDropbox()
 
 
@@ -67,34 +55,15 @@ shinyServer(function(input, output) {
   #   return(ret)
   # })
   # 
-  
-  runinfo <- reactive({
-    p.idx = which(input$paramset == paramsets)
-    
-   paste0("Simulated ", input$indicator, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters and ",  input$scenario, " scenario." )
-  })
-  runinfo2 <- reactive({
-    p.idx = which(input$paramset2 == paramsets)
-    
-    paste0("Simulated ", input$indicator2, " in ", input$year2, " with the ", paramsets.fullanems[p.idx], " parameters and ",  input$scenario2, " scenario." )
-  })
-  
-  output$PaneRuninfo <- renderText({
-    runinfo()
-  })
-  output$PaneRuninfo2 <- renderText({
-    runinfo2()
-  })
-  
   rnew <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
     
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
     spdf_changed = getSPDF(fname_changed)
     rs_changed = stack(spdf_changed)[[4:22]]
     
-    # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
+    # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$Year, "_LL.tif"), 16)
     indicator_idx = which (input$indicator == indicator.names)
     r_changed = rs_changed[[indicator_idx]] 
     
@@ -117,9 +86,9 @@ shinyServer(function(input, output) {
   selectedData <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$Year, ".csv")
     spdf_changed = getSPDF(fname_changed)
-    
+     
     target_val = spdf_changed[4:22]
     
     # hist(as.numeric(target_val$Service.Meat))
@@ -128,26 +97,10 @@ shinyServer(function(input, output) {
   
   
   output$PlotPane <- renderPlot({
- 
-    runid = which(scenario.names == input$scenario2) - 1 
-    fname_changed =  paste0("Data/", input$paramset2, "/", input$scenario2, "/", input$scenario2, "-",runid, "-99-EU-Cell-", input$year2, ".csv")
-    spdf_changed = getSPDF(fname_changed)
-    
-    target_val = spdf_changed[4:22]
- 
-    
-    par(mar = c(5.1, 4.1, 4, 1))
-    plot(target_val@data[, input$indicator2], main=input$indicator2)
+     par(mar = c(5.1, 4.1, 4, 1))
+     plot(selectedData()@data[, input$indicator], main=input$indicator)
   })
-  
-  # observe({
-  #   # dt.plot = selectedData()
-  #   input$
-  #   par(mar = c(5.1, 4.1, 4, 1))
-  #   plot(selectedData()@data[, input$indicator], main=input$indicator)
-  #   
-  # })
-  
+   
   
   output$MapPane <- renderLeaflet({
     
@@ -238,7 +191,10 @@ shinyServer(function(input, output) {
   #   }
   # })
   # # 
-   
+  
+  
+  
+  
   
   # output$distPlot <- renderPlot({
   # 
@@ -250,24 +206,7 @@ shinyServer(function(input, output) {
   #   hist(x, breaks = bins, col = 'darkgray', border = 'white')
   # 
   # })
-    # output$summary <- renderPrint({
-    #   summary(cars)
-    # })
-    # 
-    # output$table <- DT::renderDataTable({
-    #   DT::datatable(cars)
-    # })
-
+  
+  
+  
 })
-
-# function(input, output, session) {
-#   output$plot <- renderPlot({
-#     plot(cars, type=input$plotType)
-#   })
-#   
-#   output$summary <- renderPrint({
-#     summary(cars)
-#   })
-#   
-
-# }

@@ -14,6 +14,7 @@ library(leaflet.extras)
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
 paramsets = paste0("Paramset", 1:5)
+paramsets.fullanems = c("Behavioural baseline", "Thresholds", "Variations", "Larger Thresholds", "Larger Variations")
 indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
                      "Service.Timber","Service.Carbon","Service.Urban",
                      "Service.Recreation","Capital.Crop.productivity","Capital.Forest.productivity",
