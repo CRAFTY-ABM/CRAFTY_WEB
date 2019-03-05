@@ -80,6 +80,7 @@ fluidPage("CRAFTY interactive web-interface",
                              # # )
                              # sliderInput("n", "", min=3, max=20, value=5),
                              # plotOutput("plot2", height="50px")
+                             ,   downloadLink("downloadData", "Download Map (GeoTIFF)")
                            ),
                            style = "opacity: 0.5"
                            
@@ -126,7 +127,7 @@ fluidPage("CRAFTY interactive web-interface",
                 # , navbarMenu("More",
                 tabPanel("About",
                          fluidRow(
-                           column(6,
+                           column(12,
                                   includeMarkdown("crafty_about.md")
                            )
                            # ,

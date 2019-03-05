@@ -76,7 +76,7 @@ shinyServer(function(input, output) {
     # print(indicator_idx)
     #  
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
-     
+    
     projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     # return(r_changed)
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
@@ -112,7 +112,7 @@ shinyServer(function(input, output) {
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
     spdf_changed = getSPDF(fname_changed)
     target_val = spdf_changed[4:22]
-     
+    
     par(mar = c(5.1, 4.1, 4, 1))
     plot(target_val@data[, input$indicator], main=input$indicator)
   })
@@ -131,7 +131,7 @@ shinyServer(function(input, output) {
     demand_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
-     
+    
     
     serviceNames <- c("Meat","Crops", "Diversity", "Timber", "Carbon", "Urban", "Recreation")
     serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
@@ -170,7 +170,7 @@ shinyServer(function(input, output) {
       ) %>%
       # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
       
-      addRasterImage(r.default, project = FALSE, colors = aft.pal, opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
+      addRasterImage(r.default, project = FALSE, colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
       addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
     
@@ -254,7 +254,27 @@ shinyServer(function(input, output) {
   # })
   # # 
   
-  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      
+      runid = which(scenario.names == input$scenario) - 1 
+      indicator_idx = which (input$indicator == indicator.names)
+      
+      fname_changed =  paste0("CRAFTY-EU_", input$paramset, "_", input$scenario, "_", input$year, "_", input$indicator, ".tif")
+      
+      # fname_changed      
+    },
+    content = function(file) {
+      runid = which(scenario.names == input$scenario) - 1 
+      indicator_idx = which (input$indicator == indicator.names)
+      
+      fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      print(fname_changed)
+      data = projectRaster(getRaster(fname_changed, band.idx = indicator_idx), crs = proj4.LL)
+      
+      writeRaster(data, file)
+    }
+  )
   # output$distPlot <- renderPlot({
   # 
   #   # generate bins based on input$bins from ui.R
