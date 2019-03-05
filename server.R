@@ -18,31 +18,6 @@ source("Functions_CRAFTY_WEB.R")
 
 
 
-
-
-# r.default <- projectRaster( raster(paste0("Data/Maps/", scenarioname.default, "-0-0-EU-Cell-2016_LL.tif"), 16), crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-# [1] "Tick"                           "X"                              "Y"                             
-# [4] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
-# [7] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
-# [10] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   
-# [13] "Capital.Grassland.productivity" "Capital.Financial.capital"      "Capital.Human.capital"         
-# [16] "Capital.Social.capital"         "Capital.Manufactured.capital"   "Capital.Urban.capital"         
-# [19] "LandUse"                        "LandUseIndex"                   "Agent"                         
-# [22] "Competitiveness"                "lon"                            "lat"         
-
-
-
-# r.default <- projectRaster( raster(paste0("Data/Maps/", scenarioname.default, "-0-0-EU-Cell-2016_LL.tif"), 16), crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-# [1] "Tick"                           "X"                              "Y"                             
-# [4] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
-# [7] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
-# [10] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   
-# [13] "Capital.Grassland.productivity" "Capital.Financial.capital"      "Capital.Human.capital"         
-# [16] "Capital.Social.capital"         "Capital.Manufactured.capital"   "Capital.Urban.capital"         
-# [19] "LandUse"                        "LandUseIndex"                   "Agent"                         
-# [22] "Competitiveness"                "lon"                            "lat"         
-
-
 accessDropbox()
 
 
@@ -71,33 +46,37 @@ shinyServer(function(input, output) {
   runinfo <- reactive({
     p.idx = which(input$paramset == paramsets)
     
-   paste0("Simulated ", input$indicator, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters and ",  input$scenario, " scenario." )
+    paste0("Simulated ", input$indicator, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset, ") and ",  input$scenario, " scenario." )
   })
-  runinfo2 <- reactive({
-    p.idx = which(input$paramset2 == paramsets)
-    
-    paste0("Simulated ", input$indicator2, " in ", input$year2, " with the ", paramsets.fullanems[p.idx], " parameters and ",  input$scenario2, " scenario." )
-  })
+  
+  # runinfo2 <- reactive({
+  #   p.idx = which(input$paramset2 == paramsets)
+  #   
+  #   paste0("Simulated ", input$indicator2, " in ", input$year2, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset2, ") and ",  input$scenario2, " scenario." )
+  # })
   
   output$PaneRuninfo <- renderText({
     runinfo()
   })
-  output$PaneRuninfo2 <- renderText({
-    runinfo2()
-  })
+  # output$PaneRuninfo2 <- renderText({
+  #   runinfo2()
+  # })
   
   rnew <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
+    indicator_idx = which (input$indicator == indicator.names)
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    spdf_changed = getSPDF(fname_changed)
-    rs_changed = stack(spdf_changed)[[4:22]]
-    
-    # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
-    indicator_idx = which (input$indicator == indicator.names)
-    r_changed = rs_changed[[indicator_idx]] 
-    
+    # spdf_changed = getSPDF(fname_changed)
+    # rs_changed = stack(spdf_changed)[[4:22]]
+    # 
+    # # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
+    # r_changed = rs_changed[[indicator_idx]] 
+    # print(indicator_idx)
+    #  
+    r_changed = getRaster(fname_changed, band.idx = indicator_idx)
+     
     projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     # return(r_changed)
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
@@ -128,16 +107,49 @@ shinyServer(function(input, output) {
   
   
   output$PlotPane <- renderPlot({
- 
-    runid = which(scenario.names == input$scenario2) - 1 
-    fname_changed =  paste0("Data/", input$paramset2, "/", input$scenario2, "/", input$scenario2, "-",runid, "-99-EU-Cell-", input$year2, ".csv")
+    
+    runid = which(scenario.names == input$scenario) - 1 
+    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
     spdf_changed = getSPDF(fname_changed)
-    
     target_val = spdf_changed[4:22]
- 
-    
+     
     par(mar = c(5.1, 4.1, 4, 1))
-    plot(target_val@data[, input$indicator2], main=input$indicator2)
+    plot(target_val@data[, input$indicator], main=input$indicator)
+  })
+  
+  
+  output$Tab1_SubplotPane <- renderPlot({
+    
+    runid = which(scenario.names == input$scenario) - 1 
+    # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
+    
+    aft_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
+    aftcomp_dt = getCSV(aft_csvname_changed)
+    aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
+    
+    
+    demand_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
+    demand_dt = getCSV(demand_csvname_changed)
+    demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
+     
+    
+    serviceNames <- c("Meat","Crops", "Diversity", "Timber", "Carbon", "Urban", "Recreation")
+    serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
+    
+    # demand.colors = rich.colors(7)
+    # # library(ggplot2)
+    # # ggplot(aftcomp_dt)
+    
+    par(mfrow=c(2,2), mar = c(5.1, 4.1, 4, 1))
+    # AFT changes
+    barplot(height = aftcomp_m/colSums(aftcomp_m) * 100, ylab="%", col = (aft.colors.fromzero), main = "AFT composition", names= target_years)
+    barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    
+    barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
+    barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    
   })
   
   # observe({
@@ -153,14 +165,14 @@ shinyServer(function(input, output) {
     
     leaflet() %>%
       #addTiles() %>%
-      addProviderTiles(providers$ OpenStreetMap.Mapnik, # Esri.WorldImagery
+      addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%
       # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
       
       addRasterImage(r.default, project = FALSE, colors = aft.pal, opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-      addLegend(colors = (aft.colors), labels = aft.names.fromzero, title = input$indicator)
+      addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
     
     #%>%
     # addMarkers(data = points())
@@ -176,22 +188,25 @@ shinyServer(function(input, output) {
     
     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) {
       proxy %>%  
-        addRasterImage(dt, project = FALSE, colors =aft.colors
+        addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-        addLegend(colors = (aft.colors), labels = aft.names.fromzero, title = input$indicator)
+        
+        addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
+      
+      # addLegend(colors = (aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
     } else {
       # print(which (input$indicator == indicator.names))
       # print(pal.list)
       dt.v = getValues(dt)
       dt.rng = range(dt.v, na.rm = T)
       print(dt.rng)
-      pal = colorNumeric(input$colors, domain = dt.rng, na.color = "transparent")
+      pal = colorNumeric(input$colors,reverse = T, domain = dt.rng, na.color = "transparent")
       
       proxy %>%
         addRasterImage(dt, project = FALSE, colors =pal
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-        addLegend(pal = pal , values = quantile(dt.v, probs=seq(0, 1, 0.05), na.rm=T) 
-                  , title = input$indicator, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0.01, 1, 0.33), na.rm=T), decreasing = TRUE)))
+        addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T), 
+                  , title = input$indicator, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)))
     }
     
   })
@@ -221,11 +236,11 @@ shinyServer(function(input, output) {
   #   proxy %>% clearControls()
   #   
   #   if (input$legend) {
-  #     #proxy %>% addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = "AFT")
+  #     #proxy %>% addLegend(colors = col2hex(aft.colors.fromzero), labels = aft.names.fromzero, title = "AFT")
   #     
   #     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
   #       proxy %>%
-  #         addLegend(colors = col2hex(aft.colors), labels = aft.names.fromzero, title = input$indicator)
+  #         addLegend(colors = col2hex(aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
   #     } else {
   #       dt.v = getValues(dt)
   #       dt.rng = range(dt.v, na.rm = T)
@@ -238,7 +253,7 @@ shinyServer(function(input, output) {
   #   }
   # })
   # # 
-   
+  
   
   # output$distPlot <- renderPlot({
   # 
@@ -250,14 +265,14 @@ shinyServer(function(input, output) {
   #   hist(x, breaks = bins, col = 'darkgray', border = 'white')
   # 
   # })
-    # output$summary <- renderPrint({
-    #   summary(cars)
-    # })
-    # 
-    # output$table <- DT::renderDataTable({
-    #   DT::datatable(cars)
-    # })
-
+  # output$summary <- renderPrint({
+  #   summary(cars)
+  # })
+  # 
+  # output$table <- DT::renderDataTable({
+  #   DT::datatable(cars)
+  # })
+  
 })
 
 # function(input, output, session) {

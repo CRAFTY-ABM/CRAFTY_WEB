@@ -35,13 +35,21 @@ indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
 aft.names.fromzero <- c( "Ext_AF", "IA", "Int_AF", "Int_Fa", "IP", "MF", "Min_man", "Mix_Fa", "Mix_For", "Mix_P", "Multifun", "P-Ur", "UL", "UMF", "Ur", "VEP", "EP")
 
 
-aft.colors <- col2hex(as.character(c("Ext_AF" = "yellowgreen", "IA"  = "yellow1", "Int_AF" =  "darkolivegreen1", "Int_Fa" = "lightgoldenrod1",
-                "IP" = "red1", "MF" =  "green3", "Min_man" = "lightyellow3",  "Mix_Fa" = "darkgoldenrod",  "Mix_For" = "green4",   "Mix_P" = "violetred",  "Multifun" = "blueviolet", "P-Ur"="lightslategrey", "UL" = "grey", "UMF" = "darkgreen", "Ur" = "black", "VEP" = "red4", "EP" = "red3"))) # , "Lazy FR" = "black")
+# aftNames <- c("IA","Int_Fa","Mix_Fa","Int_AF","Ext_AF","MF", "Mix_For","UMF","IP","EP","Mix_P","VEP","Multifun","Min_man","UL","P-Ur","Ur", "Lazy FR")
+
+aft.colors.fromzero <-  (c("Ext_AF" = "yellowgreen", "IA"  = "yellow1", "Int_AF" =  "darkolivegreen1", "Int_Fa" = "lightgoldenrod1",  "IP" = "red1", "MF" =  "green3", "Min_man" = "lightyellow3",  "Mix_Fa" = "darkgoldenrod",  "Mix_For" = "green4",   "Mix_P" = "violetred",  "Multifun" = "blueviolet", "P-Ur"="lightslategrey", "UL" = "grey", "UMF" = "darkgreen", "Ur" = "black", "VEP" = "red4", "EP" = "red3")) # , "Lazy FR" = "black")
+
+aft.fullnames <- c("Ext. agro-forestry","Int. arable","Int. agro-forestry","Int. mixed farming","Int. pastoral","Managed forest","Minimal management",
+                   "Ext. mixed farming","Mixed forest","Mixed pastoral","Multifunctional","Peri-Urban", "Unmanaged land","Umanaged forest","Urban", "Very ext. pastoral","Ext. pastoral")
+
+# AFTColours <- c("Ext. agro-forestry" = "darkolivegreen3","Int. arable"="gold1","Int. agro-forestry"="darkolivegreen1","Int. mixed farming"="darkorange1",
+# "Int. pastoral"="firebrick1","Managed forest"="chartreuse2","Minimal management"="darkgrey","Ext. mixed farming"="darkorange3","Mixed forest"="chartreuse4",
+# "Mixed pastoral"="firebrick2", "Multifunctional"="dodgerblue3","Unmanaged land"="black","Umanaged forest"="darkgreen","Very ext. pastoral"="firebrick4","Ext. pastoral"="firebrick3")
+
+target_years = seq(2020, 2090, 10)
 
 
-aft.pal <- colorFactor(col2hex(as.character(aft.colors)),levels = 1:17, na.color = "transparent") # "#0C2C84", "#41B6C4", "#FFFFCC"), # , bins = 17) 
-
-
+aft.pal <- colorFactor(col2hex(as.character(aft.colors.fromzero)), levels = 0:17, na.color = "transparent") # "#0C2C84", "#41B6C4", "#FFFFCC"), # , bins = 17) 
 
 
 
@@ -65,7 +73,8 @@ accessDropbox <- function() {
   
 }
 
-
+# A seed used in the CRAFTY runs 
+seedid = "99"
 
 # Lon-Lat projection 
 proj4.LL <- CRS("+proj=longlat +datum=WGS84")
@@ -94,7 +103,7 @@ y.lon.v = sort(unique(ctry.ids$Latitude))
 getCSV = function(tmp.in.name) { 
   
   localfile_path =  paste0(path.droptmp, tmp.in.name)
-   
+  
   if(!file.exists(localfile_path)) {
     localdir_path =  dirname(localfile_path)
     
@@ -139,8 +148,41 @@ scenarioname.default = "Baseline"
 fname.default = (paste0("Data/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
 spdf.default = getSPDF(fname.default)
 rs.LL <- stack(spdf.default)[[4:22]]
-agent.LL = rs.LL[[16]]
+agent.LL = rs.LL[[17]]
 r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+
+# getRaster(fname.default, band.idx = 18)
+
+
+getRaster<- function(fname, band.idx) {
+  
+  localfile_path = paste0("rastertmp/",fname, "_", band.idx, ".tif")
+  
+  if(!file.exists(localfile_path)) {
+    localdir_path =  dirname(localfile_path)
+    if (!dir.exists(localdir_path)) {
+      dir.create(localdir_path, recursive = T)
+    }
+    spdf.out = getSPDF(fname)
+    rs.LL <- stack(spdf.out)[[4:22]]
+    out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    writeRaster(out.reproj, filename = localfile_path, overwrite=T)
+     
+  } else {
+    out.reproj = raster(localfile_path) 
+  }
+  
+  return(out.reproj)
+}
+
+# [1] "Tick"                           "X"                              "Y"                             
+# [4] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
+# [7] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
+# [10] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   
+# [13] "Capital.Grassland.productivity" "Capital.Financial.capital"      "Capital.Human.capital"         
+# [16] "Capital.Social.capital"         "Capital.Manufactured.capital"   "Capital.Urban.capital"         
+# [19] "LandUse"                        "LandUseIndex"                   "Agent"                         
+# [22] "Competitiveness"                "lon"                            "lat"         
 
 
 
