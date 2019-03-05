@@ -82,6 +82,10 @@ shinyServer(function(input, output) {
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
   })
   
+  providernew <- reactive({
+    input$background
+  })
+    
   
   # points <- eventReactive(input$year, {
   # cbind(rnorm(1) * 2 + 13, rnorm(1) + 48)
@@ -172,10 +176,18 @@ shinyServer(function(input, output) {
       
       addRasterImage(r.default, project = FALSE, colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-      addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
+      addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
     
     #%>%
     # addMarkers(data = points())
+  })
+  
+  
+  observe({
+    # dt = providernew()
+    proxy <- leafletProxy("MapPane", data = providernew())
+    proxy %>% clearTiles() %>% addProviderTiles(input$background, options = providerTileOptions(noWrap = TRUE))  
+    
   })
   
   
@@ -185,12 +197,19 @@ shinyServer(function(input, output) {
     proxy <- leafletProxy("MapPane", data =rnew())
     proxy %>% clearImages() %>% clearControls() 
     
+    # touches
+    (input$background)
+    # Layers control
+    proxy %>% addLayersControl(
+      # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+      overlayGroups = c("OutputLayer"),
+      options = layersControlOptions(collapsed = FALSE)
+    )
     
     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) {
       proxy %>%  
-        addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero
+        addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "OutputLayer"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-        
         addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
       
       # addLegend(colors = (aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
@@ -203,11 +222,13 @@ shinyServer(function(input, output) {
       pal = colorNumeric(input$colors,reverse = T, domain = dt.rng, na.color = "transparent")
       
       proxy %>%
-        addRasterImage(dt, project = FALSE, colors =pal
-                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
+        addRasterImage(dt, project = FALSE, colors =pal, group = "OutputLayer"
+                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>% 
         addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T), 
                   , title = input$indicator, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)))
     }
+    
+
     
   })
   

@@ -34,7 +34,7 @@ fluidPage("CRAFTY interactive web-interface",
                                      "Year:",
                                      min = 2016,
                                      max = 2096,
-                                     value = 2016, step=10, animate =F),
+                                     value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                          selectInput("paramset", label = "Paramset",
                                      choices = paramsets, selected = paramsets[1] 
                          ),
@@ -42,8 +42,13 @@ fluidPage("CRAFTY interactive web-interface",
                                      scenario.names, selected = scenario.names[1]
                          ),
                          selectInput("indicator", "Indicator", 
-                                     indicator.names[-c(16, 18)], selected=indicator.names[17])
+                                     indicator.names[-c(16, 18)], selected=indicator.names[17]
+                         ), 
+                           selectInput("background", "Background tiles", choices = 
+                                         as.character(providers), selected=providers$OpenStreetMap.Mapnik
+                           ) 
             ), 
+     
             # Main panel for displaying outputs ----
             mainPanel(
               tabsetPanel(
@@ -72,7 +77,8 @@ fluidPage("CRAFTY interactive web-interface",
                              ),
                              selectInput("colors", "Color palette",
                                          rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-                             )
+                             ), 
+                             
                              # , radioButtons("plotType", "Plot type",
                              #              c("Scatter"="p", "Line"="l")
                              # )
@@ -80,7 +86,7 @@ fluidPage("CRAFTY interactive web-interface",
                              # # )
                              # sliderInput("n", "", min=3, max=20, value=5),
                              # plotOutput("plot2", height="50px")
-                             ,   downloadLink("downloadData", "Download Map (GeoTIFF)")
+                             downloadLink("downloadData", "Download Map (GeoTIFF)")
                            ),
                            style = "opacity: 0.5"
                            
