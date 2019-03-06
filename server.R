@@ -59,7 +59,6 @@ shinyServer(function(input, output) {
   rnew <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
-    indicator_idx = which (input$outputlayer == indicator.names)
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # spdf_changed = getSPDF(fname_changed)
@@ -68,11 +67,15 @@ shinyServer(function(input, output) {
     # # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
     # r_changed = rs_changed[[indicator_idx]] 
     # print(indicator_idx)
-    #  
+    
+    
+    indicator_idx = which (input$outputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
     
-    projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-    # return(r_changed)
+    # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    
+    
+    return(r_changed)
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
   })
   
@@ -129,10 +132,7 @@ shinyServer(function(input, output) {
     demand_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
-    
-    
-    serviceNames <- c("Meat","Crops", "Diversity", "Timber", "Carbon", "Urban", "Recreation")
-    serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
+
     
     # demand.colors = rich.colors(7)
     # # library(ggplot2)
@@ -160,18 +160,20 @@ shinyServer(function(input, output) {
   
   
   output$MapPane <- renderLeaflet({
+    r_dummy  = raster(extent(r.default))
+    r_dummy = setValues(r_dummy, values = 0)
+    proj4string(r_dummy) = proj4string(r.default)
     
     leaflet() %>%
       #addTiles() %>%
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%
-      # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
-      
-      addRasterImage(r.default, project = FALSE, colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
+     # %>%
+      # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
+       addRasterImage(r.default, project = FALSE) # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
       #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-      addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
-    
+      # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
     #%>%
     # addMarkers(data = points())
   })
@@ -201,13 +203,19 @@ shinyServer(function(input, output) {
       options = layersControlOptions(collapsed = FALSE)
     )
     
-    if (input$outputlayer %in% c("LandUse", "LandUseIndex", "Agent")) {
-      proxy %>%  
-        addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "OutputLayer"
-                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-        addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$outputlayer)
-      
-      # addLegend(colors = (aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
+    if (input$outputlayer %in% indicators_categorical) {
+
+      if (input$outputlayer  == indicator.names[20]) {
+        proxy %>%  
+          addRasterImage(dt, project = FALSE, colors =aft.colors.8classes, group = "OutputLayer"
+                         , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+         proxy %>% addLegend(colors = col2hex(as.character(aft.colors.8classes)), labels = aft.names.8classes , title = input$outputlayer)
+      } else {
+        proxy %>%  
+          addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "OutputLayer"
+                         , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+        proxy %>% addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$outputlayer)
+      }
     } else {
       # print(which (input$indicator == indicator.names))
       # print(pal.list)

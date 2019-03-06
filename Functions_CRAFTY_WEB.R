@@ -20,15 +20,14 @@ indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
                      "Service.Recreation","Crop.productivity","Forest.productivity",
                      "Grassland.productivity","Financial.capital","Human.capital",
                      "Social.capital","Manufactured.capital","Urban.capital",
-                     "LandUse_notuse","Land Use (AFT)","Agent_notuse", "Competitiveness")
-#   [1] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
-# [4] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
-# [7] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   
-# [10] "Capital.Grassland.productivity" "Capital.Financial.capital"      "Capital.Human.capital"         
-# [13] "Capital.Social.capital"         "Capital.Manufactured.capital"   "Capital.Urban.capital"         
-# [16] "LandUse"                        "LandUseIndex"                   "Agent"                         
-# [19] "Competitiveness"         
+                     "LandUse_notuse","Land Use (17 AFTs)","Agent_notuse", "Competitiveness", "Land Use (8 AFTs)")
+ 
 
+indicators_categorical = indicator.names[c(16:18, 20)]
+
+
+serviceNames <- c("Meat","Crops", "Diversity", "Timber", "Carbon", "Urban", "Recreation")
+serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
 
 
 # aft.colors = rich.colors(17)
@@ -50,6 +49,46 @@ target_years = seq(2020, 2090, 10)
 
 
 aft.pal <- colorFactor(col2hex(as.character(aft.colors.fromzero)), levels = 0:17, na.color = "transparent") # "#0C2C84", "#41B6C4", "#FFFFCC"), # , bins = 17) 
+
+# 8 aft classes used in the EU-paper
+# result$Agent[result$Agent=="IA"] <- "Intensive arable"
+# result$Agent[result$Agent=="IP"] <- "Intensive grassland"
+# result$Agent[result$Agent=="MF"] <- "Intensive forest"
+# result$Agent[result$Agent=="Int_AF" |result$Agent=="Int_Fa"] <- "Mixed intensive"
+# result$Agent[result$Agent=="Mix_Fa" |result$Agent=="Ext_AF" |result$Agent=="Multifun"|result$Agent=="EP"|result$Agent=="Mix_P"] <- "Mixed extensive"
+# result$Agent[result$Agent=="UMF" |result$Agent=="Mix_For"|result$Agent=="VEP"] <- "Extensive primarily forest"
+# result$Agent[result$Agent=="Min_man" |result$Agent=="UL"] <- "Near-natural"
+# result$Agent[result$Agent=="Ur" |result$Agent=="P-Ur" |result$Agent=="Lazy FR"] <- "Other"
+
+aft.lookup.17to8 = matrix(ncol = 2, byrow = T, data = c(
+  "Lazy FR", "Other",
+  "Ext_AF", "Mixed extensive", 
+  "IA", "Intensive arable",
+  "Int_AF",  "Mixed intensive",
+  "Int_Fa",  "Mixed intensive",
+  "IP", "Intensive grassland", 
+  "MF", "Intensive forest", 
+  "Min_man", "Near-natural",
+  "Mix_Fa", "Mixed extensive", 
+  "Mix_For", "Extensive primarily forest",
+  "Mix_P", "Mixed extensive", 
+  "Multifun", "Mixed extensive", 
+  "P-Ur","Other", 
+  "UL", "Near-natural", 
+  "UMF", "Extensive primarily forest",
+  "Ur","Other", 
+  "VEP", "Extensive primarily forest",
+  "EP", "Mixed extensive"
+))
+
+
+
+
+aft.names.8classes <- aft.fullnames.8classes <- c("Intensive arable","Intensive grassland","Intensive forest","Mixed intensive","Mixed extensive","Extensive primarily forest","Near-natural","Other")
+
+aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = "greenyellow","Intensive forest" = "olivedrab4",
+                         "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="white")
+
 
 
 
@@ -128,6 +167,7 @@ getCSV = function(tmp.in.name) {
   return(res)
 }
 
+tmp.in.name = (paste0("Data/Paramset3/", scenario.names[3], "/", scenario.names[3], "-0-99-EU-Cell-2016.csv"))
 
 getSPDF <- function(tmp.in.name) {
   
@@ -144,6 +184,7 @@ getSPDF <- function(tmp.in.name) {
 }
 
 scenarioname.default = "Baseline"
+fname.default = (paste0("Data/Paramset3/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2056.csv"))
 
 fname.default = (paste0("Data/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
 spdf.default = getSPDF(fname.default)
@@ -165,9 +206,12 @@ getRaster<- function(fname, band.idx) {
     }
     spdf.out = getSPDF(fname)
     rs.LL <- stack(spdf.out)[[4:22]]
+    agent_8classes.v= (factor(aft.lookup.17to8[getValues(rs.LL[[17]]) + 2, 2 ]))
+    stopifnot(length(agent_8classes.v) == ncell(rs.LL))
+     rs.LL[[20]] = agent_8classes.v
     out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     writeRaster(out.reproj, filename = localfile_path, overwrite=T)
-     
+    
   } else {
     out.reproj = raster(localfile_path) 
   }
@@ -186,7 +230,7 @@ getRaster<- function(fname, band.idx) {
 
 
 
-smr = sapply(1:nlayers(spdf.default[4:22]),FUN = function(x)  summary(spdf.default[4:22][[x]]))
+smr = sapply(1:nlayers(spdf.default[4:22]),FUN = function(x)  summary(spdf.default[4:22][[x]], na.rm=T))
 smr.max = sapply(1:19, FUN = function(x) as.numeric(smr[[x]]["Max."])) * 1.2
 smr.min = sapply(1:19, FUN = function(x) as.numeric(smr[[x]]["Min."])) * 0.8
 

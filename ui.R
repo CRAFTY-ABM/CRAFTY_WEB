@@ -23,7 +23,9 @@ source("Functions_CRAFTY_WEB.R")
 #   )
 # )
 
-
+# https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
+  
+  
 fluidPage("CRAFTY interactive web-interface",   
           titlePanel("CRAFTY-EU"), 
           
@@ -45,7 +47,7 @@ fluidPage("CRAFTY interactive web-interface",
                                      indicator.names[8:14], selected=indicator.names[9]
                          ), 
                          selectInput("outputlayer", "Output indicator", 
-                                     indicator.names[c(17, 1:7, 19)], selected=indicator.names[17]
+                                     indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
                          ), 
                            selectInput("background", "Background tiles", choices = 
                                          as.character(providers), selected=providers$OpenStreetMap.Mapnik
