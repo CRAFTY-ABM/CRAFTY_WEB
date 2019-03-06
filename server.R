@@ -16,8 +16,6 @@ library(rgeos)
 
 source("Functions_CRAFTY_WEB.R")
 
-
-
 accessDropbox()
 
 
