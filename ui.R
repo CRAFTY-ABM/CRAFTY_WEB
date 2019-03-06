@@ -29,7 +29,7 @@ fluidPage("CRAFTY interactive web-interface",
           
           # Sidebar layout with input and output definitions ----
           sidebarLayout(
-            sidebarPanel(width=3,
+            sidebarPanel(width=4,
                          sliderInput("year",
                                      "Year:",
                                      min = 2016,
@@ -41,8 +41,11 @@ fluidPage("CRAFTY interactive web-interface",
                          selectInput("scenario", "Scenario",
                                      scenario.names, selected = scenario.names[1]
                          ),
-                         selectInput("indicator", "Indicator", 
-                                     indicator.names[-c(16, 18)], selected=indicator.names[17]
+                         selectInput("inputlayer", "Input data", 
+                                     indicator.names[8:14], selected=indicator.names[9]
+                         ), 
+                         selectInput("outputlayer", "Output indicator", 
+                                     indicator.names[c(17, 1:7, 19)], selected=indicator.names[17]
                          ), 
                            selectInput("background", "Background tiles", choices = 
                                          as.character(providers), selected=providers$OpenStreetMap.Mapnik
@@ -99,34 +102,10 @@ fluidPage("CRAFTY interactive web-interface",
                          , verbatimTextOutput("PaneRuninfo2")
                 ), 
                 
-                # tabPanel("Transition plot (working on)",
-                #          sidebarLayout(
-                #          #   sidebarPanel(width=3,
-                #          #                
-                #          #                sliderInput("year2",
-                #          #                            "Year:",
-                #          #                            min = 2016,
-                #          #                            max = 2096,
-                #          #                            value = 2016, step=10, animate =F),
-                #          #                
-                #          #                selectInput("paramset2", label = "Paramset",
-                #          #                            choices = paramsets, selected = paramsets[1] 
-                #          #                ),
-                #          #                selectInput("scenario2", "Scenario",
-                #          #                            scenario.names, selected = scenario.names[1]
-                #          #                ),
-                #          #                
-                #          #                selectInput("indicator2", "Indicator", 
-                #          #                            indicator.names[-c(17:18)], selected=indicator.names[16]
-                #          #                )
-                #          #   ),
-                #          #   mainPanel(
-                #          #     # Show a plot of the generated distribution
-                #          #     # plotOutput("PlotPane")
-                #          #     # , verbatimTextOutput("PaneRuninfo2")
-                #          #   )
-                #          )
-                # )
+                tabPanel("Transition plot (working on)",
+                         # Show a transition plot of the selected
+                         plotOutput("PlotPane_Transition")
+                ), 
                 # , tabPanel("Behaviora Table (working on)",
                 # DT::dataTableOutput("table")
                 # )

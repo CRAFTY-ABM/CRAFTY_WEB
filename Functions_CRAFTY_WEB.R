@@ -17,10 +17,10 @@ paramsets = paste0("Paramset", 1:5)
 paramsets.fullanems = c("Behavioural baseline", "Thresholds", "Variations", "Larger Thresholds", "Larger Variations")
 indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
                      "Service.Timber","Service.Carbon","Service.Urban",
-                     "Service.Recreation","Capital.Crop.productivity","Capital.Forest.productivity",
-                     "Capital.Grassland.productivity","Capital.Financial.capital","Capital.Human.capital",
-                     "Capital.Social.capital","Capital.Manufactured.capital","Capital.Urban.capital",
-                     "LandUse","LandUseIndex","Agent", "Competitiveness")
+                     "Service.Recreation","Crop.productivity","Forest.productivity",
+                     "Grassland.productivity","Financial.capital","Human.capital",
+                     "Social.capital","Manufactured.capital","Urban.capital",
+                     "LandUse_notuse","Land Use (AFT)","Agent_notuse", "Competitiveness")
 #   [1] "Service.Meat"                   "Service.Crops"                  "Service.Diversity"             
 # [4] "Service.Timber"                 "Service.Carbon"                 "Service.Urban"                 
 # [7] "Service.Recreation"             "Capital.Crop.productivity"      "Capital.Forest.productivity"   

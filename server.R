@@ -46,26 +46,22 @@ shinyServer(function(input, output) {
   runinfo <- reactive({
     p.idx = which(input$paramset == paramsets)
     
-    paste0("Simulated ", input$indicator, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset, ") and ",  input$scenario, " scenario." )
+    paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset, ") and ",  input$scenario, " scenario." )
   })
   
-  # runinfo2 <- reactive({
-  #   p.idx = which(input$paramset2 == paramsets)
-  #   
-  #   paste0("Simulated ", input$indicator2, " in ", input$year2, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset2, ") and ",  input$scenario2, " scenario." )
-  # })
-  
+ 
   output$PaneRuninfo <- renderText({
     runinfo()
   })
-  # output$PaneRuninfo2 <- renderText({
-  #   runinfo2()
-  # })
+
+  output$PaneRuninfo2 <- renderText({
+    runinfo()
+  })
   
   rnew <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
-    indicator_idx = which (input$indicator == indicator.names)
+    indicator_idx = which (input$outputlayer == indicator.names)
     
     fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # spdf_changed = getSPDF(fname_changed)
@@ -118,7 +114,7 @@ shinyServer(function(input, output) {
     target_val = spdf_changed[4:22]
     
     par(mar = c(5.1, 4.1, 4, 1))
-    plot(target_val@data[, input$indicator], main=input$indicator)
+    plot(target_val@data[, input$outputlayer], main=input$outputlayer)
   })
   
   
@@ -160,7 +156,7 @@ shinyServer(function(input, output) {
   #   # dt.plot = selectedData()
   #   input$
   #   par(mar = c(5.1, 4.1, 4, 1))
-  #   plot(selectedData()@data[, input$indicator], main=input$indicator)
+  #   plot(selectedData()@data[, input$outputlayer], main=input$indicator)
   #   
   # })
   
@@ -198,7 +194,8 @@ shinyServer(function(input, output) {
     proxy %>% clearImages() %>% clearControls() 
     
     # touches
-    (input$background)
+    input$background
+    
     # Layers control
     proxy %>% addLayersControl(
       # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
@@ -206,11 +203,11 @@ shinyServer(function(input, output) {
       options = layersControlOptions(collapsed = FALSE)
     )
     
-    if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) {
+    if (input$outputlayer %in% c("LandUse", "LandUseIndex", "Agent")) {
       proxy %>%  
         addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "OutputLayer"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>%
-        addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$indicator)
+        addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$outputlayer)
       
       # addLegend(colors = (aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
     } else {
@@ -225,7 +222,7 @@ shinyServer(function(input, output) {
         addRasterImage(dt, project = FALSE, colors =pal, group = "OutputLayer"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>% 
         addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T), 
-                  , title = input$indicator, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)))
+                  , title = input$outputlayer, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)))
     }
     
 
@@ -259,7 +256,7 @@ shinyServer(function(input, output) {
   #   if (input$legend) {
   #     #proxy %>% addLegend(colors = col2hex(aft.colors.fromzero), labels = aft.names.fromzero, title = "AFT")
   #     
-  #     if (input$indicator %in% c("LandUse", "LandUseIndex", "Agent")) { 
+  #     if (input$outputlayer %in% c("LandUse", "LandUseIndex", "Agent")) { 
   #       proxy %>%
   #         addLegend(colors = col2hex(aft.colors.fromzero), labels = aft.names.fromzero, title = input$indicator)
   #     } else {
@@ -279,15 +276,15 @@ shinyServer(function(input, output) {
     filename = function() {
       
       runid = which(scenario.names == input$scenario) - 1 
-      indicator_idx = which (input$indicator == indicator.names)
+      indicator_idx = which (input$outputlayer == indicator.names)
       
-      fname_changed =  paste0("CRAFTY-EU_", input$paramset, "_", input$scenario, "_", input$year, "_", input$indicator, ".tif")
+      fname_changed =  paste0("CRAFTY-EU_", input$paramset, "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
       
       # fname_changed      
     },
     content = function(file) {
       runid = which(scenario.names == input$scenario) - 1 
-      indicator_idx = which (input$indicator == indicator.names)
+      indicator_idx = which (input$outputlayer == indicator.names)
       
       fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       print(fname_changed)
