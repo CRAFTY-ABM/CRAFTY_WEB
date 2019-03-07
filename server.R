@@ -47,11 +47,11 @@ shinyServer(function(input, output) {
     paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset, ") and ",  input$scenario, " scenario." )
   })
   
- 
+  
   output$PaneRuninfo <- renderText({
     runinfo()
   })
-
+  
   output$PaneRuninfo2 <- renderText({
     runinfo()
   })
@@ -73,16 +73,27 @@ shinyServer(function(input, output) {
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
     
     # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-    
-    
+     
     return(r_changed)
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
   })
   
+  rnew_input <- reactive({
+    
+    runid = which(scenario.names == input$scenario) - 1 
+    
+    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+     
+    indicator_idx = which (input$inputlayer == indicator.names)
+    r_changed = getRaster(fname_changed, band.idx = indicator_idx)
+ 
+    return(r_changed)
+   })
+  
   providernew <- reactive({
     input$background
   })
-    
+  
   
   # points <- eventReactive(input$year, {
   # cbind(rnorm(1) * 2 + 13, rnorm(1) + 48)
@@ -132,7 +143,7 @@ shinyServer(function(input, output) {
     demand_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
-
+    
     
     # demand.colors = rich.colors(7)
     # # library(ggplot2)
@@ -165,15 +176,16 @@ shinyServer(function(input, output) {
     proj4string(r_dummy) = proj4string(r.default)
     
     leaflet() %>%
-      #addTiles() %>%
+      clearImages() %>% clearControls() %>%
+      #addTiles()
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
-                       options = providerTileOptions(noWrap = TRUE)
+                       options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
       ) %>%
-     # %>%
+      # %>%
       # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-       addRasterImage(r.default, project = FALSE) # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
-      #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-      # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
+      addRasterImage(r_dummy, project = FALSE, group="OutputLayer") # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
+    #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
+    # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
     #%>%
     # addMarkers(data = points())
   })
@@ -182,7 +194,8 @@ shinyServer(function(input, output) {
   observe({
     # dt = providernew()
     proxy <- leafletProxy("MapPane", data = providernew())
-    proxy %>% clearTiles() %>% addProviderTiles(input$background, options = providerTileOptions(noWrap = TRUE))  
+    proxy %>% clearTiles() %>% addProviderTiles(input$background, options = providerTileOptions(noWrap = TRUE), group = "TileLayer")
+    # proxy %>% clearControls() 
     
   })
   
@@ -190,6 +203,9 @@ shinyServer(function(input, output) {
   # should be managed in its own observer.
   observe({
     dt = rnew()
+    # print(which (input$indicator == indicator.names))
+
+     
     proxy <- leafletProxy("MapPane", data =rnew())
     proxy %>% clearImages() %>% clearControls() 
     
@@ -199,39 +215,56 @@ shinyServer(function(input, output) {
     # Layers control
     proxy %>% addLayersControl(
       # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
-      overlayGroups = c("OutputLayer"),
+      baseGroups = c("ModelOutput", "ModelInput"),  # , "OutputLayer"), 
+      # overlayGroups = c(  "TileLayer"), 
       options = layersControlOptions(collapsed = FALSE)
     )
     
-    if (input$outputlayer %in% indicators_categorical) {
 
+    # Add output layer 
+    if (input$outputlayer %in% indicators_categorical) {
+      
       if (input$outputlayer  == indicator.names[20]) {
         proxy %>%  
-          addRasterImage(dt, project = FALSE, colors =aft.colors.8classes, group = "OutputLayer"
+          addRasterImage(dt, project = FALSE, colors =aft.colors.8classes, group = "ModelOutput"
                          , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
-         proxy %>% addLegend(colors = col2hex(as.character(aft.colors.8classes)), labels = aft.names.8classes , title = input$outputlayer)
+        proxy %>% addLegend(colors = col2hex(as.character(aft.colors.8classes)), labels = aft.names.8classes , title = paste0("Output: ", input$outputlayer),group = "ModelOutput")
       } else {
         proxy %>%  
-          addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "OutputLayer"
+          addRasterImage(dt, project = FALSE, colors =aft.colors.fromzero, group = "ModelOutput"
                          , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
-        proxy %>% addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = input$outputlayer)
+        proxy %>% addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelOutput")
       }
     } else {
-      # print(which (input$indicator == indicator.names))
-      # print(pal.list)
       dt.v = getValues(dt)
       dt.rng = range(dt.v, na.rm = T)
       print(dt.rng)
-      pal = colorNumeric(input$colors,reverse = T, domain = dt.rng, na.color = "transparent")
-      
+      pal = colorNumeric(input$colors,reverse = T, domain = dt.rng,  na.color = "transparent")
+
       proxy %>%
-        addRasterImage(dt, project = FALSE, colors =pal, group = "OutputLayer"
+        addRasterImage(dt, project = FALSE, colors =pal, group = "ModelOutput", method = "bilinear"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>% 
         addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T), 
-                  , title = input$outputlayer, labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)))
+                  , title = paste0("Output ", input$outputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelOutput")
     }
     
-
+    # Add input layer 
+    dt_input = rnew_input()
+    dt_input.v = getValues(dt_input)
+    dt_input.rng = range(dt_input.v, na.rm = T)
+    print(dt_input.rng)
+    
+    pal_input = colorNumeric(input$colors, reverse = T, domain = dt_input.rng, na.color = "transparent")
+    
+    proxy %>%
+      addRasterImage(dt_input, project = FALSE, colors =pal_input, method = "bilinear", group = "ModelInput"
+                     , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>% 
+      addLegend(pal = pal_input, values = quantile(dt_input.v, probs=seq(1, 0, -0.05), na.rm=T), 
+                , title = paste0("Input ", input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelInput")
+    
+    
+    
+    
     
   })
   

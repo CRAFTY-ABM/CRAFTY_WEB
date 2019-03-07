@@ -37,16 +37,16 @@ fluidPage("CRAFTY interactive web-interface",
                                      min = 2016,
                                      max = 2096,
                                      value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
-                         selectInput("paramset", label = "Paramset",
+                         selectInput("paramset", label = "Behavioural parameters",
                                      choices = paramsets, selected = paramsets[1] 
                          ),
-                         selectInput("scenario", "Scenario",
+                         selectInput("scenario", "Climatic-Social Scenario",
                                      scenario.names, selected = scenario.names[1]
                          ),
-                         selectInput("inputlayer", "Input data", 
+                         selectInput("inputlayer", "Model Input", 
                                      indicator.names[8:14], selected=indicator.names[9]
                          ), 
-                         selectInput("outputlayer", "Output indicator", 
+                         selectInput("outputlayer", "Model Output", 
                                      indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
                          ), 
                            selectInput("background", "Background tiles", choices = 
