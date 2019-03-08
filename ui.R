@@ -35,12 +35,12 @@ fluidPage("CRAFTY interactive web-interface",
                          sliderInput("year",
                                      "Year:",
                                      min = 2016,
-                                     max = 2096,
+                                     max = 2096, sep = "", 
                                      value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
-                         selectInput("paramset", label = "Behavioural parameters",
-                                     choices = paramsets, selected = paramsets[1] 
+                         selectInput("paramset_full", label = "Behavioural parameters",
+                                     choices = paramsets.fullnames, selected = paramsets.fullnames[1] 
                          ),
-                         selectInput("scenario", "Climatic-Social Scenario",
+                         selectInput("scenario", "Climate and socio-economic scenario",
                                      scenario.names, selected = scenario.names[1]
                          ),
                          selectInput("inputlayer", "Model Input", 
@@ -98,7 +98,7 @@ fluidPage("CRAFTY interactive web-interface",
                            
                          )
                 ),
-                tabPanel("Summary plot",
+                tabPanel("Summary plot (working on)",
                          # Show a plot of the generated distribution
                          plotOutput("PlotPane")
                          , verbatimTextOutput("PaneRuninfo2")

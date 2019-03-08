@@ -42,9 +42,9 @@ shinyServer(function(input, output) {
   # 
   
   runinfo <- reactive({
-    p.idx = which(input$paramset == paramsets)
+    p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", paramsets.fullanems[p.idx], " parameters (", input$paramset, ") and ",  input$scenario, " scenario." )
+    paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", input$paramset_full, " parameters and ",  input$scenario, " scenario." )
   })
   
   
@@ -59,8 +59,9 @@ shinyServer(function(input, output) {
   rnew <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
+    p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # spdf_changed = getSPDF(fname_changed)
     # rs_changed = stack(spdf_changed)[[4:22]]
     # 
@@ -73,7 +74,7 @@ shinyServer(function(input, output) {
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
     
     # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-     
+    
     return(r_changed)
     # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
   })
@@ -82,13 +83,16 @@ shinyServer(function(input, output) {
     
     runid = which(scenario.names == input$scenario) - 1 
     
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-     
+    p.idx = which(input$paramset_full == paramsets.fullnames)
+    
+    
+    fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    
     indicator_idx = which (input$inputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
- 
+    
     return(r_changed)
-   })
+  })
   
   providernew <- reactive({
     input$background
@@ -108,7 +112,9 @@ shinyServer(function(input, output) {
   selectedData <- reactive({
     
     runid = which(scenario.names == input$scenario) - 1 
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    p.idx = which(input$paramset_full == paramsets.fullnames)
+    
+    fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     spdf_changed = getSPDF(fname_changed)
     
     target_val = spdf_changed[4:22]
@@ -121,7 +127,9 @@ shinyServer(function(input, output) {
   output$PlotPane <- renderPlot({
     
     runid = which(scenario.names == input$scenario) - 1 
-    fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
+    p.idx = which(input$paramset_full == paramsets.fullnames)
+    
+    fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
     spdf_changed = getSPDF(fname_changed)
     target_val = spdf_changed[4:22]
     
@@ -134,30 +142,71 @@ shinyServer(function(input, output) {
     
     runid = which(scenario.names == input$scenario) - 1 
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
+    p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    aft_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
+    aft_csvname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
     aftcomp_dt = getCSV(aft_csvname_changed)
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
+    # 8 classes 
+    aftcomp_8classes_by = by(aftcomp_m, INDICES = aft.lookup.17to8[-1, 2], FUN = colSums)
     
-    demand_csvname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
+    aftcomp_8classes_m = t(sapply(aftcomp_8classes_by, c))[aft.fullnames.8classes, ]
+    
+    
+    
+    
+    demand_csvname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
     
+    
+    shortfall_m = ((demand_m[8:14,] - demand_m[1:7,]) / demand_m[8:14,] ) * 100 
     
     # demand.colors = rich.colors(7)
     # # library(ggplot2)
     # # ggplot(aftcomp_dt)
     
     par(mfrow=c(2,2), mar = c(5.1, 4.1, 4, 1))
-    # AFT changes
-    barplot(height = aftcomp_m/colSums(aftcomp_m) * 100, ylab="%", col = (aft.colors.fromzero), main = "AFT composition", names= target_years)
-    barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
-    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+
+    # plot(target_years, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
+    # 
+    # for (a.idx in 2:8) { 
+    #   lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
+    # }
+    # legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
+    # 
+     
     
-    barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
-    barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
-    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
+    # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
+    
+    plot(target_years, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="%", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
+    
+    for (a.idx in 2:8) { 
+      lines(target_years, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
+    }
+    legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
+    
+    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    # 
+    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
+    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
+    
+    
+    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-200,200), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
+    
+    for (a.idx in 2:7) { 
+      lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
+    }
+      
+    legend("topright", legend = serviceNames, col=serviceColours, lty = 1, cex=0.7, bty="n")
+    
+    
+    # AFT changes
+    aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
+    barplot(height = aftcomp_perc_m, ylab="%", col = (aft.colors.fromzero), main = "AFT (17) composition", names= target_years)
     
   })
   
@@ -204,8 +253,8 @@ shinyServer(function(input, output) {
   observe({
     dt = rnew()
     # print(which (input$indicator == indicator.names))
-
-     
+    
+    
     proxy <- leafletProxy("MapPane", data =rnew())
     proxy %>% clearImages() %>% clearControls() 
     
@@ -220,7 +269,7 @@ shinyServer(function(input, output) {
       options = layersControlOptions(collapsed = FALSE)
     )
     
-
+    
     # Add output layer 
     if (input$outputlayer %in% indicators_categorical) {
       
@@ -240,7 +289,7 @@ shinyServer(function(input, output) {
       dt.rng = range(dt.v, na.rm = T)
       print(dt.rng)
       pal = colorNumeric(input$colors,reverse = T, domain = dt.rng,  na.color = "transparent")
-
+      
       proxy %>%
         addRasterImage(dt, project = FALSE, colors =pal, group = "ModelOutput", method = "bilinear"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) %>% 
@@ -316,16 +365,18 @@ shinyServer(function(input, output) {
       
       runid = which(scenario.names == input$scenario) - 1 
       indicator_idx = which (input$outputlayer == indicator.names)
+      p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("CRAFTY-EU_", input$paramset, "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
+      fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
       
       # fname_changed      
     },
     content = function(file) {
       runid = which(scenario.names == input$scenario) - 1 
       indicator_idx = which (input$outputlayer == indicator.names)
+      p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("Data/", input$paramset, "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       print(fname_changed)
       data = projectRaster(getRaster(fname_changed, band.idx = indicator_idx), crs = proj4.LL)
       
