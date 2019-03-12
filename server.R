@@ -48,13 +48,24 @@ shinyServer(function(input, output) {
   })
   
   
+  runinfo2 <- reactive({
+    p.idx = which(input$paramset_full == paramsets.fullnames)
+    
+    paste0("Simulated ", input$outputlayer," with the ", input$paramset_full, " parameters and ",  input$scenario, " scenario." )
+  })
+  
+  
   output$PaneRuninfo <- renderText({
     runinfo()
   })
   
   output$PaneRuninfo2 <- renderText({
-    runinfo()
+    runinfo2()
   })
+  
+  
+  
+  
   
   rnew <- reactive({
     
@@ -124,21 +135,40 @@ shinyServer(function(input, output) {
   })
   
   
-  output$PlotPane <- renderPlot({
+  output$Tab1_SubPlotPane <- renderPlot({
     
-    runid = which(scenario.names == input$scenario) - 1 
-    p.idx = which(input$paramset_full == paramsets.fullnames)
+    target_data = rnew()
     
-    fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
-    spdf_changed = getSPDF(fname_changed)
-    target_val = spdf_changed[4:22]
+    # runid = which(scenario.names == input$scenario) - 1 
+    # p.idx = which(input$paramset_full == paramsets.fullnames)
+    # 
+    # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
+    # spdf_changed = getSPDF(fname_changed)
+    # target_val = spdf_changed[4:22]
+    # 
+    # str(getValues(target_data))
     
-    par(mar = c(5.1, 4.1, 4, 1))
-    plot(target_val@data[, input$outputlayer], main=input$outputlayer)
+    par(mar = c(5.1, 4.1, 4, 1), mfrow=c(1,2))
+    hist(getValues(target_data), main="Histogram", xlab= input$outputlayer)
+    # plot(target_val@data[, input$inputlayer], main=input$inputlayer)
+    
+    
+    # target_val = selectedData()
+    # rs.LL = stack(target_val)[[17]]
+    # classstat.res.LL = ClassStat(rs.LL, cellsize = 15000, bkgd = NA, latlon = T)
+    # boxplot(classstat.res.LL, las=2, ylim=c(-10, 10))
+    # boxplot(classstat.res.LL$mean.frac.dim.index, classstat.res.LL$patch.cohesion.index, classstat.res.LL$aggregation.index)
+    
   })
+  # observe({
+  #   # dt.plot = selectedData()
+  #   input$
+  #   par(mar = c(5.1, 4.1, 4, 1))
+  #   plot(selectedData()@data[, input$outputlayer], main=input$indicator)
+  #   
+  # })
   
-  
-  output$Tab1_SubplotPane <- renderPlot({
+  output$Tab2_SummaryPlotPane <- renderPlot(height = 600, res = 96, {
     
     runid = which(scenario.names == input$scenario) - 1 
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
@@ -168,7 +198,7 @@ shinyServer(function(input, output) {
     # # ggplot(aftcomp_dt)
     
     par(mfrow=c(2,2), mar = c(5.1, 4.1, 4, 1))
-
+    
     # plot(target_years, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
     # 
     # for (a.idx in 2:8) { 
@@ -176,12 +206,12 @@ shinyServer(function(input, output) {
     # }
     # legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
     # 
-     
+    
     
     aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
     # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
     
-    plot(target_years, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="%", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
+    plot(target_years, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
     
     for (a.idx in 2:8) { 
       lines(target_years, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
@@ -200,23 +230,28 @@ shinyServer(function(input, output) {
     for (a.idx in 2:7) { 
       lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
     }
-      
+    
     legend("topright", legend = serviceNames, col=serviceColours, lty = 1, cex=0.7, bty="n")
     
     
     # AFT changes
     aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
-    barplot(height = aftcomp_perc_m, ylab="%", col = (aft.colors.fromzero), main = "AFT (17) composition", names= target_years)
+    
+    plot(target_years, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
+    
+    for (a.idx in 2:nrow(aftcomp_perc_m)) { 
+      lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
+    }
+    legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
+    
+    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    # 
+    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
+    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
     
   })
   
-  # observe({
-  #   # dt.plot = selectedData()
-  #   input$
-  #   par(mar = c(5.1, 4.1, 4, 1))
-  #   plot(selectedData()@data[, input$outputlayer], main=input$indicator)
-  #   
-  # })
   
   
   output$MapPane <- renderLeaflet({

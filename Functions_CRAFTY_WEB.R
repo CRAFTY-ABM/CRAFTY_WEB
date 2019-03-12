@@ -11,10 +11,27 @@ library(leaflet)
 library(dplyr)
 library(leaflet.extras)
 
+library(SDMTools)
+
+# A seed used in the CRAFTY runs 
+seedid = "99"
+
+# Lon-Lat projection 
+proj4.LL <- CRS("+proj=longlat +datum=WGS84")
+
+# Proj4js.defs["EPSG:3035"] etrs89/etrs-laea
+# Scope: Single CRS for all Europe. Used for statistical mapping at all scales and other purposes where true area representation is required.
+# Reference: http://spatialreference.org/ref/epsg/3035/
+proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
+
+ 
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
-paramsets = paste0("Paramset", 1:5)
-paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)")
+
+n.paramset = 5
+paramsets = paste0("Paramset", 1:n.paramset)
+paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
+
 indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
                      "Service.Timber","Service.Carbon","Service.Urban",
                      "Service.Recreation","Crop.productivity","Forest.productivity",
@@ -27,7 +44,8 @@ indicators_categorical = indicator.names[c(16:18, 20)]
 
 
 serviceNames <- c("Meat","Crops", "Diversity", "Timber", "Carbon", "Urban", "Recreation")
-serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
+# serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
+serviceColours = c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity"="turquoise", "Timber" = "tan4","Carbon"="black", "Urban" = "grey","Recreation"="dodgerblue2")
 
 
 # aft.colors = rich.colors(17)
@@ -85,6 +103,9 @@ aft.lookup.17to8 = matrix(ncol = 2, byrow = T, data = c(
 
 
 
+
+
+
 aft.names.8classes <- aft.fullnames.8classes <- c("Intensive arable","Intensive grassland","Intensive forest","Mixed intensive","Mixed extensive","Extensive primarily forest","Near-natural","Other")
 
 aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = "greenyellow","Intensive forest" = "olivedrab4",
@@ -112,17 +133,6 @@ accessDropbox <- function() {
   drop_acc(dtoken = token)
   
 }
-
-# A seed used in the CRAFTY runs 
-seedid = "99"
-
-# Lon-Lat projection 
-proj4.LL <- CRS("+proj=longlat +datum=WGS84")
-
-# Proj4js.defs["EPSG:3035"] etrs89/etrs-laea
-# Scope: Single CRS for all Europe. Used for statistical mapping at all scales and other purposes where true area representation is required.
-# Reference: http://spatialreference.org/ref/epsg/3035/
-proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
 
 # result<-read.csv("C:/Users/brown-c/Documents/Work_docs/IMPRESSIONS/CRAFTY Europe IMPRESSIONS/Results/Raw results/Baseline/Baseline-0-0-EU-Cell-2096.csv")
@@ -193,7 +203,7 @@ rs.LL <- stack(spdf.default)[[4:22]]
 agent.LL = rs.LL[[17]]
 r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
 
-
+ 
 # getRaster(fname.default, band.idx = 18)
 # 
 # fname = fname.default

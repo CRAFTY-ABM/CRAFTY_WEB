@@ -62,7 +62,7 @@ fluidPage("CRAFTY interactive web-interface",
                          # Run info
                          , verbatimTextOutput("PaneRuninfo")
                          # Time series info 
-                         , plotOutput("Tab1_SubplotPane")
+                         , plotOutput("Tab1_SubPlotPane")
                          # Map view options
                          , absolutePanel(
                            top = 380, left = 20, width = 150,
@@ -98,15 +98,15 @@ fluidPage("CRAFTY interactive web-interface",
                            
                          )
                 ),
-                tabPanel("Summary plot (working on)",
+                tabPanel("Time Series", 
                          # Show a plot of the generated distribution
-                         plotOutput("PlotPane")
+                         plotOutput("Tab2_SummaryPlotPane", height = 600)
                          , verbatimTextOutput("PaneRuninfo2")
                 ), 
                 
                 tabPanel("Transition plot (working on)",
                          # Show a transition plot of the selected
-                         plotOutput("PlotPane_Transition")
+                         plotOutput("Tab3_TransitionPlotPane")
                 ), 
                 # , tabPanel("Behaviora Table (working on)",
                 # DT::dataTableOutput("table")
