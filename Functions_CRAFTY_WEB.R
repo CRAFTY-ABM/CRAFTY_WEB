@@ -118,6 +118,7 @@ aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = 
 path.wd <- ("KIT_Modelling/CRAFTY/crafty_web/")
 path.serverwd = getwd()
 path.droptmp = paste0(path.serverwd, "/droptmp/")
+path.rastertmp = paste0(path.serverwd, "/rastertmp/")
 
 if(!dir.exists(path.droptmp)) { 
   dir.create(path.droptmp)

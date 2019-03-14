@@ -51,7 +51,9 @@ fluidPage("CRAFTY interactive web-interface",
                          ), 
                            selectInput("background", "Background tiles", choices = 
                                          as.character(providers), selected=providers$OpenStreetMap.Mapnik
-                           ) 
+                           ),
+                         actionLink("deleteCache", "Delete cached files")
+                         
             ), 
      
             # Main panel for displaying outputs ----

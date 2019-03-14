@@ -55,6 +55,16 @@ shinyServer(function(input, output) {
   })
   
   
+ 
+  observeEvent(input$deleteCache, {
+    # session$sendCustomMessage(type = 'testmessage',
+                              # message = 'Thank you for clicking')
+    unlink(path.rastertmp)
+    unlink(path.droptmp)
+    
+  })
+  
+  
   output$PaneRuninfo <- renderText({
     runinfo()
   })
