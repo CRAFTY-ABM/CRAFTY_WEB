@@ -23,7 +23,9 @@ source("Functions_CRAFTY_WEB.R")
 #   )
 # )
 
-
+# https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
+  
+  
 fluidPage("CRAFTY interactive web-interface",   
           titlePanel("CRAFTY-EU"), 
           
@@ -33,23 +35,25 @@ fluidPage("CRAFTY interactive web-interface",
                          sliderInput("year",
                                      "Year:",
                                      min = 2016,
-                                     max = 2096,
+                                     max = 2096, sep = "", 
                                      value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
-                         selectInput("paramset", label = "Paramset",
-                                     choices = paramsets, selected = paramsets[1] 
+                         selectInput("paramset_full", label = "Behavioural parameters",
+                                     choices = paramsets.fullnames, selected = paramsets.fullnames[1] 
                          ),
-                         selectInput("scenario", "Scenario",
+                         selectInput("scenario", "Climate and socio-economic scenario",
                                      scenario.names, selected = scenario.names[1]
                          ),
-                         selectInput("inputlayer", "Input data", 
+                         selectInput("inputlayer", "Model Input", 
                                      indicator.names[8:14], selected=indicator.names[9]
                          ), 
-                         selectInput("outputlayer", "Output indicator", 
-                                     indicator.names[c(17, 1:7, 19)], selected=indicator.names[17]
+                         selectInput("outputlayer", "Model Output", 
+                                     indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
                          ), 
                            selectInput("background", "Background tiles", choices = 
                                          as.character(providers), selected=providers$OpenStreetMap.Mapnik
-                           ) 
+                           ),
+                         actionLink("deleteCache", "Delete cached files")
+                         
             ), 
      
             # Main panel for displaying outputs ----
@@ -60,7 +64,7 @@ fluidPage("CRAFTY interactive web-interface",
                          # Run info
                          , verbatimTextOutput("PaneRuninfo")
                          # Time series info 
-                         , plotOutput("Tab1_SubplotPane")
+                         , plotOutput("Tab1_SubPlotPane")
                          # Map view options
                          , absolutePanel(
                            top = 380, left = 20, width = 150,
@@ -96,15 +100,15 @@ fluidPage("CRAFTY interactive web-interface",
                            
                          )
                 ),
-                tabPanel("Summary plot",
+                tabPanel("Time Series", 
                          # Show a plot of the generated distribution
-                         plotOutput("PlotPane")
+                         plotOutput("Tab2_SummaryPlotPane", height = 600)
                          , verbatimTextOutput("PaneRuninfo2")
                 ), 
                 
                 tabPanel("Transition plot (working on)",
                          # Show a transition plot of the selected
-                         plotOutput("PlotPane_Transition")
+                         plotOutput("Tab3_TransitionPlotPane")
                 ), 
                 # , tabPanel("Behaviora Table (working on)",
                 # DT::dataTableOutput("table")
