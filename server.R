@@ -55,10 +55,10 @@ shinyServer(function(input, output) {
   })
   
   
- 
+  
   observeEvent(input$deleteCache, {
     # session$sendCustomMessage(type = 'testmessage',
-                              # message = 'Thank you for clicking')
+    # message = 'Thank you for clicking')
     unlink(path.rastertmp)
     unlink(path.droptmp)
     
@@ -184,7 +184,7 @@ shinyServer(function(input, output) {
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    aft_csvname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
+    aft_csvname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid.v[p.idx], "-EU-AggregateAFTComposition.csv") 
     aftcomp_dt = getCSV(aft_csvname_changed)
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
@@ -196,7 +196,7 @@ shinyServer(function(input, output) {
     
     
     
-    demand_csvname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
+    demand_csvname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid.v[p.idx], "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
     
