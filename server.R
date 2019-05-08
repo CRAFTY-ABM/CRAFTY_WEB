@@ -11,7 +11,7 @@ library(shiny)
 library(raster)
 library(RColorBrewer)
 library(gplots)
-library(rgdal)
+# library(rgdal)
 library(rgeos)
 
 source("Functions_CRAFTY_WEB.R")
@@ -79,7 +79,8 @@ shinyServer(function(input, output) {
   
   rnew <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1 
+    runid = which(scenario.names == input$scenario) - 1
+    # runid = 0
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
     fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
@@ -102,7 +103,8 @@ shinyServer(function(input, output) {
   
   rnew_input <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1 
+    runid = which(scenario.names == input$scenario) - 1
+    # runid = 0 
     
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
@@ -180,7 +182,9 @@ shinyServer(function(input, output) {
   
   output$Tab2_SummaryPlotPane <- renderPlot(height = 600, res = 96, {
     
-    runid = which(scenario.names == input$scenario) - 1 
+    runid = which(scenario.names == input$scenario) - 1
+    # runid = 0
+    
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
@@ -406,10 +410,12 @@ shinyServer(function(input, output) {
   # # 
   
   output$downloadData <- downloadHandler(
+    
     filename = function() {
+      # runid = 0 
+      runid = which(scenario.names == input$scenario) - 1
       
-      runid = which(scenario.names == input$scenario) - 1 
-      indicator_idx = which (input$outputlayer == indicator.names)
+       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
       fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
@@ -417,7 +423,9 @@ shinyServer(function(input, output) {
       # fname_changed      
     },
     content = function(file) {
-      runid = which(scenario.names == input$scenario) - 1 
+      # runid = 0 
+      
+      runid = which(scenario.names == input$scenario) - 1
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       

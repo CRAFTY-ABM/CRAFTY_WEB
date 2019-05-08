@@ -3,10 +3,9 @@ library(gplots)
 library(shiny)
 library(raster)
 library(RColorBrewer)
-library(gplots)
 library(rgdal)
 library(rgeos)
-library(udunits2)
+# library(udunits2)
 library(leaflet)
 library(dplyr)
 library(leaflet.extras)
@@ -29,7 +28,7 @@ scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP
 
 n.paramset = 6
 paramsets = paste0("Paramset", 1:n.paramset)
-paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)", "Template") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
+paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Template") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
 
 seedid.v = c(rep("99", 5), "99")
 

@@ -6,7 +6,8 @@ library(leaflet.extras)
 library(RColorBrewer)
 library(gplots)
 library(markdown)
-library(rgdal) 
+# library(rgdal) 
+
 source("Functions_CRAFTY_WEB.R")
 # 
 # 
