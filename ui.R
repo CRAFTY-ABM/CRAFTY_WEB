@@ -6,7 +6,8 @@ library(leaflet.extras)
 library(RColorBrewer)
 library(gplots)
 library(markdown)
-library(rgdal) 
+# library(rgdal) 
+
 source("Functions_CRAFTY_WEB.R")
 # 
 # 
@@ -26,7 +27,7 @@ source("Functions_CRAFTY_WEB.R")
 # https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
   
   
-fluidPage("CRAFTY interactive web-interface",   
+fluidPage("Welcome to CRAFTY-EU interactive web application (http://landchange.earth/CRAFTY). This page allows you to explore simulated land use changes (2010-2090) using the agent-based land use model CRAFTY-EU (Brown et al., submitted). Please note that this page is in development, and the results shown may be amended and extended over time.",
           titlePanel("CRAFTY-EU"), 
           
           # Sidebar layout with input and output definitions ----
