@@ -106,7 +106,7 @@ fluidPage("CRAFTY interactive web-interface",
                          , verbatimTextOutput("PaneRuninfo2")
                 ), 
                 
-                tabPanel("Transition plot (working on)",
+                tabPanel("Transition plot (alpha)",
                          # Show a transition plot of the selected
                          plotOutput("Tab3_TransitionPlotPane")
                 ), 
