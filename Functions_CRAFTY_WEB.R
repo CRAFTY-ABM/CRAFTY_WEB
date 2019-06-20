@@ -1,16 +1,21 @@
-library(rdrop2)
-library(gplots)
-library(shiny)
-library(raster)
+library(rdrop2) # Dropbox access
+library(gplots) # color palette
 library(RColorBrewer)
+ 
+library(shiny) 
+
+library(raster)
 library(rgdal)
 library(rgeos)
-# library(udunits2)
-library(leaflet)
+
 library(dplyr)
+
+library(leaflet)  # leaflet.js
 library(leaflet.extras)
 
-# library(SDMTools)
+library(SDMTools) # fragmentation statistics
+
+library(Gmisc) # transition plot
 
 # A seed used in the CRAFTY runs 
 
@@ -22,7 +27,7 @@ proj4.LL <- CRS("+proj=longlat +datum=WGS84")
 # Reference: http://spatialreference.org/ref/epsg/3035/
 proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
- 
+
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
 
@@ -126,12 +131,14 @@ if(!dir.exists(path.droptmp)) {
 }
 
 authDropbox <- function() {
-  token<-drop_auth()
+  token <- drop_auth()
   saveRDS(token, "Authentication/droptoken.rds")
 }
 
 accessDropbox <- function() { 
   token <- readRDS("Authentication/droptoken.rds") 
+  
+  # @todo trycatch
   drop_acc(dtoken = token)
   
 }
@@ -197,15 +204,14 @@ getSPDF <- function(tmp.in.name) {
 }
 
 scenarioname.default = "Baseline"
-fname.default = (paste0("Data/Paramset3/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2056.csv"))
-
+# fname.default = (paste0("Data/Paramset3/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2056.csv"))
 fname.default = (paste0("Data/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
 spdf.default = getSPDF(fname.default)
 rs.LL <- stack(spdf.default)[[4:22]]
 agent.LL = rs.LL[[17]]
 r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
 
- 
+
 # getRaster(fname.default, band.idx = 18)
 # 
 # fname = fname.default
