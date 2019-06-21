@@ -265,20 +265,28 @@ shinyServer(function(input, output) {
   
   output$Tab3_TransitionPlotPane <- renderPlot(height = 600, res = 96, {
     
+    runid = which(scenario.names == input$scenario) - 1 
+    # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
+    p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    runid_from = which(scenario.names == input$scenario_from ) - 1 
-    runid_to = which(scenario.names == input$scenario_to ) - 1 
+    aft_csvname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
+    aftcomp_dt = getCSV(aft_csvname_changed)
+    aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
-    p_from.idx = which(input$paramset_full_from == paramsets.fullnames)
-    p_to.idx = which(input$paramset_full_to  == paramsets.fullnames)
+    # 8 classes 
+    aftcomp_8classes_by = by(aftcomp_m, INDICES = aft.lookup.17to8[-1, 2], FUN = colSums)
     
-    indicator_trans_idx = which (input$outputlayer_transition == indicator.names)
+    aftcomp_8classes_m = t(sapply(aftcomp_8classes_by, c))[aft.fullnames.8classes, ]
     
-    fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-    fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+     
     
-      
-
+    demand_csvname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
+    demand_dt = getCSV(demand_csvname_changed)
+    demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
+    
+    
+    shortfall_m = ((demand_m[8:14,] - demand_m[1:7,]) / demand_m[8:14,] ) * 100 
+    
     # demand.colors = rich.colors(7)
     # # library(ggplot2)
     # # ggplot(aftcomp_dt)
@@ -295,21 +303,16 @@ shinyServer(function(input, output) {
     
     
     #### Transsition matrix 
-    # @todo simply the processing by eliminating raster processing.. 
-    spdf.from = getSPDF(fname_from)
-    rs.from.LL <- stack(spdf.from)[[4:22]]
-    print(rs.from.LL)
+    r.2016 = r.default
+    fname.2086 = (paste0("Data/Paramset1/", "RCP2_6-SSP1", "/", "RCP2_6-SSP1", "-1-99-EU-Cell-2086.csv"))
+    spdf.2086 = getSPDF(fname.2086)
+    rs.2086.LL <- stack(spdf.2086)[[4:22]]
+    r.2086 = projectRaster(rs.2086.LL[[17]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     
-    print(indicator_trans_idx)
-    r.from = projectRaster(rs.from.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-    
-    spdf.to = getSPDF(fname_to)
-    rs.to.LL <- stack(spdf.to)[[4:22]]
-    r.to = projectRaster(rs.to.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
  
-     
-    aft.old = getValues(r.from)
-    aft.new = getValues(r.to)
+    
+    aft.old = getValues(r.2016)
+    aft.new = getValues(r.2086)
     
     aft.tr.df = cbind(aft.old, aft.new)
     
@@ -323,7 +326,7 @@ shinyServer(function(input, output) {
            table(aft.old, 
                  aft.new))
     plot.new()
-    transitionPlot(trn_mtrx,new_page=T, fill_start_box = aft.colors.fromzero, arrow_clr =aft.colors.fromzero, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = NULL, overlap_add_width = 1, tot_spacing = 0.07, box_label = c(2016, 2086)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
+    transitionPlot(trn_mtrx,new_page=T, fill_start_box = aft.colors.fromzero, arrow_clr =aft.colors.fromzero, cex=1, color_bar = T,  txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = NULL, overlap_add_width = 1, tot_spacing = 0.07, box_label = c(2016, 2086)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
     
      
      
