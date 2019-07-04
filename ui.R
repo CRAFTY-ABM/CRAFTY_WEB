@@ -113,9 +113,32 @@ navbarPage("CRAFTY interactive web-interface",
            # tabPanel("Time-series"),
            # tabPanel("Transition plot")), 
            tabPanel("Time-series",
+                    
+                    # Sidebar layout with input and output definitions ----
+                    sidebarLayout(
+                      sidebarPanel(width=4,
+                                   selectInput("paramset_full_ts", label = "Behavioural parameters",
+                                               choices = paramsets.fullnames, selected = paramsets.fullnames[1]
+                                   ),
+                                   selectInput("scenario_ts", "Climate and socio-economic scenario",
+                                               scenario.names, selected = scenario.names[1]
+                                   ),
+                                   selectInput("inputlayer_ts", "Model Input",
+                                               indicator.names[8:14], selected=indicator.names[9]
+                                   ),
+                                   selectInput("outputlayer_ts", "Model Output",
+                                               indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
+                                   )
+                   
+                      ),
+                      # 
+                      # # Main panel for displaying outputs ----
+                      mainPanel(
                     # Show a plot of the generated distribution
-                    plotOutput("Tab2_SummaryPlotPane", height = 600)
+                    plotOutput("Tab2_TimeseriesPlotPane", height = 600)
                     , verbatimTextOutput("PaneRuninfo2")
+                      )
+                    )
            ),
            #       
            tabPanel("Transition",
