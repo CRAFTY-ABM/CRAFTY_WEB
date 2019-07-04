@@ -13,6 +13,7 @@ library(RColorBrewer)
 library(gplots)
 library(rgdal)
 library(rgeos)
+library(grid)
 
 source("Functions_CRAFTY_WEB.R")
 
@@ -55,10 +56,10 @@ shinyServer(function(input, output) {
   })
   
   
- 
+  
   observeEvent(input$deleteCache, {
     # session$sendCustomMessage(type = 'testmessage',
-                              # message = 'Thank you for clicking')
+    # message = 'Thank you for clicking')
     unlink(path.rastertmp)
     unlink(path.droptmp)
     
@@ -263,7 +264,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$Tab3_TransitionPlotPane <- renderPlot(height = 600, res = 96, {
+  output$Tab3_TransitionPlotPane <- renderPlot(height = 800, res = 96, {
     
     
     runid_from = which(scenario.names == input$scenario_from ) - 1 
@@ -277,8 +278,8 @@ shinyServer(function(input, output) {
     fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
     fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
     
-      
-
+    
+    
     # demand.colors = rich.colors(7)
     # # library(ggplot2)
     # # ggplot(aftcomp_dt)
@@ -298,7 +299,7 @@ shinyServer(function(input, output) {
     # @todo simply the processing by eliminating raster processing.. 
     spdf.from = getSPDF(fname_from)
     rs.from.LL <- stack(spdf.from)[[4:22]]
-    print(rs.from.LL)
+    # print(rs.from.LL)
     
     print(indicator_trans_idx)
     r.from = projectRaster(rs.from.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
@@ -306,8 +307,8 @@ shinyServer(function(input, output) {
     spdf.to = getSPDF(fname_to)
     rs.to.LL <- stack(spdf.to)[[4:22]]
     r.to = projectRaster(rs.to.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
- 
-     
+    
+    
     aft.old = getValues(r.from)
     aft.new = getValues(r.to)
     
@@ -318,15 +319,56 @@ shinyServer(function(input, output) {
     colnames(aft.tr.df)[1] = "rowid"
     # Create the transition matrix that 
     # is the basis for the transition plot
-    trn_mtrx <-
-      with(aft.tr.df,
-           table(aft.old, 
-                 aft.new))
-    plot.new()
-    transitionPlot(trn_mtrx,new_page=T, fill_start_box = aft.colors.fromzero, arrow_clr =aft.colors.fromzero, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = NULL, overlap_add_width = 1, tot_spacing = 0.07, box_label = c(2016, 2086)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
     
-     
-     
+    # print( table(aft.old))
+    # print(table(aft.new))
+    
+    aft_tb_oldandnew = table(aft.old, aft.new)
+    
+    # non rectangular tables.. 
+    if (dim(aft_tb_oldandnew)[1] != dim(aft_tb_oldandnew)[2]) {
+      # if (nrow(aft_tb_oldandnew)!= nrow(aft_tb_oldandnew)){
+      # print(aft_tb_oldandnew)
+      print(dim(aft_tb_oldandnew)) 
+      
+      if (dim(aft_tb_oldandnew)[1] > dim(aft_tb_oldandnew)[2]) {
+
+        missing_class = setdiff(rownames(aft_tb_oldandnew), colnames(aft_tb_oldandnew))
+        
+        aft_tb_oldandnew= cbind(rep(0, nrow(aft_tb_oldandnew)), aft_tb_oldandnew)
+        
+        
+        colnames(aft_tb_oldandnew)[1] = missing_class
+      
+        } else {
+        
+        missing_class = setdiff(colnames(aft_tb_oldandnew), rownames(aft_tb_oldandnew))
+        
+        aft_tb_oldandnew= rbind(rep(0, ncol(aft_tb_oldandnew)), aft_tb_oldandnew)
+        
+        
+        rownames(aft_tb_oldandnew)[1] = missing_class
+      }
+      
+    }
+    
+    trn_mtrx <- with(aft.tr.df, aft_tb_oldandnew)
+    
+    if (nrow(aft_tb_oldandnew)> 17 ) { 
+      tr.colors = c("grey30", aft.colors.fromzero)
+      
+    } else {
+      tr.colors = aft.colors.fromzero
+      
+    }
+    # par(mfrow=c(2,1))
+    plot.new()
+    
+    transitionPlot(trn_mtrx,new_page=T, fill_start_box = tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = NULL, overlap_add_width = 1, tot_spacing = 0.07, box_label = c(input$year_from, input$year_to)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
+    
+    # plot.new()
+    legend("bottom", c(aft.shortnames.fromzero, "Layy FR"), col = c(aft.colors.fromzero, "grey30"), pch=15, cex=1.5, bty="n")
+    
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
     # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
     # 
@@ -343,7 +385,7 @@ shinyServer(function(input, output) {
     # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
     # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
     
-     
+    
   })
   
   output$MapPane <- renderLeaflet({

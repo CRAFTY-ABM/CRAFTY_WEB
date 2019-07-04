@@ -129,14 +129,14 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("outputlayer_ts", "Model Output",
                                                indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
                                    )
-                   
+                                   
                       ),
                       # 
                       # # Main panel for displaying outputs ----
                       mainPanel(
-                    # Show a plot of the generated distribution
-                    plotOutput("Tab2_TimeseriesPlotPane", height = 600)
-                    , verbatimTextOutput("PaneRuninfo2")
+                        # Show a plot of the generated distribution
+                        plotOutput("Tab2_TimeseriesPlotPane", height = 600)
+                        , verbatimTextOutput("PaneRuninfo2")
                       )
                     )
            ),
@@ -151,16 +151,16 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("outputlayer_transition", "Model Output (LU)",
                                                indicator.names[c(20, 17)], selected=indicator.names[17]
                                    )
-                                    , sliderInput("year_from",
+                                   , sliderInput("year_from",
                                                  "Year (from):",
                                                  min = 2016,
                                                  max = 2096, sep = "",
-                                                 value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                 value = 2016, step=10),
                                    selectInput("paramset_full_from", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[1]
+                                               scenario.names, selected = scenario.names[2]
                                    )
                                    # selectInput("inputlayer", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]
@@ -170,12 +170,12 @@ navbarPage("CRAFTY interactive web-interface",
                                                   "Year (to):",
                                                   min = 2016,
                                                   max = 2096, sep = "",
-                                                  value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                  value = 2096, step=10),
                                    selectInput("paramset_full_to", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[1]
+                                               scenario.names, selected = scenario.names[2]
                                    )
                                    # selectInput("inputlayer", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]
