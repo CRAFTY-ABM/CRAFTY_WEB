@@ -6,6 +6,7 @@ library(leaflet.extras)
 library(RColorBrewer)
 library(gplots)
 library(markdown)
+library(DT)
 
 source("Functions_CRAFTY_WEB.R")
 # 
@@ -30,7 +31,7 @@ navbarPage("CRAFTY interactive web-interface",
            
            
            # titlePanel("CRAFTY-EU"), 
-           tabPanel("Map", 
+           tabPanel("Result", 
                     
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
@@ -63,7 +64,7 @@ navbarPage("CRAFTY interactive web-interface",
                       mainPanel(
                         tabsetPanel(
                           tabPanel("Map", 
-                                   leafletOutput("MapPane",  height = 600)
+                                   leafletOutput("Tab1_MapPane",  height = 600)
                                    # Run info
                                    , verbatimTextOutput("PaneRuninfo")
                                    
@@ -101,9 +102,16 @@ navbarPage("CRAFTY interactive web-interface",
                                      
                                    )
                           ), 
+                          
+                          tabPanel("Behavioural parameters", 
+                                   # Time series info
+                                   # plotOutput("Tab1_BehaviouralTablePane")
+                                   dataTableOutput('Tab1_BehaviouralTablePane')
+                                   # Map view options
+                          ), 
                           tabPanel("Statistics", 
                                    # Time series info
-                                   plotOutput("Tab1_SubPlotPane")
+                                   plotOutput("Tab1_StatisticsPane")
                                    # Map view options
                           )
                         )))
@@ -135,7 +143,7 @@ navbarPage("CRAFTY interactive web-interface",
                       # # Main panel for displaying outputs ----
                       mainPanel(
                         # Show a plot of the generated distribution
-                        plotOutput("Tab2_TimeseriesPlotPane", height = 600)
+                        plotOutput("Tab2_TimeseriesPlotPane", height = 800)
                         , verbatimTextOutput("PaneRuninfo2")
                       )
                     )

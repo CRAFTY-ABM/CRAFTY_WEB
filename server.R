@@ -14,7 +14,7 @@ library(gplots)
 library(rgdal)
 library(rgeos)
 library(grid)
-
+library(DT)
 source("Functions_CRAFTY_WEB.R")
 
 accessDropbox()
@@ -146,7 +146,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$Tab1_SubPlotPane <- renderPlot({
+  output$Tab1_StatisticsPane <- renderPlot({
     
     target_data = rnew()
     
@@ -171,6 +171,34 @@ shinyServer(function(input, output) {
     # boxplot(classstat.res.LL$mean.frac.dim.index, classstat.res.LL$patch.cohesion.index, classstat.res.LL$aggregation.index)
     
   })
+  
+  
+  
+  output$Tab1_BehaviouralTablePane <- renderDataTable(
+    {
+      
+      
+      runid = which(scenario.names == input$scenario) - 1
+      p.idx = which(input$paramset_full == paramsets.fullnames)
+      
+      p_name = paste0("Tables/Paramset", p.idx, ".csv")
+      
+      p_tb = read.csv(p_name)
+      
+      
+      # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
+      # spdf_changed = getSPDF(fname_changed)
+      # target_val = spdf_changed[4:22]
+      # 
+      # str(getValues(target_data))
+      # tb1 =     table(getValues(target_data))
+      # print(tb1)
+      
+      DT::datatable(p_tb)
+    })
+  
+  
+  
   # observe({
   #   # dt.plot = selectedData()
   #   input$
@@ -179,7 +207,7 @@ shinyServer(function(input, output) {
   #   
   # })
   
-  output$Tab2_TimeseriesPlotPane <- renderPlot(height = 600, res = 96, {
+  output$Tab2_TimeseriesPlotPane <- renderPlot(height = 800, res = 96, {
     
     runid = which(scenario.names == input$scenario_ts ) - 1 
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
@@ -208,15 +236,9 @@ shinyServer(function(input, output) {
     # # library(ggplot2)
     # # ggplot(aftcomp_dt)
     
-    par(mfrow=c(2,2), mar = c(5.1, 4.1, 4, 1))
+    par(mfrow=c(3,2), mar = c(5.1, 4.1, 4, 1))
     
-    # plot(target_years, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
-    # 
-    # for (a.idx in 2:8) { 
-    #   lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
-    # }
-    # legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
-    # 
+    
     
     
     aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
@@ -229,21 +251,6 @@ shinyServer(function(input, output) {
     }
     legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
     
-    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
-    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
-    # 
-    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
-    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
-    
-    
-    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-200,200), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
-    
-    for (a.idx in 2:7) { 
-      lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
-    }
-    
-    legend("topright", legend = serviceNames, col=serviceColours, lty = 1, cex=0.7, bty="n")
-    
     
     # AFT changes
     aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
@@ -255,11 +262,30 @@ shinyServer(function(input, output) {
     }
     legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
     
-    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
-    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
-    # 
-    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
-    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
+    
+    ### Plotting service supply and demand 
+    
+    
+    supdem_range = range(demand_m)
+    y_lim_max = max(abs(supdem_range))
+    y_lim = c(-y_lim_max, y_lim_max)
+    
+    barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", ylim= y_lim, col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    
+    
+    barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim)
+    barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick, ylim = y_lim)
+    
+    
+    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-200,200), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
+    
+    for (a.idx in 2:7) { 
+      lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
+    }
+    
+    legend("topright", legend = serviceNames, col=serviceColours, lty = 1, cex=0.7, bty="n")
+    
     
   })
   
@@ -332,15 +358,15 @@ shinyServer(function(input, output) {
       print(dim(aft_tb_oldandnew)) 
       
       if (dim(aft_tb_oldandnew)[1] > dim(aft_tb_oldandnew)[2]) {
-
+        
         missing_class = setdiff(rownames(aft_tb_oldandnew), colnames(aft_tb_oldandnew))
         
         aft_tb_oldandnew= cbind(rep(0, nrow(aft_tb_oldandnew)), aft_tb_oldandnew)
         
         
         colnames(aft_tb_oldandnew)[1] = missing_class
-      
-        } else {
+        
+      } else {
         
         missing_class = setdiff(colnames(aft_tb_oldandnew), rownames(aft_tb_oldandnew))
         
@@ -388,7 +414,7 @@ shinyServer(function(input, output) {
     
   })
   
-  output$MapPane <- renderLeaflet({
+  output$Tab1_MapPane <- renderLeaflet({
     r_dummy  = raster(extent(r.default))
     r_dummy = setValues(r_dummy, values = 0)
     proj4string(r_dummy) = proj4string(r.default)
