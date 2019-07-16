@@ -11,7 +11,7 @@ library(shiny)
 library(raster)
 library(RColorBrewer)
 library(gplots)
-# library(rgdal)
+library(rgdal)
 library(rgeos)
 library(grid)
 library(DT)
@@ -80,8 +80,7 @@ shinyServer(function(input, output) {
   
   rnew <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1
-    # runid = 0
+    runid = which(scenario.names == input$scenario) - 1 
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
     fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
@@ -104,8 +103,7 @@ shinyServer(function(input, output) {
   
   rnew_input <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1
-    # runid = 0 
+    runid = which(scenario.names == input$scenario) - 1 
     
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
@@ -439,7 +437,7 @@ shinyServer(function(input, output) {
   
   observe({
     # dt = providernew()
-    proxy <- leafletProxy("MapPane", data = providernew())
+    proxy <- leafletProxy("Tab1_MapPane", data = providernew())
     proxy %>% clearTiles() %>% addProviderTiles(input$background, options = providerTileOptions(noWrap = TRUE), group = "TileLayer")
     # proxy %>% clearControls() 
     
@@ -452,7 +450,7 @@ shinyServer(function(input, output) {
     # print(which (input$indicator == indicator.names))
     
     
-    proxy <- leafletProxy("MapPane", data =rnew())
+    proxy <- leafletProxy("Tab1_MapPane", data =rnew())
     proxy %>% clearImages() %>% clearControls() 
     
     # touches
@@ -521,7 +519,7 @@ shinyServer(function(input, output) {
   # observe({
   #   pal <- colorpal()
   # 
-  #   leafletProxy("MapPane", data = filteredData()) %>%
+  #   leafletProxy("Tab1_MapPane", data = filteredData()) %>%
   #     clearShapes() %>%
   #     addCircles(radius = ~10^mag/10, weight = 1, color = "#777777",
   #                fillColor = ~pal(mag), fillOpacity = 0.7, popup = ~paste(mag)
@@ -532,7 +530,7 @@ shinyServer(function(input, output) {
   #
   # Use a separate observer to recreate the legend as needed.
   # observe({
-  #   proxy <- leafletProxy("MapPane")
+  #   proxy <- leafletProxy("Tab1_MapPane")
   #   
   #   # Remove any existing legend, and only if the legend is
   #   # enabled, create a new one.
@@ -558,12 +556,10 @@ shinyServer(function(input, output) {
   # # 
   
   output$downloadData <- downloadHandler(
-    
     filename = function() {
-      # runid = 0 
-      runid = which(scenario.names == input$scenario) - 1
       
-       indicator_idx = which (input$outputlayer == indicator.names)
+      runid = which(scenario.names == input$scenario) - 1 
+      indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
       fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
@@ -571,9 +567,7 @@ shinyServer(function(input, output) {
       # fname_changed      
     },
     content = function(file) {
-      # runid = 0 
-      
-      runid = which(scenario.names == input$scenario) - 1
+      runid = which(scenario.names == input$scenario) - 1 
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       

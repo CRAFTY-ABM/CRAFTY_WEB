@@ -117,9 +117,6 @@ navbarPage("CRAFTY interactive web-interface",
                         )))
            ),
            
-           # navbarMenu("Analysis",
-           # tabPanel("Time-series"),
-           # tabPanel("Transition plot")), 
            tabPanel("Time-series",
                     
                     # Sidebar layout with input and output definitions ----

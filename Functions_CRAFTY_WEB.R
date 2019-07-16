@@ -18,6 +18,7 @@ library(SDMTools) # fragmentation statistics
 library(Gmisc) # transition plot
 
 # A seed used in the CRAFTY runs 
+seedid = "99"
 
 # Lon-Lat projection 
 proj4.LL <- CRS("+proj=longlat +datum=WGS84")
@@ -31,12 +32,9 @@ proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +el
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
 
-n.paramset = 6
+n.paramset = 5
 paramsets = paste0("Paramset", 1:n.paramset)
-paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Template") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
-
-seedid.v = c(rep("99", 5), "99")
-
+paramsets.fullnames = c("Behavioural baseline (P1)", "Thresholds (P2)", "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
 
 indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
                      "Service.Timber","Service.Carbon","Service.Urban",
