@@ -15,7 +15,7 @@ library(rgdal)
 library(rgeos)
 library(grid)
 library(DT)
-source("Functions_CRAFTY_WEB.R")
+source("RScripts/Functions_CRAFTY_WEB.R")
 
 accessDropbox()
 
@@ -84,6 +84,10 @@ shinyServer(function(input, output) {
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
     fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    if (input$food != "Normal") { 
+      
+      fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    }
     # spdf_changed = getSPDF(fname_changed)
     # rs_changed = stack(spdf_changed)[[4:22]]
     # 
@@ -109,7 +113,9 @@ shinyServer(function(input, output) {
     
     
     fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    
+    if (input$food != "Normal") { 
+       fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    }
     indicator_idx = which (input$inputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
     
@@ -304,6 +310,12 @@ shinyServer(function(input, output) {
     fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
     fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
     
+    
+    if (input$food != "Normal") { 
+      fname_from =  paste0("Data/", input$food, "/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
+      fname_to =  paste0("Data/", input$food, "/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+      
+    }
     
     
     # demand.colors = rich.colors(7)
@@ -562,8 +574,8 @@ shinyServer(function(input, output) {
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_", input$year, "_", input$outputlayer, ".tif")
-      
+      fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_",  input$food, "_",input$year, "_", input$outputlayer, ".tif")
+
       # fname_changed      
     },
     content = function(file) {
@@ -572,6 +584,13 @@ shinyServer(function(input, output) {
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
       fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      
+      if (input$food != "Normal") { 
+        
+        fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+        
+      }
+      
       print(fname_changed)
       data = projectRaster(getRaster(fname_changed, band.idx = indicator_idx), crs = proj4.LL)
       

@@ -8,7 +8,7 @@ library(gplots)
 library(markdown)
 library(DT)
 
-source("Functions_CRAFTY_WEB.R")
+source("RScripts/Functions_CRAFTY_WEB.R")
 # 
 # 
 # absolutePanel(
@@ -47,6 +47,9 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("scenario", "Climate and socio-economic scenario",
                                                scenario.names, selected = scenario.names[1]
                                    ),
+                                   selectInput("food", "Food price",
+                                               food.names, selected = food.names[1]
+                                   ),
                                    selectInput("inputlayer", "Model Input",
                                                indicator.names[8:14], selected=indicator.names[9]
                                    ),
@@ -55,8 +58,8 @@ navbarPage("CRAFTY interactive web-interface",
                                    ),
                                    selectInput("background", "Background tiles", choices =
                                                  as.character(providers), selected=providers$OpenStreetMap.Mapnik
-                                   ),
-                                   actionLink("deleteCache", "Delete cached files")
+                                   )
+                                   # , actionLink("deleteCache", "Delete cached files")
                                    
                       ),
                       # 
