@@ -15,7 +15,7 @@ library(leaflet.extras)
 
 library(SDMTools) # fragmentation statistics
 
-library(Gmisc) # transition plot
+library(Gmisc) # transition plot 
 
 # A seed used in the CRAFTY runs 
 seedid = "99"
