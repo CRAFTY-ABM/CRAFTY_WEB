@@ -11,7 +11,7 @@ library(shiny)
 library(raster)
 library(RColorBrewer)
 library(gplots)
-library(rgdal)
+# library(rgdal)
 library(rgeos)
 library(grid)
 library(DT)
@@ -80,7 +80,8 @@ shinyServer(function(input, output) {
   
   rnew <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1 
+    runid = which(scenario.names == input$scenario) - 1
+    # runid = 0
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
     fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
@@ -107,7 +108,8 @@ shinyServer(function(input, output) {
   
   rnew_input <- reactive({
     
-    runid = which(scenario.names == input$scenario) - 1 
+    runid = which(scenario.names == input$scenario) - 1
+    # runid = 0 
     
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
@@ -568,10 +570,12 @@ shinyServer(function(input, output) {
   # # 
   
   output$downloadData <- downloadHandler(
+    
     filename = function() {
+      # runid = 0 
+      runid = which(scenario.names == input$scenario) - 1
       
-      runid = which(scenario.names == input$scenario) - 1 
-      indicator_idx = which (input$outputlayer == indicator.names)
+       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
       fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_",  input$food, "_",input$year, "_", input$outputlayer, ".tif")
@@ -579,7 +583,9 @@ shinyServer(function(input, output) {
       # fname_changed      
     },
     content = function(file) {
-      runid = which(scenario.names == input$scenario) - 1 
+      # runid = 0 
+      
+      runid = which(scenario.names == input$scenario) - 1
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
