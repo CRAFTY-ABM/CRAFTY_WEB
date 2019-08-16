@@ -47,8 +47,11 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("scenario", "Climate and socio-economic scenario",
                                                scenario.names[c(1,7)], selected = scenario.names[1]
                                    ),
-                                   selectInput("food", "Food price",
-                                               food.names, selected = food.names[1]
+                                   selectInput("foodprice", "Food price",
+                                               foodprice.names, selected = foodprice.names[1]
+                                   ),
+                                   selectInput("fooddemand", "Meat demand",
+                                               fooddemand.names, selected = fooddemand.names[1]
                                    ),
                                    selectInput("inputlayer", "Model Input",
                                                indicator.names[8:14], selected=indicator.names[9]
@@ -129,10 +132,13 @@ navbarPage("CRAFTY interactive web-interface",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[1]
+                                               scenario.names[c(1,7)], selected = scenario.names[1]
                                    )
-                                   , selectInput("food", "Food price",
-                                               food.names, selected = food.names[1]
+                                   , selectInput("foodprice", "Food price",
+                                                 foodprice.names, selected = foodprice.names[1]
+                                   )
+                                   , selectInput("fooddemand", "Food demand",
+                                                 fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # ,
                                    # selectInput("inputlayer_ts", "Model Input",
@@ -161,7 +167,7 @@ navbarPage("CRAFTY interactive web-interface",
                       sidebarPanel(width=4,
                                    
                                    selectInput("outputlayer_transition", "Model Output (LU)",
-                                               indicator.names[c(20, 17)], selected=indicator.names[17]
+                                               indicator.names[c(20)], selected=indicator.names[20]
                                    )
                                    , sliderInput("year_from",
                                                  "Year (from):",
@@ -172,7 +178,14 @@ navbarPage("CRAFTY interactive web-interface",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[2]
+                                               scenario.names[c(1,7)], selected = scenario.names[1]
+                                               
+                                   )
+                                   , selectInput("foodprice", "Food price",
+                                                 foodprice.names, selected = foodprice.names[1]
+                                   )
+                                   , selectInput("fooddemand", "Food demand",
+                                                 fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]
@@ -188,6 +201,12 @@ navbarPage("CRAFTY interactive web-interface",
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
                                                scenario.names, selected = scenario.names[2]
+                                   )
+                                   , selectInput("foodprice", "Food price",
+                                                 foodprice.names, selected = foodprice.names[1]
+                                   )
+                                   , selectInput("fooddemand", "Food demand",
+                                                 fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]

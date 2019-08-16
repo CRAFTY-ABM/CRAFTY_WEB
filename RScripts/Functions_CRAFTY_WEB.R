@@ -32,7 +32,8 @@ proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +el
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
 
-food.names = c("Normal", "Doubled", "Tripled") 
+foodprice.names = c("Normal", "Doubled", "Tripled") 
+fooddemand.names = c("Normal", "LowMeatDemand")
 
 n.paramset = 5
 paramsets = paste0("Paramset", 1:n.paramset)
@@ -192,7 +193,7 @@ getCSV = function(tmp.in.name) {
   return(res)
 }
 
-tmp.in.name = (paste0("Data/Paramset3/", scenario.names[3], "/", scenario.names[3], "-0-99-EU-Cell-2016.csv"))
+# tmp.in.name = (paste0("Data/Paramset3/",  scenario.names[3], "/", scenario.names[3], "-0-99-EU-Cell-2016.csv"))
 
 getSPDF <- function(tmp.in.name) {
   
@@ -210,7 +211,7 @@ getSPDF <- function(tmp.in.name) {
 
 scenarioname.default = "Baseline"
 # fname.default = (paste0("Data/Paramset3/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2056.csv"))
-fname.default = (paste0("Data/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
+fname.default = (paste0("Data/Normal/Normal/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
 spdf.default = getSPDF(fname.default)
 rs.LL <- stack(spdf.default)[[4:22]]
 agent.LL = rs.LL[[17]]

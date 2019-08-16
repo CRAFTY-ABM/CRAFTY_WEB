@@ -84,11 +84,11 @@ shinyServer(function(input, output) {
     # runid = 0
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    if (input$food != "Normal") { 
+    # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    # if (input$food != "Normal") { 
       
-      fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    }
+      fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    # }
     # spdf_changed = getSPDF(fname_changed)
     # rs_changed = stack(spdf_changed)[[4:22]]
     # 
@@ -114,10 +114,10 @@ shinyServer(function(input, output) {
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
     
-    fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    if (input$food != "Normal") { 
-       fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-    }
+    # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    # if (input$food != "Normal") { 
+      fname_changed =   paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    # }
     indicator_idx = which (input$inputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
     
@@ -144,7 +144,7 @@ shinyServer(function(input, output) {
     runid = which(scenario.names == input$scenario) - 1 
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    fname_changed =  paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     spdf_changed = getSPDF(fname_changed)
     
     target_val = spdf_changed[4:22]
@@ -221,7 +221,7 @@ shinyServer(function(input, output) {
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
     p.idx = which(input$paramset_full_ts == paramsets.fullnames)
     
-    aft_csvname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
+    aft_csvname_changed =  paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateAFTComposition.csv") 
     aftcomp_dt = getCSV(aft_csvname_changed)
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
@@ -233,7 +233,7 @@ shinyServer(function(input, output) {
     
     
     
-    demand_csvname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
+    demand_csvname_changed =  paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
     
@@ -261,15 +261,15 @@ shinyServer(function(input, output) {
     
     plotting17AFT = FALSE # summerschool version
     if (plotting17AFT) { 
-    # AFT changes
-    aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
-    
-    plot(target_years, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
-    
-    for (a.idx in 2:nrow(aftcomp_perc_m)) { 
-      lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
-    }
-    legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
+      # AFT changes
+      aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
+      
+      plot(target_years, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
+      
+      for (a.idx in 2:nrow(aftcomp_perc_m)) { 
+        lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
+      }
+      legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
     }
     
     ### Plotting service supply and demand 
@@ -277,17 +277,25 @@ shinyServer(function(input, output) {
     
     supdem_range = range(demand_m)
     y_lim_max = max(abs(supdem_range))
-    y_lim = c(-y_lim_max, y_lim_max)
+    y_lim = c(0, y_lim_max)
+    y_lim_symm = c(-y_lim_max, y_lim_max)/2
     
     barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", ylim= y_lim, col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
     legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
     
     
     barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim)
-    barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick, ylim = y_lim)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    
+    barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick, ylim = y_lim_symm)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
     
     
-    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-200,200), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
+    shortfall_range = range(shortfall_m[1,], na.rm = T)
+    shortfall_max = max(abs(shortfall_range)) * 2
+    
+    
+    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-shortfall_max,shortfall_max), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
     
     for (a.idx in 2:7) { 
       lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
@@ -310,15 +318,15 @@ shinyServer(function(input, output) {
     
     indicator_trans_idx = which (input$outputlayer_transition == indicator.names)
     
-    fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-    fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+    # fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
+    # fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
     
     
-    if (input$food != "Normal") { 
-      fname_from =  paste0("Data/", input$food, "/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-      fname_to =  paste0("Data/", input$food, "/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+    # if (input$food != "Normal") { 
+      fname_from =  paste0("Data/", input$foodprice, "/",  input$fooddemand, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
+      fname_to =  paste0("Data/", input$foodprice, "/",  input$fooddemand, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
       
-    }
+    # }
     
     
     # demand.colors = rich.colors(7)
@@ -338,16 +346,22 @@ shinyServer(function(input, output) {
     
     #### Transsition matrix 
     # @todo simply the processing by eliminating raster processing.. 
-    spdf.from = getSPDF(fname_from)
-    rs.from.LL <- stack(spdf.from)[[4:22]]
+    # spdf.from = getSPDF(fname_from)
+    # rs.from.LL <- stack(spdf.from)[[4:22]]
     # print(rs.from.LL)
     
-    print(indicator_trans_idx)
-    r.from = projectRaster(rs.from.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     
-    spdf.to = getSPDF(fname_to)
-    rs.to.LL <- stack(spdf.to)[[4:22]]
-    r.to = projectRaster(rs.to.LL[[indicator_trans_idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    rs.from.LL = getRaster(fname_from, indicator_trans_idx)
+    
+    print(indicator_trans_idx)
+    r.from = projectRaster(rs.from.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    
+    # spdf.to = getSPDF(fname_to)
+    # rs.to.LL <- stack(spdf.to)[[4:22]]
+    
+    rs.to.LL = getRaster(fname_to, indicator_trans_idx)
+    
+    r.to = projectRaster(rs.to.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
     
     
     aft.old = getValues(r.from)
@@ -399,7 +413,7 @@ shinyServer(function(input, output) {
       tr.colors = c("grey30", aft.colors.fromzero)
       
     } else {
-      tr.colors = aft.colors.fromzero
+      tr.colors =  aft.colors.8classes # aft.colors.fromzero
       
     }
     # par(mfrow=c(2,1))
@@ -408,7 +422,7 @@ shinyServer(function(input, output) {
     transitionPlot(trn_mtrx,new_page=T, fill_start_box = tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = NULL, overlap_add_width = 1, tot_spacing = 0.07, box_label = c(input$year_from, input$year_to)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
     
     # plot.new()
-    legend("bottom", c(aft.shortnames.fromzero, "Layy FR"), col = c(aft.colors.fromzero, "grey30"), pch=15, cex=1.5, bty="n")
+    legend("bottom", c(aft.names.8classes), col = c(aft.colors.8classes), pch=15, cex=1.5, bty="n")
     
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
     # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
@@ -576,11 +590,11 @@ shinyServer(function(input, output) {
       # runid = 0 
       runid = which(scenario.names == input$scenario) - 1
       
-       indicator_idx = which (input$outputlayer == indicator.names)
+      indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("CRAFTY-EU_",paramsets[p.idx], "_", input$scenario, "_",  input$food, "_",input$year, "_", input$outputlayer, ".tif")
-
+      fname_changed =  paste0("CRAFTY-EU_", paramsets[p.idx], "_", input$scenario, "_", "FoodPrice_", input$foodprice, "_", "FoodDemand_", input$fooddemand, "_", input$year, "_", input$outputlayer, ".tif")
+      
       # fname_changed      
     },
     content = function(file) {
@@ -590,13 +604,13 @@ shinyServer(function(input, output) {
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      # fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       
-      if (input$food != "Normal") { 
+      # if (input$food != "Normal") { 
         
-        fname_changed =   paste0("Data/", input$food, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+        fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
         
-      }
+      # }
       
       print(fname_changed)
       data = projectRaster(getRaster(fname_changed, band.idx = indicator_idx), crs = proj4.LL)
