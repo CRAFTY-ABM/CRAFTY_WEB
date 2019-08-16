@@ -45,7 +45,7 @@ navbarPage("CRAFTY interactive web-interface",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[1]
+                                               scenario.names[c(1,7)], selected = scenario.names[1]
                                    ),
                                    selectInput("food", "Food price",
                                                food.names, selected = food.names[1]
@@ -54,7 +54,7 @@ navbarPage("CRAFTY interactive web-interface",
                                                indicator.names[8:14], selected=indicator.names[9]
                                    ),
                                    selectInput("outputlayer", "Model Output",
-                                               indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
+                                               indicator.names[c(20, 1:7, 19)], selected=indicator.names[20]
                                    ),
                                    selectInput("background", "Background tiles", choices =
                                                  as.character(providers), selected=providers$OpenStreetMap.Mapnik
@@ -130,13 +130,17 @@ navbarPage("CRAFTY interactive web-interface",
                                    ),
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
                                                scenario.names, selected = scenario.names[1]
-                                   ),
-                                   selectInput("inputlayer_ts", "Model Input",
-                                               indicator.names[8:14], selected=indicator.names[9]
-                                   ),
-                                   selectInput("outputlayer_ts", "Model Output",
-                                               indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
                                    )
+                                   , selectInput("food", "Food price",
+                                               food.names, selected = food.names[1]
+                                   )
+                                   # ,
+                                   # selectInput("inputlayer_ts", "Model Input",
+                                   #             indicator.names[8:14], selected=indicator.names[9]
+                                   # ),
+                                   # selectInput("outputlayer_ts", "Model Output",
+                                   #             indicator.names[c(20, 17, 1:7, 19)], selected=indicator.names[20]
+                                   # )
                                    
                       ),
                       # 

@@ -1,7 +1,7 @@
 library(rdrop2) # Dropbox access
 library(gplots) # color palette
 library(RColorBrewer)
- 
+
 library(shiny) 
 
 library(raster)
@@ -130,17 +130,22 @@ if(!dir.exists(path.droptmp)) {
   dir.create(path.droptmp)
 }
 
-authDropbox <- function() {
-  token <- drop_auth()
-  saveRDS(token, "Authentication/droptoken.rds")
+drop_token_name = "Authentication/droptoken.rds"
+
+if (!file.exists(drop_token_name)) { 
+  
+  token <- drop_auth(cache=F)
+  saveRDS(token, drop_token_name, version = 2)
+} else {
+  # token <- readRDS(drop_token_name)
+  
+  # @todo trycatch
+  drop_auth(rdstoken = drop_token_name)
+  
 }
 
 accessDropbox <- function() { 
-  token <- readRDS("Authentication/droptoken.rds") 
-  
-  # @todo trycatch
-  drop_acc(dtoken = token)
-  
+  print("do nothing")
 }
 
 
@@ -152,7 +157,7 @@ accessDropbox <- function() {
 
 # Cell ID and cooridnates 
 # ctry.ids <- read.csv("~/Dropbox/KIT/CLIMSAVE/IAP/Cell_ID_LatLong.csv")
-# saveRDS(ctry.ids, file = "GISData/ctry.ids.Rds")
+# saveRDS(ctry.ids, file = "GISData/ctry.ids.Rds", version = 2)
 ctry.ids = readRDS("GISData/ctry.ids.Rds")
 x.lat.v = sort(unique(ctry.ids$Longitude))
 y.lon.v = sort(unique(ctry.ids$Latitude))

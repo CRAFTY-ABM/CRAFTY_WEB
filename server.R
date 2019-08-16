@@ -259,7 +259,8 @@ shinyServer(function(input, output) {
     }
     legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
     
-    
+    plotting17AFT = FALSE # summerschool version
+    if (plotting17AFT) { 
     # AFT changes
     aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
     
@@ -269,7 +270,7 @@ shinyServer(function(input, output) {
       lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
     }
     legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
-    
+    }
     
     ### Plotting service supply and demand 
     
