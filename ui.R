@@ -60,7 +60,7 @@ navbarPage("CRAFTY interactive web-interface",
                                                indicator.names[c(20, 1:7, 19)], selected=indicator.names[20]
                                    ),
                                    selectInput("background", "Background tiles", choices =
-                                                 as.character(providers), selected=providers$OpenStreetMap.Mapnik
+                                                 provider_names, selected=providers$OpenStreetMap.Mapnik
                                    )
                                    # , actionLink("deleteCache", "Delete cached files")
                                    
@@ -134,10 +134,10 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
                                                scenario.names[c(1,7)], selected = scenario.names[1]
                                    )
-                                   , selectInput("foodprice", "Food price",
+                                   , selectInput("foodprice_ts", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand", "Food demand",
+                                   , selectInput("fooddemand_ts", "Food demand",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # ,
@@ -179,12 +179,11 @@ navbarPage("CRAFTY interactive web-interface",
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
                                                scenario.names[c(1,7)], selected = scenario.names[1]
-                                               
-                                   )
-                                   , selectInput("foodprice", "Food price",
+                                    )
+                                   , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand", "Food demand",
+                                   , selectInput("fooddemand_from", "Food demand",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",
@@ -200,12 +199,12 @@ navbarPage("CRAFTY interactive web-interface",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
-                                               scenario.names, selected = scenario.names[2]
+                                               scenario.names[c(1,7)], selected = scenario.names[1]
                                    )
-                                   , selectInput("foodprice", "Food price",
+                                   , selectInput("foodprice_to", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand", "Food demand",
+                                   , selectInput("fooddemand_to", "Food demand",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",

@@ -116,10 +116,68 @@ aft.lookup.17to8 = matrix(ncol = 2, byrow = T, data = c(
 aft.names.8classes <- aft.fullnames.8classes <- c("Intensive arable","Intensive grassland","Intensive forest","Mixed intensive","Mixed extensive","Extensive primarily forest","Near-natural","Other")
 
 aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = "greenyellow","Intensive forest" = "olivedrab4",
-                         "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="white")
+                         "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="gray85") # other was white 
 
 
+provider_names = c(
+ "OpenStreetMap.Mapnik", "OpenTopoMap"     
+  , "Esri.WorldImagery"             
+   ,"Esri.WorldPhysical"              
+  , "Esri.NatGeoWorldMap" 
+  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
+  ,"NASAGIBS.ViirsEarthAtNight2012"
+  ,  "Wikimedia"      
+)
 
+# [1] "OpenStreetMap"                       "OpenStreetMap.Mapnik"                "OpenStreetMap.BlackAndWhite"        
+# [4] "OpenStreetMap.DE"                    "OpenStreetMap.CH"                    "OpenStreetMap.France"               
+# [7] "OpenStreetMap.HOT"                   "OpenStreetMap.BZH"                   "OpenInfraMap"                       
+# [10] "OpenInfraMap.Power"                  "OpenInfraMap.Telecom"                "OpenInfraMap.Petroleum"             
+# [13] "OpenInfraMap.Water"                  "OpenSeaMap"                          "OpenPtMap"                          
+# [16] "OpenTopoMap"                         "OpenRailwayMap"                      "OpenFireMap"                        
+# [19] "SafeCast"                            "Thunderforest"                       "Thunderforest.OpenCycleMap"         
+# [22] "Thunderforest.Transport"             "Thunderforest.TransportDark"         "Thunderforest.SpinalMap"            
+# [25] "Thunderforest.Landscape"             "Thunderforest.Outdoors"              "Thunderforest.Pioneer"              
+# [28] "OpenMapSurfer"                       "OpenMapSurfer.Roads"                 "OpenMapSurfer.AdminBounds"          
+# [31] "OpenMapSurfer.Grayscale"             "Hydda"                               "Hydda.Full"                         
+# [34] "Hydda.Base"                          "Hydda.RoadsAndLabels"                "MapBox"                             
+# [37] "Stamen"                              "Stamen.Toner"                        "Stamen.TonerBackground"             
+# [40] "Stamen.TonerHybrid"                  "Stamen.TonerLines"                   "Stamen.TonerLabels"                 
+# [43] "Stamen.TonerLite"                    "Stamen.Watercolor"                   "Stamen.Terrain"                     
+# [46] "Stamen.TerrainBackground"            "Stamen.TopOSMRelief"                 "Stamen.TopOSMFeatures"              
+# [49] "Esri"                                "Esri.WorldStreetMap"                 "Esri.DeLorme"                       
+# [52] "Esri.WorldTopoMap"                   "Esri.WorldImagery"                   "Esri.WorldTerrain"                  
+# [55] "Esri.WorldShadedRelief"              "Esri.WorldPhysical"                  "Esri.OceanBasemap"                  
+# [58] "Esri.NatGeoWorldMap"                 "Esri.WorldGrayCanvas"                "OpenWeatherMap"                     
+# [61] "OpenWeatherMap.Clouds"               "OpenWeatherMap.CloudsClassic"        "OpenWeatherMap.Precipitation"       
+# [64] "OpenWeatherMap.PrecipitationClassic" "OpenWeatherMap.Rain"                 "OpenWeatherMap.RainClassic"         
+# [67] "OpenWeatherMap.Pressure"             "OpenWeatherMap.PressureContour"      "OpenWeatherMap.Wind"                
+# [70] "OpenWeatherMap.Temperature"          "OpenWeatherMap.Snow"                 "HERE"                               
+# [73] "HERE.normalDay"                      "HERE.normalDayCustom"                "HERE.normalDayGrey"                 
+# [76] "HERE.normalDayMobile"                "HERE.normalDayGreyMobile"            "HERE.normalDayTransit"              
+# [79] "HERE.normalDayTransitMobile"         "HERE.normalNight"                    "HERE.normalNightMobile"             
+# [82] "HERE.normalNightGrey"                "HERE.normalNightGreyMobile"          "HERE.basicMap"                      
+# [85] "HERE.mapLabels"                      "HERE.trafficFlow"                    "HERE.carnavDayGrey"                 
+# [88] "HERE.hybridDay"                      "HERE.hybridDayMobile"                "HERE.pedestrianDay"                 
+# [91] "HERE.pedestrianNight"                "HERE.satelliteDay"                   "HERE.terrainDay"                    
+# [94] "HERE.terrainDayMobile"               "FreeMapSK"                           "MtbMap"                             
+# [97] "CartoDB"                             "CartoDB.Positron"                    "CartoDB.PositronNoLabels"           
+# [100] "CartoDB.PositronOnlyLabels"          "CartoDB.DarkMatter"                  "CartoDB.DarkMatterNoLabels"         
+# [103] "CartoDB.DarkMatterOnlyLabels"        "HikeBike"                            "HikeBike.HikeBike"                  
+# [106] "HikeBike.HillShading"                "BasemapAT"                           "BasemapAT.basemap"                  
+# [109] "BasemapAT.grau"                      "BasemapAT.overlay"                   "BasemapAT.highdpi"                  
+# [112] "BasemapAT.orthofoto"                 "nlmaps"                              "nlmaps.standaard"                   
+# [115] "nlmaps.pastel"                       "nlmaps.grijs"                        "nlmaps.luchtfoto"                   
+# [118] "NASAGIBS"                            "NASAGIBS.ModisTerraTrueColorCR"      "NASAGIBS.ModisTerraBands367CR"      
+# [121] "NASAGIBS.ViirsEarthAtNight2012"      "NASAGIBS.ModisTerraLSTDay"           "NASAGIBS.ModisTerraSnowCover"       
+# [124] "NASAGIBS.ModisTerraAOD"              "NASAGIBS.ModisTerraChlorophyll"      "NLS"                                
+# [127] "JusticeMap"                          "JusticeMap.income"                   "JusticeMap.americanIndian"          
+# [130] "JusticeMap.asian"                    "JusticeMap.black"                    "JusticeMap.hispanic"                
+# [133] "JusticeMap.multi"                    "JusticeMap.nonWhite"                 "JusticeMap.white"                   
+# [136] "JusticeMap.plurality"                "Wikimedia"                      
+# 
+# 
+# 
 
 
 path.wd <- ("KIT_Modelling/CRAFTY/crafty_web/")
