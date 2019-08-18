@@ -50,7 +50,7 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("foodprice", "Food price",
                                                foodprice.names, selected = foodprice.names[1]
                                    ),
-                                   selectInput("fooddemand", "Meat demand",
+                                   selectInput("fooddemand", "Meat demand (applies to RCP8.5-SSP3)",
                                                fooddemand.names, selected = fooddemand.names[1]
                                    ),
                                    selectInput("inputlayer", "Model Input",
@@ -137,7 +137,7 @@ navbarPage("CRAFTY interactive web-interface",
                                    , selectInput("foodprice_ts", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand_ts", "Food demand",
+                                   , selectInput("fooddemand_ts", "Meat demand (applies to RCP8.5-SSP3)",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # ,
@@ -183,7 +183,7 @@ navbarPage("CRAFTY interactive web-interface",
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand_from", "Food demand",
+                                   , selectInput("fooddemand_from","Meat demand (applies to RCP8.5-SSP3)",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",
@@ -204,7 +204,7 @@ navbarPage("CRAFTY interactive web-interface",
                                    , selectInput("foodprice_to", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
-                                   , selectInput("fooddemand_to", "Food demand",
+                                   , selectInput("fooddemand_to","Meat demand (applies to RCP8.5-SSP3)",
                                                  fooddemand.names, selected = fooddemand.names[1]
                                    )
                                    # selectInput("inputlayer", "Model Input",
