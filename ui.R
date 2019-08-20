@@ -31,21 +31,21 @@ navbarPage("CRAFTY interactive web-interface",
            
            
            # titlePanel("CRAFTY-EU"), 
-           tabPanel("Result", 
+           tabPanel("Main", 
                     
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
                       sidebarPanel(width=4,
                                    sliderInput("year",
                                                "Year:",
-                                               min = 2016,
-                                               max = 2096, sep = "",
-                                               value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                               min = 2086,
+                                               max = 2086, sep = "",
+                                               value = 2086, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                                    selectInput("paramset_full", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,7)], selected = scenario.names[1]
+                                               scenario.names[c(1:8)], selected = scenario.names[1]
                                    ),
                                    selectInput("foodprice", "Food price",
                                                foodprice.names, selected = foodprice.names[1]
@@ -57,7 +57,7 @@ navbarPage("CRAFTY interactive web-interface",
                                                indicator.names[8:14], selected=indicator.names[9]
                                    ),
                                    selectInput("outputlayer", "Model Output",
-                                               indicator.names[c(20, 1:7, 19)], selected=indicator.names[20]
+                                               indicator.names[c(20, 1:7)], selected=indicator.names[20]
                                    ),
                                    selectInput("background", "Background tiles", choices =
                                                  provider_names, selected=providers$OpenStreetMap.Mapnik
@@ -132,7 +132,7 @@ navbarPage("CRAFTY interactive web-interface",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,7)], selected = scenario.names[1]
+                                               scenario.names[c(1:8)], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_ts", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -171,14 +171,14 @@ navbarPage("CRAFTY interactive web-interface",
                                    )
                                    , sliderInput("year_from",
                                                  "Year (from):",
-                                                 min = 2016,
-                                                 max = 2096, sep = "",
-                                                 value = 2016, step=10),
+                                                 min = 2086,
+                                                 max = 2086, sep = "",
+                                                 value = 2086, step=10),
                                    selectInput("paramset_full_from", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,7)], selected = scenario.names[1]
+                                               scenario.names[c(1:8)], selected = scenario.names[1]
                                     )
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -192,17 +192,17 @@ navbarPage("CRAFTY interactive web-interface",
                                    
                                    ,  sliderInput("year_to",
                                                   "Year (to):",
-                                                  min = 2016,
-                                                  max = 2096, sep = "",
-                                                  value = 2096, step=10),
+                                                  min = 2086,
+                                                  max = 2086, sep = "",
+                                                  value = 2086, step=10),
                                    selectInput("paramset_full_to", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,7)], selected = scenario.names[1]
+                                               scenario.names[c(1:8)], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_to", "Food price",
-                                                 foodprice.names, selected = foodprice.names[1]
+                                                 foodprice.names, selected = foodprice.names[3]
                                    )
                                    , selectInput("fooddemand_to","Meat demand (applies to RCP8.5-SSP3)",
                                                  fooddemand.names, selected = fooddemand.names[1]

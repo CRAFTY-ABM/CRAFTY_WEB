@@ -249,12 +249,13 @@ shinyServer(function(input, output) {
     
     
     aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
-    # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
+    # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years_aggcsv)
     
-    plot(target_years, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
+    plot(target_years_other[-9], aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes", xaxt="n")
+    axis(side=1, at = target_years_other[-9], labels = target_years_other[-9])
     
     for (a.idx in 2:8) { 
-      lines(target_years, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
+      lines(target_years_other[-9], aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
     }
     legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
     
@@ -263,28 +264,49 @@ shinyServer(function(input, output) {
       # AFT changes
       aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
       
-      plot(target_years, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
+      plot(target_years_other, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes", xaxt="n")
       
       for (a.idx in 2:nrow(aftcomp_perc_m)) { 
-        lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
+        lines(target_years_other, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
       }
       legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
     }
     
+    
+    ### Plotting number of changed pixels
+    print("changed pixels")
+    cnp_path =  paste0("Tables/ChangedPixelNo/",input$foodprice_ts, "/", input$fooddemand_ts, "/",paramsets[p.idx], "/", input$scenario_ts, "_ChangedPixelNo.xlsx")
+    
+    cnp_dt = readxl::read_excel(cnp_path, sheet = 1)
+    cnp_v = as.numeric(unlist(cnp_dt))
+    cnp_max = max(c(500, cnp_v), na.rm = T)
+    
+    
+    
+    plot(target_years_other[c(2:8)],cnp_v, ylim=c(0, cnp_max), type="l", xlab= "Year", ylab="Number of pixels changed", col = "black", main = "Land use change", xaxt ="n")
+    
+    axis(side=1, at = target_years_other[-1], labels = target_years_other[-1])
+    
+    
+    
     ### Plotting service supply and demand 
     
-     supdem_range = range(demand_m)
-    y_lim_max = max(abs(supdem_range))
-    y_lim = c(0, y_lim_max)
+
      
-    barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", ylim= y_lim, col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    supply_m_norm = (demand_m[1:7,] / demand_m[1:7,1] - 1) * 100 
+    supdem_range = range(supply_m_norm)
+    y_lim_max = max(10, max(abs(supdem_range)) * 1.2)
+    y_lim = c(-y_lim_max, y_lim_max)
+    barplot(height = supply_m_norm, beside=T, ylab= "Relative to 2016's supply (%)", ylim= y_lim, col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
     legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
     
     
-    barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim)
+    demand_m_norm = (demand_m[8:14,]/ demand_m[1:7,1]-1) * 100
+    barplot(height = demand_m_norm, beside=T, ylab="Relative to 2016's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim)
     legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
     
-    sdgap  = (demand_m[8:14,] - demand_m[1:7,])
+    sdgap  = (demand_m[8:14,] - demand_m[1:7,]) 
+    # sdgap = (sdgap /demand_m[1:7,1] -1 ) * 100 
     sdgap_range = range(sdgap, na.rm=T)
     y_lim_max = max(abs(sdgap_range)) *2
     y_lim = c(-y_lim_max, y_lim_max)
@@ -296,15 +318,18 @@ shinyServer(function(input, output) {
     
     shortfall_range = range(shortfall_m[1,], na.rm = T)
     shortfall_max = max(abs(shortfall_range)) * 2
+    shortfall_intv = floor(shortfall_max / 100) * 10 
+    shortfall_intv = max(1,shortfall_intv)
+    # print(shortfall_intv)
+    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-shortfall_max,shortfall_max), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall", las=1, xaxt="n" )
+    axis(side=1, at = target_years_other, labels = target_years_other)
+    # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     
-    
-    plot(demand_dt$Tick, shortfall_m[1,], type="l", col = serviceColours[1], ylim=c(-shortfall_max,shortfall_max), xlab="Year", ylab="Production shortfall (%)",  main = "Production shortfall")
-    
-    for (a.idx in 2:7) { 
+    for (a.idx in c(2:5, 7)) { 
       lines(demand_dt$Tick, shortfall_m[a.idx,],   col = serviceColours[a.idx])
     }
     
-    legend("topright", legend = serviceNames, col=serviceColours, lty = 1, cex=0.7, bty="n")
+    legend("topright", legend = serviceNames[-6], col=serviceColours[-6], lty = 1, cex=0.7, bty="n")
     
     
   })
@@ -338,10 +363,10 @@ shinyServer(function(input, output) {
     
     par(mfrow=c(1,1), mar = c(5.1, 4.1, 4, 1))
     
-    # plot(target_years, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
+    # plot(target_years_aggcsv, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
     # 
     # for (a.idx in 2:8) { 
-    #   lines(target_years, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
+    #   lines(target_years_aggcsv, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
     # }
     # legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
     # 
@@ -357,14 +382,14 @@ shinyServer(function(input, output) {
     rs.from.LL = getRaster(fname_from, indicator_trans_idx)
     
     print(indicator_trans_idx)
-    r.from = projectRaster(rs.from.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 5E4)
+    r.from = projectRaster(rs.from.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
     
     # spdf.to = getSPDF(fname_to)
     # rs.to.LL <- stack(spdf.to)[[4:22]]
     
     rs.to.LL = getRaster(fname_to, indicator_trans_idx)
     
-    r.to = projectRaster(rs.to.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 5E4)
+    r.to = projectRaster(rs.to.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
     
     
     aft.old = getValues(r.from)
@@ -438,12 +463,12 @@ shinyServer(function(input, output) {
     legend("center", c(aft.names.8classes), col = c(aft.colors.8classes), pch=15, cex=1.5, bty="n")
     
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
-    # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years)
+    # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years_aggcsv)
     # 
-    # plot(target_years, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
+    # plot(target_years_aggcsv, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
     # 
     # for (a.idx in 2:8) { 
-    #   lines(target_years, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
+    #   lines(target_years_aggcsv, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
     # }
     # legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
     # 
@@ -606,7 +631,7 @@ shinyServer(function(input, output) {
       indicator_idx = which (input$outputlayer == indicator.names)
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      fname_changed =  paste0("CRAFTY-EU_", paramsets[p.idx], "_", input$scenario, "_", "FoodPrice_", input$foodprice, "_", "FoodDemand_", input$fooddemand, "_", input$year, "_", input$outputlayer, ".tif")
+      fname_changed =  paste0("CRAFTY-EU_", paramsets[p.idx], "_", input$scenario, "_", "FoodPrice_", input$foodprice, "_", "MeatDemand_", input$fooddemand, "_", input$year, "_", input$outputlayer, ".tif")
       
       # fname_changed      
     },
