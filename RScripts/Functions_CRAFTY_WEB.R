@@ -12,11 +12,14 @@ library(dplyr)
 
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
-
-library(SDMTools) # fragmentation statistics
+# library(wesanderson)
 
 library(Gmisc) # transition plot 
 
+PLOT_HEIGHT = 1000 
+
+SIDEBAR_WIDTH = 2
+MAINPANEL_WIDTH = 12-SIDEBAR_WIDTH
 
 # A seed used in the CRAFTY runs 
 seedid = "99"
@@ -121,13 +124,17 @@ aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = 
 
 
 provider_names = c(
-  "OpenStreetMap.Mapnik", "OpenTopoMap"     
+  "OpenStreetMap.Mapnik"
+  # "OpenTopoMap"  
+#  , "Stamen.Terrain"
+#  , "Thunderforest"      
   , "Esri.WorldImagery"             
   ,"Esri.WorldPhysical"              
-  , "Esri.NatGeoWorldMap" 
-  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
-  ,"NASAGIBS.ViirsEarthAtNight2012"
-  ,  "Wikimedia"      
+#  , "Esri.NatGeoWorldMap" 
+# , "CartoDB"
+#  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
+ # ,"NASAGIBS.ViirsEarthAtNight2012"
+ # ,  "Wikimedia"      
 )
 
 # [1] "OpenStreetMap"                       "OpenStreetMap.Mapnik"                "OpenStreetMap.BlackAndWhite"        
@@ -207,6 +214,12 @@ if (!file.exists(drop_token_name)) {
 accessDropbox <- function() { 
   print("do nothing")
 }
+
+
+
+
+
+
 
 
 # result<-read.csv("C:/Users/brown-c/Documents/Work_docs/IMPRESSIONS/CRAFTY Europe IMPRESSIONS/Results/Raw results/Baseline/Baseline-0-0-EU-Cell-2096.csv")
@@ -290,17 +303,18 @@ r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat
 
 
 
-price = "Normal"
-demand = "Normal"
-paramset = "Paramset1"
-scenario = "RCP8_5-SSP3"  
-
-library(doMC)
-registerDoMC()
 
 
 # call once on a local workstation
 createChangedNumberTable <- function() { 
+  
+  # price = "Normal"
+  # demand = "Normal"
+  # paramset = "Paramset1"
+  # scenario = "RCP8_5-SSP3"  
+  # 
+  library(doMC)
+  registerDoMC()
   
   library(openxlsx)
   
@@ -310,16 +324,16 @@ createChangedNumberTable <- function() {
     foreach(demand = fooddemand.names) %do% { 
       print(demand)
       
-      foreach(paramset = paramsets, .errorhandling = "stop") %do% { 
+      foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
         print(paramset)
         
-        tb_localdir_path =  dirname(paste0("Tables/ChangedPixelNo/", price, "/", demand, "/",paramset, "/", scenario ))
+        tb_localdir_path =  file.path(paste0("Tables/ChangedPixelNo/", price, "/", demand, "/",paramset, "/" ))
         
         if (!dir.exists(tb_localdir_path)) {
           dir.create(tb_localdir_path, recursive = T)
         }
         
-        res1 = foreach(scenario = scenario.names, .combine = "cbind") %dopar% { 
+        res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling="stop") %dopar% { 
           
           runid_tmp = which(scenario.names == scenario) - 1 
           
@@ -343,6 +357,72 @@ createChangedNumberTable <- function() {
   
   return(TRUE)
 }
+
+
+
+
+# call once on a local workstation
+createFragstatsTable <- function() { 
+  # price = "Normal"
+  # demand = "Normal"
+  # paramset = "Paramset1"
+  # scenario = "RCP8_5-SSP3"  
+  
+  library(doMC)
+  registerDoMC()
+
+  library(openxlsx) # excel 
+  library(SDMTools) # fragmentation statistics
+  
+  foreach(price = foodprice.names, .errorhandling ="stop") %do% {
+    print(price)
+    
+    foreach(demand = fooddemand.names) %do% { 
+      print(demand)
+      
+      foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
+        print(paramset)
+        
+        tb_localdir_path =  file.path(paste0("Tables/FragStats/", price, "/", demand, "/",paramset, "/" ))
+        
+        if (!dir.exists(tb_localdir_path)) {
+          dir.create(tb_localdir_path, recursive = T)
+        }
+        
+        res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling = "stop") %dopar% { 
+          
+          runid_tmp = which(scenario.names == scenario) - 1 
+          
+             
+          res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
+          
+          res_rs_LL = projectRaster(res_rs, crs = proj4.LL, res = 0.1, method = "ngb")
+          tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = 15000, bkgd = NA, latlon = T)$mean.frac.dim.index)
+          
+            
+          colnames(tmp_fragstat_m) = target_years_other
+          rownames(tmp_fragstat_m) = aft.names.8classes
+          write.xlsx(tmp_fragstat_m, file = paste0(tb_localdir_path, "/", scenario, "_FragStats.xlsx"))
+          
+          return(NULL)
+        }
+        
+        
+        
+      }
+    }
+  }
+  
+  return(TRUE)
+}
+
+
+
+
+
+
+
+
 
 
 

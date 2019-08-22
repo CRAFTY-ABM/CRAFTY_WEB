@@ -27,7 +27,7 @@ source("RScripts/Functions_CRAFTY_WEB.R")
 # https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
 
 
-navbarPage("CRAFTY interactive web-interface", 
+navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactive web-interface (Land Use and Ecosystem Change Summer School 2019)", fluid = T, 
            
            
            # titlePanel("CRAFTY-EU"), 
@@ -35,17 +35,19 @@ navbarPage("CRAFTY interactive web-interface",
                     
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
-                      sidebarPanel(width=4,
-                                   sliderInput("year",
+                      sidebarPanel(width=SIDEBAR_WIDTH,
+                                   fluidPage(br(), h4("Scenario customisation"))
+                                   
+                                   , sliderInput("year",
                                                "Year:",
-                                               min = 2086,
+                                               min = 2016,
                                                max = 2086, sep = "",
-                                               value = 2086, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
-                                   selectInput("paramset_full", label = "Behavioural parameters",
+                                               value = 2086, step=70, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                   selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario.names[c(1:8)], selected = scenario.names[1]
+                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
                                    ),
                                    selectInput("foodprice", "Food price",
                                                foodprice.names, selected = foodprice.names[1]
@@ -53,29 +55,33 @@ navbarPage("CRAFTY interactive web-interface",
                                    selectInput("fooddemand", "Meat demand (applies to RCP8.5-SSP3)",
                                                fooddemand.names, selected = fooddemand.names[1]
                                    ),
-                                   selectInput("inputlayer", "Model Input",
+                                   fluidPage(br(), h4("Map customisation"))
+                                   , selectInput("outputlayer", "Model Output",
+                                               indicator.names[c(20, 1:7)], selected=indicator.names[20]
+                                   )                                  
+                                   , selectInput("inputlayer", "Model Input",
                                                indicator.names[8:14], selected=indicator.names[9]
                                    ),
-                                   selectInput("outputlayer", "Model Output",
-                                               indicator.names[c(20, 1:7)], selected=indicator.names[20]
-                                   ),
+
                                    selectInput("background", "Background tiles", choices =
                                                  provider_names, selected=providers$OpenStreetMap.Mapnik
                                    )
+                                   , htmlOutput("ReferenceToScenarios")
+
                                    # , actionLink("deleteCache", "Delete cached files")
                                    
                       ),
                       # 
                       # # Main panel for displaying outputs ----
-                      mainPanel(
+                      mainPanel(width=MAINPANEL_WIDTH, 
                         tabsetPanel(
                           tabPanel("Map", 
-                                   leafletOutput("Tab1_MapPane",  height = 600)
+                                   leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
                                    # Run info
                                    , verbatimTextOutput("PaneRuninfo")
                                    
                                    , absolutePanel(
-                                     top = 380, left = 20, width = 150,
+                                     top = 380, left = 20, width = 180,
                                      draggable = TRUE,
                                      
                                      
@@ -90,7 +96,7 @@ navbarPage("CRAFTY interactive web-interface",
                                        sliderInput("alpha", "Transparency",0, 1,
                                                    value = 0.8, step = 0.1
                                        ),
-                                       selectInput("colors", "Color palette",
+                                       selectInput("colors", "Color palette (cont.)",
                                                    rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                                        ),
                                        
@@ -101,7 +107,7 @@ navbarPage("CRAFTY interactive web-interface",
                                        # # )
                                        # sliderInput("n", "", min=3, max=20, value=5),
                                        # plotOutput("plot2", height="50px")
-                                       downloadLink("downloadData", "Download Map (GeoTIFF)")
+                                       downloadLink("downloadData", "Download output map (GeoTIFF)")
                                      ),
                                      style = "opacity: 0.5"
                                      
@@ -111,8 +117,9 @@ navbarPage("CRAFTY interactive web-interface",
                           
                           tabPanel("Behavioural parameters", 
                                    # Time series info
-                                   # plotOutput("Tab1_BehaviouralTablePane")
                                    dataTableOutput('Tab1_BehaviouralTablePane')
+                                   , htmlOutput("ReferenceToParameters")
+                                   
                                    # Map view options
                           ), 
                           tabPanel("Statistics", 
@@ -127,12 +134,12 @@ navbarPage("CRAFTY interactive web-interface",
                     
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
-                      sidebarPanel(width=4,
+                      sidebarPanel(width=SIDEBAR_WIDTH,
                                    selectInput("paramset_full_ts", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                               scenario.names[c(1:8)], selected = scenario.names[1]
+                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_ts", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -151,10 +158,10 @@ navbarPage("CRAFTY interactive web-interface",
                       ),
                       # 
                       # # Main panel for displaying outputs ----
-                      mainPanel(
+                      mainPanel(width = MAINPANEL_WIDTH,
                         # Show a plot of the generated distribution
-                        plotOutput("Tab2_TimeseriesPlotPane", height = 800)
-                        , verbatimTextOutput("PaneRuninfo2")
+                        plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                       # , verbatimTextOutput("PaneRuninfo_ts")
                       )
                     )
            ),
@@ -164,21 +171,24 @@ navbarPage("CRAFTY interactive web-interface",
                     
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
-                      sidebarPanel(width=4,
+                      sidebarPanel(width=SIDEBAR_WIDTH, height=PLOT_HEIGHT, 
+                                   # 
+                                   # selectInput("outputlayer_transition", "Model Output (LU)",
+                                   #             indicator.names[c(20)], selected=indicator.names[20]
+                                   # )
+                                   # ,
+                                   fluidPage(br(), h4("Land use transition from"))
                                    
-                                   selectInput("outputlayer_transition", "Model Output (LU)",
-                                               indicator.names[c(20)], selected=indicator.names[20]
-                                   )
                                    , sliderInput("year_from",
-                                                 "Year (from):",
-                                                 min = 2086,
+                                                 "Year",
+                                                 min = 2016,
                                                  max = 2086, sep = "",
-                                                 value = 2086, step=10),
+                                                 value = 2016, step=70),
                                    selectInput("paramset_full_from", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
-                                               scenario.names[c(1:8)], selected = scenario.names[1]
+                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
                                     )
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -189,17 +199,18 @@ navbarPage("CRAFTY interactive web-interface",
                                    # selectInput("inputlayer", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]
                                    # ),
+                                   , fluidPage(br(), h4("To"))
                                    
                                    ,  sliderInput("year_to",
-                                                  "Year (to):",
-                                                  min = 2086,
+                                                  "Year",
+                                                  min = 2016,
                                                   max = 2086, sep = "",
-                                                  value = 2086, step=10),
+                                                  value = 2086, step=70),
                                    selectInput("paramset_full_to", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
-                                               scenario.names[c(1:8)], selected = scenario.names[1]
+                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_to", "Food price",
                                                  foodprice.names, selected = foodprice.names[3]
