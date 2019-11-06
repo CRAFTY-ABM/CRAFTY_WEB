@@ -85,7 +85,7 @@ Please refer to the following paper to understand the behavioural model used in 
 
 <p/>
 Please see the further details of the parameters in Table A4 of the following paper: <p/>
-<i>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a>"
+<i>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics, (accepted), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a>"
       })
   
   
@@ -395,8 +395,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     p_from.idx = which(input$paramset_full_from == paramsets.fullnames)
     p_to.idx = which(input$paramset_full_to  == paramsets.fullnames)
     
-    # indicator_trans_idx = which (input$outputlayer_transition == indicator.names)
-    indicator_trans_idx = 20
+    indicator_trans_idx = which (input$outputlayer_transition == indicator.names)
+    # indicator_trans_idx = 20
     # fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
     # fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
     
@@ -487,12 +487,18 @@ Please see the further details of the parameters in Table A4 of the following pa
     }
     
     trn_mtrx <- with(aft.tr.df, aft_tb_oldandnew)
+    # str(aft_tb_oldandnew)
     
     if (nrow(aft_tb_oldandnew)> 17 ) { 
       tr.colors = c("grey30", aft.colors.fromzero)
+      tr_names = c("LazyFR", aft.names.fromzero)
+    } else if (nrow(aft_tb_oldandnew)== 17){
+      tr.colors =  aft.colors.fromzero 
+      tr_names = c( aft.names.fromzero)
       
     } else {
-      tr.colors =  aft.colors.8classes # aft.colors.fromzero
+      tr.colors =  aft.colors.8classes  
+      tr_names = c(aft.names.8classes)
       
     }
     
@@ -511,7 +517,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     transitionPlot(trn_mtrx,new_page=T,   fill_start_box =  tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop,  overlap_add_width = 1, tot_spacing = 0.07, box_label = c(input$year_from, input$year_to)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
     
     plot.new()
-    legend("center", c(aft.names.8classes), col = c(aft.colors.8classes), pch=15, cex=1.5, bty="n")
+    
+     
+    legend("center", tr_names, col = tr.colors, pch=15, cex=1)
     
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
     # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years_aggcsv)

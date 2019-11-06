@@ -21,8 +21,8 @@ https://bitbucket.org/geoslurg/crafty_wiki/wiki/Home
 
 Publications: 
 
+- Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics, (accepted), 1–49. https://doi.org/10.5194/esd-2019-24
 - Holzhauer, S., Brown, C., & Rounsevell, M. (2019). Modelling dynamic effects of multi-scale institutions on land use change. Regional Environmental Change, 19(3), 733–746. https://doi.org/10.1007/s10113-018-1424-5
-- Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49. https://doi.org/10.5194/esd-2019-24
 - Synes, N., Brown, C., Palmer, S., Bocedi, G., Osborne, P. E., Watts, K., … Travis, J. (2018). Coupled land use and ecological models reveal emergence and feedbacks in socio-ecological systems. Ecography. https://doi.org/10.1111/ecog.04039
 - Seo, B., Brown, C., & Rounsevell, M. D. A. (2018). EVALUATION AND CALIBRATION OF AN AGENT BASED LAND USE MODEL USING ta. In IGARSS 2018-2018 IEEE International Geoscience and Remote Sensing Symposium(pp. 7476–7479).
 - Alexander et al. (2017). Assessing uncertainties in land cover projections. Global Change Biology, 23(2), 767–781. https://doi.org/10.1111/gcb.13447

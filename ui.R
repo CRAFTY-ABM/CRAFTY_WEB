@@ -42,12 +42,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                "Year:",
                                                min = 2016,
                                                max = 2086, sep = "",
-                                               value = 2086, step=70, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                               value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                                    selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
+                                               scenario.names[], selected = scenario.names[1]
                                    ),
                                    selectInput("foodprice", "Food price",
                                                foodprice.names, selected = foodprice.names[1]
@@ -57,7 +57,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ),
                                    fluidPage(br(), h4("Map customisation"))
                                    , selectInput("outputlayer", "Model Output",
-                                               indicator.names[c(20, 1:7)], selected=indicator.names[20]
+                                               indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
                                    )                                  
                                    , selectInput("inputlayer", "Model Input",
                                                indicator.names[8:14], selected=indicator.names[9]
@@ -139,7 +139,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
+                                               scenario.names[], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_ts", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -173,22 +173,22 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                     sidebarLayout(
                       sidebarPanel(width=SIDEBAR_WIDTH, height=PLOT_HEIGHT, 
                                    # 
-                                   # selectInput("outputlayer_transition", "Model Output (LU)",
-                                   #             indicator.names[c(20)], selected=indicator.names[20]
-                                   # )
-                                   # ,
+                                   selectInput("outputlayer_transition", "Model Output (LU)",
+                                               indicator.names[c(17, 20)], selected=indicator.names[20]
+                                   )
+                                   ,
                                    fluidPage(br(), h4("Land use transition from"))
                                    
                                    , sliderInput("year_from",
                                                  "Year",
                                                  min = 2016,
                                                  max = 2086, sep = "",
-                                                 value = 2016, step=70),
+                                                 value = 2016, step=10),
                                    selectInput("paramset_full_from", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
+                                               scenario.names[], selected = scenario.names[1]
                                     )
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
@@ -205,12 +205,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                   "Year",
                                                   min = 2016,
                                                   max = 2086, sep = "",
-                                                  value = 2086, step=70),
+                                                  value = 2086, step=10),
                                    selectInput("paramset_full_to", label = "Behavioural parameters",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
                                    selectInput("scenario_to", "Climate and socio-economic scenario",
-                                               scenario.names[c(1,2,7)], selected = scenario.names[1]
+                                               scenario.names[], selected = scenario.names[1]
                                    )
                                    , selectInput("foodprice_to", "Food price",
                                                  foodprice.names, selected = foodprice.names[3]
