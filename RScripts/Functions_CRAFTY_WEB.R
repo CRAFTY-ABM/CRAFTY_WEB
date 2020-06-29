@@ -1,7 +1,7 @@
 library(rdrop2) # Dropbox access
 library(gplots) # color palette
 library(RColorBrewer)
- 
+
 library(shiny) 
 
 library(raster)
@@ -12,10 +12,14 @@ library(dplyr)
 
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
-
-library(SDMTools) # fragmentation statistics
+# library(wesanderson)
 
 library(Gmisc) # transition plot 
+
+PLOT_HEIGHT = 1000 
+
+SIDEBAR_WIDTH = 2
+MAINPANEL_WIDTH = 12-SIDEBAR_WIDTH
 
 # A seed used in the CRAFTY runs 
 seedid = "99"
@@ -32,7 +36,8 @@ proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +el
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")
 
-food.names = c("Normal", "Doubled", "Tripled") 
+foodprice.names = c("Normal", "Tripled", "Nonupled") 
+fooddemand.names = c("Normal", "LowMeatDemand")
 
 n.paramset = 5
 paramsets = paste0("Paramset", 1:n.paramset)
@@ -69,8 +74,8 @@ aft.names.fromzero <- c("Ext. agro-forestry","Int. arable","Int. agro-forestry",
 # "Int. pastoral"="firebrick1","Managed forest"="chartreuse2","Minimal management"="darkgrey","Ext. mixed farming"="darkorange3","Mixed forest"="chartreuse4",
 # "Mixed pastoral"="firebrick2", "Multifunctional"="dodgerblue3","Unmanaged land"="black","Umanaged forest"="darkgreen","Very ext. pastoral"="firebrick4","Ext. pastoral"="firebrick3")
 
-target_years = seq(2020, 2090, 10)
-
+target_years_aggcsv = seq(2020, 2090, 10)
+target_years_other = seq(2016,2096,10)
 
 aft.pal <- colorFactor(col2hex(as.character(aft.colors.fromzero)), levels = 0:17, na.color = "transparent") # "#0C2C84", "#41B6C4", "#FFFFCC"), # , bins = 17) 
 
@@ -115,10 +120,72 @@ aft.lookup.17to8 = matrix(ncol = 2, byrow = T, data = c(
 aft.names.8classes <- aft.fullnames.8classes <- c("Intensive arable","Intensive grassland","Intensive forest","Mixed intensive","Mixed extensive","Extensive primarily forest","Near-natural","Other")
 
 aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = "greenyellow","Intensive forest" = "olivedrab4",
-                         "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="white")
+                         "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="gray85") # other was white 
 
 
+provider_names = c(
+  "OpenStreetMap.Mapnik"
+  # "OpenTopoMap"  
+  #  , "Stamen.Terrain"
+  #  , "Thunderforest"      
+  , "Esri.WorldImagery"             
+  ,"Esri.WorldPhysical"              
+  #  , "Esri.NatGeoWorldMap" 
+  # , "CartoDB"
+  #  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
+  # ,"NASAGIBS.ViirsEarthAtNight2012"
+  # ,  "Wikimedia"      
+)
 
+# [1] "OpenStreetMap"                       "OpenStreetMap.Mapnik"                "OpenStreetMap.BlackAndWhite"        
+# [4] "OpenStreetMap.DE"                    "OpenStreetMap.CH"                    "OpenStreetMap.France"               
+# [7] "OpenStreetMap.HOT"                   "OpenStreetMap.BZH"                   "OpenInfraMap"                       
+# [10] "OpenInfraMap.Power"                  "OpenInfraMap.Telecom"                "OpenInfraMap.Petroleum"             
+# [13] "OpenInfraMap.Water"                  "OpenSeaMap"                          "OpenPtMap"                          
+# [16] "OpenTopoMap"                         "OpenRailwayMap"                      "OpenFireMap"                        
+# [19] "SafeCast"                            "Thunderforest"                       "Thunderforest.OpenCycleMap"         
+# [22] "Thunderforest.Transport"             "Thunderforest.TransportDark"         "Thunderforest.SpinalMap"            
+# [25] "Thunderforest.Landscape"             "Thunderforest.Outdoors"              "Thunderforest.Pioneer"              
+# [28] "OpenMapSurfer"                       "OpenMapSurfer.Roads"                 "OpenMapSurfer.AdminBounds"          
+# [31] "OpenMapSurfer.Grayscale"             "Hydda"                               "Hydda.Full"                         
+# [34] "Hydda.Base"                          "Hydda.RoadsAndLabels"                "MapBox"                             
+# [37] "Stamen"                              "Stamen.Toner"                        "Stamen.TonerBackground"             
+# [40] "Stamen.TonerHybrid"                  "Stamen.TonerLines"                   "Stamen.TonerLabels"                 
+# [43] "Stamen.TonerLite"                    "Stamen.Watercolor"                   "Stamen.Terrain"                     
+# [46] "Stamen.TerrainBackground"            "Stamen.TopOSMRelief"                 "Stamen.TopOSMFeatures"              
+# [49] "Esri"                                "Esri.WorldStreetMap"                 "Esri.DeLorme"                       
+# [52] "Esri.WorldTopoMap"                   "Esri.WorldImagery"                   "Esri.WorldTerrain"                  
+# [55] "Esri.WorldShadedRelief"              "Esri.WorldPhysical"                  "Esri.OceanBasemap"                  
+# [58] "Esri.NatGeoWorldMap"                 "Esri.WorldGrayCanvas"                "OpenWeatherMap"                     
+# [61] "OpenWeatherMap.Clouds"               "OpenWeatherMap.CloudsClassic"        "OpenWeatherMap.Precipitation"       
+# [64] "OpenWeatherMap.PrecipitationClassic" "OpenWeatherMap.Rain"                 "OpenWeatherMap.RainClassic"         
+# [67] "OpenWeatherMap.Pressure"             "OpenWeatherMap.PressureContour"      "OpenWeatherMap.Wind"                
+# [70] "OpenWeatherMap.Temperature"          "OpenWeatherMap.Snow"                 "HERE"                               
+# [73] "HERE.normalDay"                      "HERE.normalDayCustom"                "HERE.normalDayGrey"                 
+# [76] "HERE.normalDayMobile"                "HERE.normalDayGreyMobile"            "HERE.normalDayTransit"              
+# [79] "HERE.normalDayTransitMobile"         "HERE.normalNight"                    "HERE.normalNightMobile"             
+# [82] "HERE.normalNightGrey"                "HERE.normalNightGreyMobile"          "HERE.basicMap"                      
+# [85] "HERE.mapLabels"                      "HERE.trafficFlow"                    "HERE.carnavDayGrey"                 
+# [88] "HERE.hybridDay"                      "HERE.hybridDayMobile"                "HERE.pedestrianDay"                 
+# [91] "HERE.pedestrianNight"                "HERE.satelliteDay"                   "HERE.terrainDay"                    
+# [94] "HERE.terrainDayMobile"               "FreeMapSK"                           "MtbMap"                             
+# [97] "CartoDB"                             "CartoDB.Positron"                    "CartoDB.PositronNoLabels"           
+# [100] "CartoDB.PositronOnlyLabels"          "CartoDB.DarkMatter"                  "CartoDB.DarkMatterNoLabels"         
+# [103] "CartoDB.DarkMatterOnlyLabels"        "HikeBike"                            "HikeBike.HikeBike"                  
+# [106] "HikeBike.HillShading"                "BasemapAT"                           "BasemapAT.basemap"                  
+# [109] "BasemapAT.grau"                      "BasemapAT.overlay"                   "BasemapAT.highdpi"                  
+# [112] "BasemapAT.orthofoto"                 "nlmaps"                              "nlmaps.standaard"                   
+# [115] "nlmaps.pastel"                       "nlmaps.grijs"                        "nlmaps.luchtfoto"                   
+# [118] "NASAGIBS"                            "NASAGIBS.ModisTerraTrueColorCR"      "NASAGIBS.ModisTerraBands367CR"      
+# [121] "NASAGIBS.ViirsEarthAtNight2012"      "NASAGIBS.ModisTerraLSTDay"           "NASAGIBS.ModisTerraSnowCover"       
+# [124] "NASAGIBS.ModisTerraAOD"              "NASAGIBS.ModisTerraChlorophyll"      "NLS"                                
+# [127] "JusticeMap"                          "JusticeMap.income"                   "JusticeMap.americanIndian"          
+# [130] "JusticeMap.asian"                    "JusticeMap.black"                    "JusticeMap.hispanic"                
+# [133] "JusticeMap.multi"                    "JusticeMap.nonWhite"                 "JusticeMap.white"                   
+# [136] "JusticeMap.plurality"                "Wikimedia"                      
+# 
+# 
+# 
 
 
 path.wd <- ("KIT_Modelling/CRAFTY/crafty_web/")
@@ -130,18 +197,29 @@ if(!dir.exists(path.droptmp)) {
   dir.create(path.droptmp)
 }
 
-authDropbox <- function() {
-  token <- drop_auth()
-  saveRDS(token, "Authentication/droptoken.rds")
+drop_token_name = "Authentication/droptoken.rds"
+
+if (!file.exists(drop_token_name)) { 
+  
+  token <- drop_auth(cache=F)
+  saveRDS(token, drop_token_name, version = 2)
+} else {
+  # token <- readRDS(drop_token_name)
+  
+  # @todo trycatch
+  drop_auth(rdstoken = drop_token_name)
+  
 }
 
 accessDropbox <- function() { 
-  token <- readRDS("Authentication/droptoken.rds") 
-  
-  # @todo trycatch
-  drop_acc(dtoken = token)
-  
+  print("do nothing")
 }
+
+
+
+
+
+
 
 
 # result<-read.csv("C:/Users/brown-c/Documents/Work_docs/IMPRESSIONS/CRAFTY Europe IMPRESSIONS/Results/Raw results/Baseline/Baseline-0-0-EU-Cell-2096.csv")
@@ -152,16 +230,22 @@ accessDropbox <- function() {
 
 # Cell ID and cooridnates 
 # ctry.ids <- read.csv("~/Dropbox/KIT/CLIMSAVE/IAP/Cell_ID_LatLong.csv")
-# saveRDS(ctry.ids, file = "GISData/ctry.ids.Rds")
+# saveRDS(ctry.ids, file = "GISData/ctry.ids.Rds", version = 2)
 ctry.ids = readRDS("GISData/ctry.ids.Rds")
 x.lat.v = sort(unique(ctry.ids$Longitude))
 y.lon.v = sort(unique(ctry.ids$Latitude))
 
 
 # simple caching
-getCSV = function(tmp.in.name) { 
+getCSV = function(tmp.in.name, location = "Dropbox") { 
   
   localfile_path =  paste0(path.droptmp, tmp.in.name)
+  
+  
+  if(location == "Local") {
+    stop("@todo ")
+    
+  } 
   
   if(!file.exists(localfile_path)) {
     localdir_path =  dirname(localfile_path)
@@ -187,13 +271,13 @@ getCSV = function(tmp.in.name) {
   return(res)
 }
 
-tmp.in.name = (paste0("Data/Paramset3/", scenario.names[3], "/", scenario.names[3], "-0-99-EU-Cell-2016.csv"))
+# tmp.in.name = (paste0("Data/Paramset3/",  scenario.names[3], "/", scenario.names[3], "-0-99-EU-Cell-2016.csv"))
 
-getSPDF <- function(tmp.in.name) {
+getSPDF <- function(tmp.in.name, location = "Dropbox") {
   
   # Target outcome
   # result.tmp <- read.csv(paste0( tmp.in.name))
-  result.tmp = getCSV(tmp.in.name)
+  result.tmp = getCSV(tmp.in.name, location)
   result.tmp$lon = x.lat.v[result.tmp$X]
   result.tmp$lat = y.lon.v[result.tmp$Y]
   
@@ -205,11 +289,11 @@ getSPDF <- function(tmp.in.name) {
 
 scenarioname.default = "Baseline"
 # fname.default = (paste0("Data/Paramset3/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2056.csv"))
-fname.default = (paste0("Data/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
+fname.default = (paste0("Data/Normal/Normal/Paramset1/", scenarioname.default, "/", scenarioname.default, "-0-99-EU-Cell-2016.csv"))
 spdf.default = getSPDF(fname.default)
 rs.LL <- stack(spdf.default)[[4:22]]
 agent.LL = rs.LL[[17]]
-r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
 
 
 # getRaster(fname.default, band.idx = 18)
@@ -218,28 +302,168 @@ r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat
 # band.idx = 20
 
 
-getRaster<- function(fname, band.idx) {
+
+
+
+# call once on a local workstation
+createChangedNumberTable <- function() { 
+  
+  # price = "Normal"
+  # demand = "Normal"
+  # paramset = "Paramset1"
+  # scenario = "RCP8_5-SSP3"  
+  # 
+  library(doMC)
+  registerDoMC()
+  
+  library(openxlsx)
+  
+  foreach(price = foodprice.names, .errorhandling ="stop") %do% {
+    print(price)
+    
+    foreach(demand = fooddemand.names) %do% { 
+      print(demand)
+      
+      foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
+        print(paramset)
+        
+        tb_localdir_path =  file.path(paste0("Tables/ChangedPixelNo/", price, "/", demand, "/",paramset, "/" ))
+        
+        if (!dir.exists(tb_localdir_path)) {
+          dir.create(tb_localdir_path, recursive = T)
+        }
+        
+        res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling="stop") %dopar% { 
+          
+          runid_tmp = which(scenario.names == scenario) - 1 
+          
+          res=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
+          
+          res_m = as.matrix(res)
+          res_m = res_m[!is.na(res_m[,1]),]
+          
+          tmp_changedno = sapply(2:ncol(res_m), FUN = function(x) length(res_m[res_m[,x]!=res_m[,x-1], x]))
+          names(tmp_changedno) = target_years_other[-1]
+          write.xlsx(tmp_changedno, file = paste0(tb_localdir_path, "/", scenario, "_ChangedPixelNo.xlsx"))
+          
+          return(NULL)
+        }
+        
+        
+        
+      }
+    }
+  }
+  
+  return(TRUE)
+}
+
+
+
+
+# call once on a local workstation
+createFragstatsTable <- function() { 
+  # price = "Normal"
+  # demand = "Normal"
+  # paramset = "Paramset1"
+  # scenario = "RCP8_5-SSP3"  
+  
+  library(doMC)
+  registerDoMC()
+  
+  library(openxlsx) # excel 
+  library(SDMTools) # fragmentation statistics
+  
+  foreach(price = foodprice.names, .errorhandling ="stop") %do% {
+    print(price)
+    
+    foreach(demand = fooddemand.names) %do% { 
+      print(demand)
+      
+      foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
+        print(paramset)
+        
+        tb_localdir_path =  file.path(paste0("Tables/FragStats/", price, "/", demand, "/",paramset, "/" ))
+        
+        if (!dir.exists(tb_localdir_path)) {
+          dir.create(tb_localdir_path, recursive = T)
+        }
+        
+        res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling = "stop") %dopar% { 
+          
+          runid_tmp = which(scenario.names == scenario) - 1 
+          
+          
+          res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
+          
+          res_rs_LL = projectRaster(res_rs, crs = proj4.LL, res = 0.1, method = "ngb")
+          tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = 15000, bkgd = NA, latlon = T)$mean.frac.dim.index)
+          
+          
+          colnames(tmp_fragstat_m) = target_years_other
+          rownames(tmp_fragstat_m) = aft.names.8classes
+          write.xlsx(tmp_fragstat_m, file = paste0(tb_localdir_path, "/", scenario, "_FragStats.xlsx"))
+          
+          return(NULL)
+        }
+        
+        
+        
+      }
+    }
+  }
+  
+  return(TRUE)
+}
+
+
+
+
+
+
+
+
+
+
+
+getRaster<- function(fname, band.idx, location = "Dropbox") {
   
   localfile_path = paste0("rastertmp/",fname, "_", band.idx, ".tif")
   
+  
   if(!file.exists(localfile_path)) {
+    
     localdir_path =  dirname(localfile_path)
     if (!dir.exists(localdir_path)) {
       dir.create(localdir_path, recursive = T)
     }
-    spdf.out = getSPDF(fname)
+    
+    if (location == "Local") { 
+      
+      result.tmp = read.csv2(fname, sep = ",")
+      result.tmp$lon = x.lat.v[result.tmp$X]
+      result.tmp$lat = y.lon.v[result.tmp$Y]
+      spdf.out <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL), data = data.frame(result.tmp), tolerance = 0.0011)
+      
+    } else if (location == "Dropbox") {
+      
+      spdf.out = getSPDF(fname)
+    }
+    
+    
+    # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
     rs.LL <- stack(spdf.out)[[4:22]]
     agent_8classes.v= factor(aft.lookup.17to8[getValues(rs.LL[[17]]) + 2, 2 ], levels = aft.fullnames.8classes, labels = aft.fullnames.8classes)
     stopifnot(length(agent_8classes.v) == ncell(rs.LL))
     rs.LL[[20]] = agent_8classes.v
     
-    
-    out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
     writeRaster(out.reproj, filename = localfile_path, overwrite=T)
     
   } else {
     out.reproj = raster(localfile_path) 
   }
+  
   
   return(out.reproj)
 }
