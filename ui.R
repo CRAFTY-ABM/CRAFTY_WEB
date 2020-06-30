@@ -39,10 +39,10 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    fluidPage(br(), h4("Scenario customisation"))
                                    
                                    , sliderInput("year",
-                                                 "Year:",
-                                                 min = 2016,
-                                                 max = 2086, sep = "",
-                                                 value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                               "Year:",
+                                               min = 2016,
+                                               max = 2086, sep = "",
+                                               value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                                    selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
@@ -57,77 +57,77 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ),
                                    fluidPage(br(), h4("Map customisation"))
                                    , selectInput("outputlayer", "Model Output",
-                                                 indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
+                                               indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
                                    )                                  
                                    , selectInput("inputlayer", "Model Input",
-                                                 indicator.names[8:14], selected=indicator.names[9]
+                                               indicator.names[8:14], selected=indicator.names[9]
                                    ),
-                                   
+
                                    selectInput("background", "Background tiles", choices =
                                                  provider_names, selected=providers$OpenStreetMap.Mapnik
                                    )
                                    , htmlOutput("ReferenceToScenarios")
-                                   
+
                                    # , actionLink("deleteCache", "Delete cached files")
                                    
                       ),
                       # 
                       # # Main panel for displaying outputs ----
                       mainPanel(width=MAINPANEL_WIDTH, 
-                                tabsetPanel(
-                                  tabPanel("Map", 
-                                           leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
-                                           # Run info
-                                           , verbatimTextOutput("PaneRuninfo")
-                                           
-                                           , absolutePanel(
-                                             top = 380, left = 20, width = 180,
-                                             draggable = TRUE,
-                                             
-                                             
-                                             wellPanel(
-                                               # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
-                                               #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
-                                               #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
-                                               #   # The slight transparency is due to `style = 'opacity: 0.92'`.
-                                               #   # You can put anything in absolutePanel, including inputs and outputs:"
-                                               # ))),
-                                               
-                                               sliderInput("alpha", "Transparency",0, 1,
-                                                           value = 0.8, step = 0.1
-                                               ),
-                                               selectInput("colors", "Color palette (cont.)",
-                                                           rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-                                               ),
-                                               
-                                               # , radioButtons("plotType", "Plot type",
-                                               #              c("Scatter"="p", "Line"="l")
-                                               # )
-                                               # , checkboxInput("legend", "Show legend", TRUE)
-                                               # # )
-                                               # sliderInput("n", "", min=3, max=20, value=5),
-                                               # plotOutput("plot2", height="50px")
-                                               downloadLink("downloadData", "Download output map (GeoTIFF)")
-                                             ),
-                                             style = "opacity: 0.5"
-                                             
-                                             
-                                           )
-                                  ), 
-                                  
-                                  tabPanel("Behavioural parameters", 
-                                           # Time series info
-                                           dataTableOutput('Tab1_BehaviouralTablePane')
-                                           , htmlOutput("ReferenceToParameters")
-                                           
-                                           # Map view options
-                                  ), 
-                                  tabPanel("Statistics", 
-                                           # Time series info
-                                           plotOutput("Tab1_StatisticsPane")
-                                           # Map view options
-                                  )
-                                )))
+                        tabsetPanel(
+                          tabPanel("Map", 
+                                   leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
+                                   # Run info
+                                   , verbatimTextOutput("PaneRuninfo")
+                                   
+                                   , absolutePanel(
+                                     top = 380, left = 20, width = 180,
+                                     draggable = TRUE,
+                                     
+                                     
+                                     wellPanel(
+                                       # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
+                                       #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
+                                       #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
+                                       #   # The slight transparency is due to `style = 'opacity: 0.92'`.
+                                       #   # You can put anything in absolutePanel, including inputs and outputs:"
+                                       # ))),
+                                       
+                                       sliderInput("alpha", "Transparency",0, 1,
+                                                   value = 0.8, step = 0.1
+                                       ),
+                                       selectInput("colors", "Color palette (cont.)",
+                                                   rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+                                       ),
+                                       
+                                       # , radioButtons("plotType", "Plot type",
+                                       #              c("Scatter"="p", "Line"="l")
+                                       # )
+                                       # , checkboxInput("legend", "Show legend", TRUE)
+                                       # # )
+                                       # sliderInput("n", "", min=3, max=20, value=5),
+                                       # plotOutput("plot2", height="50px")
+                                       downloadLink("downloadData", "Download output map (GeoTIFF)")
+                                     ),
+                                     style = "opacity: 0.5"
+                                     
+                                     
+                                   )
+                          ), 
+                          
+                          tabPanel("Behavioural parameters", 
+                                   # Time series info
+                                   dataTableOutput('Tab1_BehaviouralTablePane')
+                                   , htmlOutput("ReferenceToParameters")
+                                   
+                                   # Map view options
+                          ), 
+                          tabPanel("Statistics", 
+                                   # Time series info
+                                   plotOutput("Tab1_StatisticsPane")
+                                   # Map view options
+                          )
+                        )))
            ),
            
            tabPanel("Time-series",
@@ -159,9 +159,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                       # 
                       # # Main panel for displaying outputs ----
                       mainPanel(width = MAINPANEL_WIDTH,
-                                # Show a plot of the generated distribution
-                                plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
-                                # , verbatimTextOutput("PaneRuninfo_ts")
+                        # Show a plot of the generated distribution
+                        plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                       # , verbatimTextOutput("PaneRuninfo_ts")
                       )
                     )
            ),
@@ -189,7 +189,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
                                                scenario.names[], selected = scenario.names[1]
-                                   )
+                                    )
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )

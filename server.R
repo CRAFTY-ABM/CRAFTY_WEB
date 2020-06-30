@@ -71,19 +71,22 @@ shinyServer(function(input, output) {
   })
   
   output$PaneRuninfo_ts <- renderText({
-    # runinfo_ts()
+   # runinfo_ts()
   })
   
   
   output$ReferenceToParameters <- renderText({
     "<br/>Behavioural parameter set 1 is the default from which main results are derived; in this setup agents respond directly to benefit values with no additional individual or typological behaviour. In parameter set 2, giving-up and giving-in thresholds are altered to introduce abandonmentof land when benefit values fall below the giving-up threshold value, and resistance to change unless a competing land use has an additional benefit value of at least the giving-in threshold. Intensive land use agents are parameterised to be less tolerantof low benefit values, and more willing to switch to a land use with higher benefit values. In parameter set 3, individual agents differ from one another in terms of their abilities to produce different ecosystem services, and their giving-up and giving-in thresholds. Parameter sets 4 and 5 replicate parameter sets 2 and 3 respectively, but with larger values for thresholds and variations.<p/>
+
 Please refer to the following paper to understand the behavioural model used in CRAFTY:
+
 <p/>
 <i>Brown, C., Murray-Rust, D., Van Vliet, J., Alam, S. J., Verburg, P. H., & Rounsevell, M. D. (2014). Experiments in globalisation, food security and land use decision making. PLoS ONE, 9(12), 1–24. </i> <a href='https://doi.org/10.1371/journal.pone.0114213'>https://doi.org/10.1371/journal.pone.0114213</a>
+
 <p/>
 Please see the further details of the parameters in Table A4 of the following paper: <p/>
 <i>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics, (accepted), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a>"
-  })
+      })
   
   
   
@@ -105,8 +108,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # if (input$food != "Normal") { 
-    
-    fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      
+      fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # }
     # spdf_changed = getSPDF(fname_changed)
     # rs_changed = stack(spdf_changed)[[4:22]]
@@ -135,7 +138,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # if (input$food != "Normal") { 
-    fname_changed =   paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      fname_changed =   paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # }
     indicator_idx = which (input$inputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
@@ -221,7 +224,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       # tb1 =     table(getValues(target_data))
       # print(tb1)
       
-      DT::datatable(p_tb, options= list(paging = FALSE),  editable = F )
+          DT::datatable(p_tb, options= list(paging = FALSE),  editable = F )
     })
   
   
@@ -250,7 +253,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     aftcomp_8classes_m = t(sapply(aftcomp_8classes_by, c))[aft.fullnames.8classes, ]
     
     
-    
+     
     demand_csvname_changed =  paste0("Data/",  input$foodprice_ts, "/",  input$fooddemand_ts, "/", paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
@@ -316,12 +319,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     
-    
-    
+   
+     
     
     ### Plotting service supply and demand 
     
-    
+
     supply_m_norm = (demand_m[1:7,] / demand_m[1:7,1] - 1) * 100 
     supdem_range = range(supply_m_norm)
     y_lim_max = max(10, max(abs(supdem_range)) * 1.2)
@@ -339,6 +342,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     sdgap_range = range(sdgap, na.rm=T)
     y_lim_max = max(abs(sdgap_range)) *2
     y_lim = c(-y_lim_max, y_lim_max)
+    barplot(height = supply_m_norm, beside=T, ylab= "Relative to 2016's supply (%)", ylim= y_lim, col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0))
     
     
     barplot(height =  sdgap, beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick, ylim = y_lim)
@@ -399,9 +404,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     # if (input$food != "Normal") { 
-    fname_from =  paste0("Data/", input$foodprice_from, "/",  input$fooddemand_from, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-    fname_to =  paste0("Data/", input$foodprice_to, "/",  input$fooddemand_to, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
-    
+      fname_from =  paste0("Data/", input$foodprice_from, "/",  input$fooddemand_from, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
+      fname_to =  paste0("Data/", input$foodprice_to, "/",  input$fooddemand_to, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+      
     # }
     
     
@@ -502,7 +507,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     aft_old_prop = paste0( round(table(aft.old) / sum(aft.old, na.rm = T) * 100, 2  ), "%")
     aft.new_prop = paste0(round(table(aft.new) / sum(aft.new, na.rm = T)* 100, 2   ), "%")
-    
+ 
     
     
     # Setup proportions
@@ -515,7 +520,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     plot.new()
     
-    
+     
     legend("center", tr_names, col = tr.colors, pch=15, cex=1)
     
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
@@ -701,6 +706,10 @@ Please see the further details of the parameters in Table A4 of the following pa
       # fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       
       # if (input$food != "Normal") { 
+        
+        fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+        
+      # }
       
       fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       

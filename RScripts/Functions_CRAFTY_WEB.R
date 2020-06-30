@@ -126,15 +126,15 @@ aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = 
 provider_names = c(
   "OpenStreetMap.Mapnik"
   # "OpenTopoMap"  
-  #  , "Stamen.Terrain"
-  #  , "Thunderforest"      
+#  , "Stamen.Terrain"
+#  , "Thunderforest"      
   , "Esri.WorldImagery"             
   ,"Esri.WorldPhysical"              
-  #  , "Esri.NatGeoWorldMap" 
-  # , "CartoDB"
-  #  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
-  # ,"NASAGIBS.ViirsEarthAtNight2012"
-  # ,  "Wikimedia"      
+#  , "Esri.NatGeoWorldMap" 
+# , "CartoDB"
+#  , "NASAGIBS.ModisTerraTrueColorCR", "NASAGIBS.ModisTerraBands367CR"      
+ # ,"NASAGIBS.ViirsEarthAtNight2012"
+ # ,  "Wikimedia"      
 )
 
 # [1] "OpenStreetMap"                       "OpenStreetMap.Mapnik"                "OpenStreetMap.BlackAndWhite"        
@@ -370,7 +370,7 @@ createFragstatsTable <- function() {
   
   library(doMC)
   registerDoMC()
-  
+
   library(openxlsx) # excel 
   library(SDMTools) # fragmentation statistics
   
@@ -393,13 +393,13 @@ createFragstatsTable <- function() {
           
           runid_tmp = which(scenario.names == scenario) - 1 
           
-          
+             
           res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
           
           res_rs_LL = projectRaster(res_rs, crs = proj4.LL, res = 0.1, method = "ngb")
           tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = 15000, bkgd = NA, latlon = T)$mean.frac.dim.index)
           
-          
+            
           colnames(tmp_fragstat_m) = target_years_other
           rownames(tmp_fragstat_m) = aft.names.8classes
           write.xlsx(tmp_fragstat_m, file = paste0(tb_localdir_path, "/", scenario, "_FragStats.xlsx"))
