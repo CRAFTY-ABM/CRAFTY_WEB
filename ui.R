@@ -39,10 +39,10 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    fluidPage(br(), h4("Scenario customisation"))
                                    
                                    , sliderInput("year",
-                                               "Year:",
-                                               min = 2016,
-                                               max = 2086, sep = "",
-                                               value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                 "Year:",
+                                                 min = 2016,
+                                                 max = 2086, sep = "",
+                                                 value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                                    selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                    ),
@@ -57,77 +57,77 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ),
                                    fluidPage(br(), h4("Map customisation"))
                                    , selectInput("outputlayer", "Model Output",
-                                               indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
+                                                 indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
                                    )                                  
                                    , selectInput("inputlayer", "Model Input",
-                                               indicator.names[8:14], selected=indicator.names[9]
+                                                 indicator.names[8:14], selected=indicator.names[9]
                                    ),
-
+                                   
                                    selectInput("background", "Background tiles", choices =
                                                  provider_names, selected=providers$OpenStreetMap.Mapnik
                                    )
                                    , htmlOutput("ReferenceToScenarios")
-
+                                   
                                    # , actionLink("deleteCache", "Delete cached files")
                                    
                       ),
                       # 
                       # # Main panel for displaying outputs ----
                       mainPanel(width=MAINPANEL_WIDTH, 
-                        tabsetPanel(
-                          tabPanel("Map", 
-                                   leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
-                                   # Run info
-                                   , verbatimTextOutput("PaneRuninfo")
-                                   
-                                   , absolutePanel(
-                                     top = 380, left = 20, width = 180,
-                                     draggable = TRUE,
-                                     
-                                     
-                                     wellPanel(
-                                       # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
-                                       #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
-                                       #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
-                                       #   # The slight transparency is due to `style = 'opacity: 0.92'`.
-                                       #   # You can put anything in absolutePanel, including inputs and outputs:"
-                                       # ))),
-                                       
-                                       sliderInput("alpha", "Transparency",0, 1,
-                                                   value = 0.8, step = 0.1
-                                       ),
-                                       selectInput("colors", "Color palette (cont.)",
-                                                   rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-                                       ),
-                                       
-                                       # , radioButtons("plotType", "Plot type",
-                                       #              c("Scatter"="p", "Line"="l")
-                                       # )
-                                       # , checkboxInput("legend", "Show legend", TRUE)
-                                       # # )
-                                       # sliderInput("n", "", min=3, max=20, value=5),
-                                       # plotOutput("plot2", height="50px")
-                                       downloadLink("downloadData", "Download output map (GeoTIFF)")
-                                     ),
-                                     style = "opacity: 0.5"
-                                     
-                                     
-                                   )
-                          ), 
-                          
-                          tabPanel("Behavioural parameters", 
-                                   # Time series info
-                                   dataTableOutput('Tab1_BehaviouralTablePane')
-                                   , htmlOutput("ReferenceToParameters")
-                                   
-                                   # Map view options
-                          ), 
-                          tabPanel("Statistics", 
-                                   # Time series info
-                                   plotOutput("Tab1_StatisticsPane")
-                                   # Map view options
-                          )
-                        )))
+                                tabsetPanel(
+                                  tabPanel("Map", 
+                                           leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
+                                           # Run info
+                                           , verbatimTextOutput("PaneRuninfo")
+                                           
+                                           , absolutePanel(
+                                             top = 380, left = 20, width = 180,
+                                             draggable = TRUE,
+                                             
+                                             
+                                             wellPanel(
+                                               # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
+                                               #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
+                                               #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
+                                               #   # The slight transparency is due to `style = 'opacity: 0.92'`.
+                                               #   # You can put anything in absolutePanel, including inputs and outputs:"
+                                               # ))),
+                                               
+                                               sliderInput("alpha", "Transparency",0, 1,
+                                                           value = 0.8, step = 0.1
+                                               ),
+                                               selectInput("colors", "Color palette (cont.)",
+                                                           rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+                                               ),
+                                               
+                                               # , radioButtons("plotType", "Plot type",
+                                               #              c("Scatter"="p", "Line"="l")
+                                               # )
+                                               # , checkboxInput("legend", "Show legend", TRUE)
+                                               # # )
+                                               # sliderInput("n", "", min=3, max=20, value=5),
+                                               # plotOutput("plot2", height="50px")
+                                               downloadLink("downloadData", "Download output map (GeoTIFF)")
+                                             ),
+                                             style = "opacity: 0.5"
+                                             
+                                             
+                                           )
+                                  ), 
+                                  
+                                  tabPanel("Behavioural parameters", 
+                                           # Time series info
+                                           dataTableOutput('Tab1_BehaviouralTablePane')
+                                           , htmlOutput("ReferenceToParameters")
+                                           
+                                           # Map view options
+                                  ), 
+                                  tabPanel("Statistics", 
+                                           # Time series info
+                                           plotOutput("Tab1_StatisticsPane")
+                                           # Map view options
+                                  )
+                                )))
            ),
            
            tabPanel("Time-series",
@@ -159,9 +159,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                       # 
                       # # Main panel for displaying outputs ----
                       mainPanel(width = MAINPANEL_WIDTH,
-                        # Show a plot of the generated distribution
-                        plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
-                       # , verbatimTextOutput("PaneRuninfo_ts")
+                                # Show a plot of the generated distribution
+                                plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                                # , verbatimTextOutput("PaneRuninfo_ts")
                       )
                     )
            ),
@@ -189,7 +189,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ),
                                    selectInput("scenario_from", "Climate and socio-economic scenario",
                                                scenario.names[], selected = scenario.names[1]
-                                    )
+                                   )
                                    , selectInput("foodprice_from", "Food price",
                                                  foodprice.names, selected = foodprice.names[1]
                                    )
@@ -234,11 +234,6 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                       )
                     )
            )
-           #, tabPanel("Behaviora Table (working on)",
-           #          DT::dataTableOutput("table")
-           # )
-           # ),
-           #       # , navbarMenu("More",
            , tabPanel("About",
                       fluidRow(
                         column(12,
@@ -259,6 +254,79 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                         #        )
                       )
            )
+           ,  
+           tabPanel("SN experiment", 
+                    # Run info
+                    # , verbatimTextOutput("PaneRuninfo")
+                    
+                    # Sidebar layout with input and output definitions ----
+                    sidebarLayout(
+                      sidebarPanel(width=SIDEBAR_WIDTH + 1 ,
+                                   fluidPage(br(), h4("Scenario customisation"))
+                                   
+                                   , sliderInput("year_sn",
+                                                 "Year:",
+                                                 min = 2016,
+                                                 max = 2086, sep = "",
+                                                 value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL))
+                                   , selectInput("type_sn", "AFT",
+                                               aft.names.fromzero, selected = aft.names.fromzero[2]
+                                   )
+                                   , sliderInput("socialnet_width", 
+                                                 "Size of Social Network Buffer:",
+                                                 min = 10, 
+                                                 max = 200, sep = "", 
+                                                 value = 100, step = 10,  animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL))
+                                   , selectInput("paramset_sn", label = "Behavioural parameter set-up",
+                                               choices = paramsets.fullnames, selected = paramsets.fullnames[1]
+                                   ),
+                                   selectInput("scenario_sn", "Climate and socio-economic scenario",
+                                               scenario.names[], selected = scenario.names[1]
+                                   ),
+                                   selectInput("foodprice_sn", "Food price",
+                                               foodprice.names, selected = foodprice.names[1]
+                                   ),
+                                   selectInput("fooddemand_sn", "Meat demand (applies to RCP8.5-SSP3)",
+                                               fooddemand.names, selected = fooddemand.names[1]
+                                   )
+                                   # fluidPage(br(), h4("Map customisation"))
+                                   # , selectInput("outputlayer2", "Model Output",
+                                   #               indicator.names[c(20, 17, 1:7)], selected=indicator.names[20]
+                                   # )                                  
+                                   # , selectInput("inputlayer2", "Model Input",
+                                   #               indicator.names[8:14], selected=indicator.names[9]
+                                   # ),
+                                   # 
+                                   # selectInput("background2", "Background tiles", choices =
+                                   #               provider_names, selected=providers$OpenStreetMap.Mapnik
+                                   # )
+                                    
+                                   # , actionLink("deleteCache", "Delete cached files")
+                                   
+                      ), 
+                      mainPanel(width=MAINPANEL_WIDTH - 1 , 
+                                tabPanel("MapUK", leafletOutput("TabUK_MapPane", height = PLOT_HEIGHT)
+                                )
+                                
+                      )
+                    )
+                    
+           )
+           
+           # ,
+           # column(3,
+           #        img(class="img-polaroid",
+           #            src=paste0("http://upload.wikimedia.org/",
+           #                       "wikipedia/commons/9/92/",
+           #                       "1919_Ford_Model_T_Highboy_Coupe.jpg")),
+           #        tags$small(
+           #          "Source: Photographed at the Bay State Antique ",
+           #          "Automobile Club's July 10, 2005 show at the ",
+           #          "Endicott Estate in Dedham, MA by ",
+           #          a(href="http://commons.wikimedia.org/wiki/User:Sfoskett",
+           #            "User:Sfoskett")
+           #        )
+           
            #       # , absolutePanel(
            #       #   bottom = 12, left = 15, width = 200, height = 'auto',
            #       #   draggable = TRUE,
@@ -277,5 +345,4 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
            #       
            #     )
            #   )
-           # )
 )

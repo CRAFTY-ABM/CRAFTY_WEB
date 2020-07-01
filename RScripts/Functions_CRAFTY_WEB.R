@@ -8,7 +8,10 @@ library(raster)
 library(rgdal)
 library(rgeos)
 
-library(dplyr)
+library(maptools)
+library(spatstat) # density map
+
+library(dplyr)    # reshaping data frame 
 
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
@@ -32,6 +35,12 @@ proj4.LL <- CRS("+proj=longlat +datum=WGS84")
 # Reference: http://spatialreference.org/ref/epsg/3035/
 proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
+
+
+# gugi_values 
+aft_parms_df = t(sapply(aft.shortnames.fromzero, FUN = function(x) read.csv(paste0("Tables/agents_eupaper_final/AftParams_", x, ".csv"))[,-c(1, 9)]))
+# aft_parms_df
+# str(aft_parms_df)
 
 # Scenarios (total 8)
 scenario.names = c("Baseline", "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1", "RCP4_5-SSP3", "RCP4_5-SSP4", "RCP8_5-SSP3", "RCP8_5-SSP5")

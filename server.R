@@ -71,7 +71,7 @@ shinyServer(function(input, output) {
   })
   
   output$PaneRuninfo_ts <- renderText({
-   # runinfo_ts()
+    # runinfo_ts()
   })
   
   
@@ -86,7 +86,7 @@ Please refer to the following paper to understand the behavioural model used in 
 <p/>
 Please see the further details of the parameters in Table A4 of the following paper: <p/>
 <i>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics, (accepted), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a>"
-      })
+  })
   
   
   
@@ -108,8 +108,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # if (input$food != "Normal") { 
-      
-      fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    
+    fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # }
     # spdf_changed = getSPDF(fname_changed)
     # rs_changed = stack(spdf_changed)[[4:22]]
@@ -138,7 +138,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # if (input$food != "Normal") { 
-      fname_changed =   paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+    fname_changed =   paste0("Data/",  input$foodprice, "/",  input$fooddemand, "/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
     # }
     indicator_idx = which (input$inputlayer == indicator.names)
     r_changed = getRaster(fname_changed, band.idx = indicator_idx)
@@ -224,7 +224,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       # tb1 =     table(getValues(target_data))
       # print(tb1)
       
-          DT::datatable(p_tb, options= list(paging = FALSE),  editable = F )
+      DT::datatable(p_tb, options= list(paging = FALSE),  editable = F )
     })
   
   
@@ -253,7 +253,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     aftcomp_8classes_m = t(sapply(aftcomp_8classes_by, c))[aft.fullnames.8classes, ]
     
     
-     
+    
     demand_csvname_changed =  paste0("Data/",  input$foodprice_ts, "/",  input$fooddemand_ts, "/", paramsets[p.idx], "/", input$scenario_ts, "/", input$scenario_ts, "-",runid, "-", seedid, "-EU-AggregateServiceDemand.csv") 
     demand_dt = getCSV(demand_csvname_changed)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(15,16)] , FUN = function(x) as.numeric(as.character(x)))))
@@ -319,12 +319,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     
-   
-     
+    
+    
     
     ### Plotting service supply and demand 
     
-
+    
     supply_m_norm = (demand_m[1:7,] / demand_m[1:7,1] - 1) * 100 
     supdem_range = range(supply_m_norm)
     y_lim_max = max(10, max(abs(supdem_range)) * 1.2)
@@ -404,9 +404,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     # if (input$food != "Normal") { 
-      fname_from =  paste0("Data/", input$foodprice_from, "/",  input$fooddemand_from, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-      fname_to =  paste0("Data/", input$foodprice_to, "/",  input$fooddemand_to, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
-      
+    fname_from =  paste0("Data/", input$foodprice_from, "/",  input$fooddemand_from, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
+    fname_to =  paste0("Data/", input$foodprice_to, "/",  input$fooddemand_to, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
+    
     # }
     
     
@@ -507,7 +507,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     aft_old_prop = paste0( round(table(aft.old) / sum(aft.old, na.rm = T) * 100, 2  ), "%")
     aft.new_prop = paste0(round(table(aft.new) / sum(aft.new, na.rm = T)* 100, 2   ), "%")
- 
+    
     
     
     # Setup proportions
@@ -520,7 +520,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     plot.new()
     
-     
+    
     legend("center", tr_names, col = tr.colors, pch=15, cex=1)
     
     # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
@@ -563,6 +563,8 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
+  
+  
   observe({
     # dt = providernew()
     proxy <- leafletProxy("Tab1_MapPane", data = providernew())
@@ -576,7 +578,6 @@ Please see the further details of the parameters in Table A4 of the following pa
   observe({
     dt = rnew()
     # print(which (input$indicator == indicator.names))
-    
     
     proxy <- leafletProxy("Tab1_MapPane", data =rnew())
     proxy %>% clearImages() %>% clearControls() 
@@ -706,9 +707,9 @@ Please see the further details of the parameters in Table A4 of the following pa
       # fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
       
       # if (input$food != "Normal") { 
-        
-        fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-        
+      
+      fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
+      
       # }
       
       fname_changed =   paste0("Data/", input$foodprice, "/",  input$fooddemand, "/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
@@ -737,18 +738,142 @@ Please see the further details of the parameters in Table A4 of the following pa
   # 
   # output$table <- DT::renderDataTable({
   #   DT::datatable(cars)
+  
+  
+  ########### UK pane
+  
+  
+  output$TabUK_MapPane <- renderLeaflet({
+    r_dummy  = raster(extent(r.default))
+    r_dummy = setValues(r_dummy, values = 0)
+    proj4string(r_dummy) = proj4string(r.default)
+    
+    leaflet() %>%
+      clearImages() %>% clearControls() %>%
+      #addTiles()
+      addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
+                       options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
+      ) %>%
+      # %>%
+      # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
+      addRasterImage(r_dummy, project = FALSE, group="OutputLayer") # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
+    #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
+    # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
+    #%>%
+    # addMarkers(data = points())
+  })
+  
+  
+  
+  
+  
+  rnew_UK <- reactive({
+    
+    runid = which(scenario.names == input$scenario_sn) - 1
+    
+    p.idx = which(input$paramset_sn == paramsets.fullnames)
+    
+    fname_changed = paste0("Data/", input$foodprice_sn, "/",  input$fooddemand_sn, "/", paramsets[p.idx], "/", input$scenario_sn, "/", input$scenario_sn, "-",runid, "-99-EU-Cell-", input$year_sn, ".csv")
+    
+    # fname_changed =   paste0("Data/Normal/Normal/Paramset1/Baseline/Baseline-0-99-EU-Cell-", input$year_sn, ".csv")
+    # }
+    # spdf_changed = getSPDF(fname_changed)
+    # rs_changed = stack(spdf_changed)[[4:22]]
+    # 
+    # # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
+    # r_changed = rs_changed[[indicator_idx]] 
+    # print(indicator_idx)
+    
+    
+    indicator_idx = which ( "Land Use (17 AFTs)" == indicator.names)
+    r_changed = getRaster(fname_changed, band.idx = indicator_idx)
+    
+    # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
+    
+    return(r_changed)
+    # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
+  })
+  
+  
+  # should be managed in its own observer.
+  observe({
+    dt = rnew_UK()
+    # print(which (input$indicator == indicator.names))
+    
+    proxy <- leafletProxy("TabUK_MapPane", data =rnew_UK())
+    proxy %>% clearImages() %>% clearControls() 
+    
+    # touches
+    # input$background
+    
+    # Layers control
+    # proxy %>% addLayersControl(
+    #   # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+    #   baseGroups = c("ModelOutput", "ModelInput"),  # , "OutputLayer"),
+    #   # overlayGroups = c(  "TileLayer"),
+    #   options = layersControlOptions(collapsed = FALSE)
+    # )
+    
+    
+    # @todo 
+    # plot AFT
+    # plot AFT density wrt buffer size done 
+    # make buffer size changeable done 
+    # tabulate Gi and Gu 
+    # plot Gi and Gu 
+    # make Gi and Gu reflecting the AFT density 
+    # 
+     
+    aft_selected = match(input$type_sn, aft.names.fromzero)
+    print(aft.names.fromzero[aft_selected])
+    
+    sp_1 = SpatialPoints(rasterToPoints(dt, fun=function(x){x==aft_selected}))
+    proj4string(sp_1) = proj4string(dt)
+    
+    
+    # sp_2 <- rescale(as.ppp(sp_1), 1000, unitname = "km")
+    if (FALSE) { 
+      sp_2 <- as.ppp(sp_1)
+      
+      dt_1 = density(sp_2, eps=input$socialnet_width * 1000 ) # sigma Kernel Smoothed Intensity of Point Pattern. sigma  means Standard deviation of isotropic smoothing kernel.  eps
+      
+      dt_1_r = raster(dt_1)
+      proj4string(dt_1_r) = proj4string(dt)
+      # dt_1_r[dt_1_r< 0] = 0
+      
+      dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
+    }
+    
+    sn_width = input$socialnet_width
+    
+    sn_width = ifelse(sn_width %% 2 == 0, yes = sn_width +1 , no = sn_width)  # make it a odd number
+    
+    
+    
+    
+    
+    dt_1_r = focal(dt==aft_selected, w = matrix(data = 1, nrow =sn_width, ncol = sn_width ), pad = T, fun = mean, na.rm=T)
+    dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
+    
+    # Add output layer 
+    pal = colorNumeric("Spectral", domain = c(0,1), na.color = "transparent")
+    
+    proxy %>%  
+      addRasterImage(dt_1_r, colors = pal, project = FALSE, group = "ModelOutput"
+                     , maxBytes = 4 * 1024 * 1024, opacity = 0.5)
+    proxy %>%  addLegend(pal = pal, values = seq(1, 0, -0.05))
+    
+  })
+  
+  
+  # function(input, output, session) {
+  #   output$plot <- renderPlot({
+  #     plot(cars, type=input$plotType)
+  #   })
+  #   
+  #   output$summary <- renderPrint({
+  #     summary(cars)
   # })
+  #   
   
 })
-
-# function(input, output, session) {
-#   output$plot <- renderPlot({
-#     plot(cars, type=input$plotType)
-#   })
-#   
-#   output$summary <- renderPrint({
-#     summary(cars)
-#   })
-#   
-
-# }
