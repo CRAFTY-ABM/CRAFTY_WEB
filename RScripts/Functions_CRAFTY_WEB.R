@@ -8,13 +8,21 @@ library(raster)
 library(rgdal)
 library(rgeos)
 
-library(dplyr)
+library(maptools)
+library(spatstat) # density map
+
+library(dplyr)    # reshaping data frame 
 
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
 # library(wesanderson)
 
 library(Gmisc) # transition plot 
+
+
+RESOLUTION_WEB = 2.5E4
+RESOLUTION_SN = 1.5E4
+RESOLUTION_CRAFTY = 1.5E4
 
 PLOT_HEIGHT = 1000 
 
@@ -31,6 +39,8 @@ proj4.LL <- CRS("+proj=longlat +datum=WGS84")
 # Scope: Single CRS for all Europe. Used for statistical mapping at all scales and other purposes where true area representation is required.
 # Reference: http://spatialreference.org/ref/epsg/3035/
 proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
+
+
 
 
 # Scenarios (total 8)
@@ -121,6 +131,23 @@ aft.names.8classes <- aft.fullnames.8classes <- c("Intensive arable","Intensive 
 
 aft.colors.8classes <- c("Intensive arable" = "khaki2", "Intensive grassland" = "greenyellow","Intensive forest" = "olivedrab4",
                          "Mixed intensive" = "gold1","Mixed extensive" = "yellowgreen","Extensive primarily forest" = "darkgreen","Near-natural"="gray37","Other"="gray85") # other was white 
+
+
+#### 
+
+# gugi_values 
+ 
+aft_params_df_l = lapply(paramsets, FUN = function(paramset) {
+  dt = read.csv(paste0("Tables/", paramset, ".csv"))
+  rownames(dt) = dt$Name 
+  dt[aft.shortnames.fromzero, ]
+  }
+)
+
+
+# aft_parms_df
+# str(aft_parms_df)
+
 
 
 provider_names = c(
@@ -293,7 +320,7 @@ fname.default = (paste0("Data/Normal/Normal/Paramset1/", scenarioname.default, "
 spdf.default = getSPDF(fname.default)
 rs.LL <- stack(spdf.default)[[4:22]]
 agent.LL = rs.LL[[17]]
-r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
+r.default = projectRaster(agent.LL, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = RESOLUTION_WEB)
 
 
 # getRaster(fname.default, band.idx = 18)
@@ -397,7 +424,7 @@ createFragstatsTable <- function() {
           res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
           
           res_rs_LL = projectRaster(res_rs, crs = proj4.LL, res = 0.1, method = "ngb")
-          tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = 15000, bkgd = NA, latlon = T)$mean.frac.dim.index)
+          tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = RESOLUTION_CRAFTY, bkgd = NA, latlon = T)$mean.frac.dim.index)
           
             
           colnames(tmp_fragstat_m) = target_years_other
@@ -426,7 +453,7 @@ createFragstatsTable <- function() {
 
 
 
-getRaster<- function(fname, band.idx, location = "Dropbox") {
+getRaster<- function(fname, band.idx, location = "Dropbox", resolution = RESOLUTION_WEB) {
   
   localfile_path = paste0("rastertmp/",fname, "_", band.idx, ".tif")
   
@@ -457,7 +484,9 @@ getRaster<- function(fname, band.idx, location = "Dropbox") {
     stopifnot(length(agent_8classes.v) == ncell(rs.LL))
     rs.LL[[20]] = agent_8classes.v
     
-    out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
+ 
+    
+    out.reproj = projectRaster(rs.LL[[band.idx]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = resolution)
     writeRaster(out.reproj, filename = localfile_path, overwrite=T)
     
   } else {
