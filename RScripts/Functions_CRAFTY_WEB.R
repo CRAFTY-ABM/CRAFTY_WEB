@@ -20,7 +20,7 @@ library(leaflet.extras)
 library(Gmisc) # transition plot 
 
 
-RESOLUTION_WEB = 2.5E4
+RESOLUTION_WEB = 1.5E4
 RESOLUTION_SN = 1.5E4
 RESOLUTION_CRAFTY = 1.5E4
 

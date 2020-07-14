@@ -11,7 +11,7 @@ library(shiny)
 library(raster)
 library(RColorBrewer)
 library(gplots)
-# library(rgdal)
+# library(rgdal)88ooooooooooooooooooooooooooo 
 library(rgeos)
 library(grid)
 library(DT)
@@ -149,7 +149,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   providernew <- reactive({
     input$background
   })
-  
+  providernew_sn <- reactive({
+    input$background_sn
+  })
   
   # points <- eventReactive(input$year, {
   # cbind(rnorm(1) * 2 + 13, rnorm(1) + 48)
@@ -760,7 +762,7 @@ Please see the further details of the parameters in Table A4 of the following pa
         # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
         addRasterImage(r_dummy, colors="transparent", project = FALSE, group="OutputLayer") # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
       
-     
+      
       # addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
       # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
       #%>%
@@ -779,7 +781,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   rnew_UK <- reactive( {
     
-    input$background # touch
+    input$background_sn # touch
     runid = which(scenario.names == input$scenario_sn) - 1
     
     p.idx = which(input$paramset_sn == paramsets.fullnames)
@@ -820,30 +822,32 @@ Please see the further details of the parameters in Table A4 of the following pa
     p.idx = which(input$paramset_sn == paramsets.fullnames)
     
     # touches
-    input$background
+    input$background_sn
     
     # Layers control
     proxy %>% addLayersControl(
-      # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
-      baseGroups = c("AFT", "AFTdensity", "GuMean", "GiMean"),  
-      # overlayGroups = c("TileLayer"),
+      # baseGroups = c( "AFT","AFTdensity","GuMean", "GiMean"),
+      # baseGroups = c( "AFT"),
+      # overlayGroups = c( "AFTdensity", "GuMean", "GiMean"),
+      overlayGroups = c("AFT"),
       options = layersControlOptions(collapsed = FALSE)
     )
     
-   # proxy %>% hideGroup("GuMean") %>% hideGroup("GiMean") 
-    proxy %>% clearImages()  %>% clearControls() 
+    
+    
+    proxy %>% clearImages() %>% clearControls() 
     
     # @todo 
     # plot AFT
     # plot AFT density wrt buffer size done 
     # make buffer size changeable done 
-    # tabulate Gi and Gu 
-    # plot Gi and Gu 
+    # tabulate Gi and Gu done?
+    # plot Gi and Gu done
     # make Gi and Gu reflecting the AFT density 
     # 
     
     aft_selected = match(values$type, aft.names.fromzero)
-      
+    
     sp_1 = SpatialPoints(rasterToPoints(dt, fun=function(x){x==aft_selected}))
     proj4string(sp_1) = proj4string(dt)
     
@@ -856,72 +860,103 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       dt_1_r = raster(dt_1)
       proj4string(dt_1_r) = proj4string(dt)
-      # dt_1_r[dt_1_r< 0] = 0
       
       dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
     }
     
     sn_width = as.integer(round(input$socialnet_width * 1E3 / RESOLUTION_SN)) # km to pixel num
-       
+    
     sn_width = ifelse(sn_width %% 2 == 0, yes = sn_width +1 , no = sn_width)  # make it a odd number
     
     sn_width = max(3, sn_width) # at least the adjacent 8 pixels
     print(paste0("focal ", sn_width, " pixels"))
-    dt_1_r = focal(dt==aft_selected, w = matrix(data = 1, nrow =sn_width, ncol = sn_width ), pad = T, fun = mean, na.rm=T)
+    
+    r_in = dt==aft_selected
+    
+    
+    wm <-focalWeight(r_in, d=input$socialnet_width * 1E3 ,type="circle") # original weight matrix
+    w<-wm
+    w[w>0]<-1
+    
+    # dt_1_r = focal(r_in, w = matrix(data = 1, nrow =sn_width, ncol = sn_width ), pad = T, padValue=0, fun = mean, na.rm=T)
+    dt_1_r = focal(r_in, w = w, pad = T, padValue=0, fun = mean, na.rm=T)
+    
+    
+    
+    # dt_1_r[dt_1_r< 0] = 0
+    # dt_1_r[is.na(dt_1_r)] = 0
+    # 
     dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
-    # Add AFT layer 
-    proxy %>%  
-      addRasterImage(dt == aft_selected, project = FALSE, colors = c("transparent", "black"), group = "AFT"
-                     , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024)
     
-    
-    # Add AFT density layer 
-    pal = colorNumeric(input$colors_sn, domain = c(0,1), na.color = "transparent")
-    proxy %>%  
-      addRasterImage(dt_1_r, colors = pal, project = FALSE, group = "AFTdensity"
-                     , maxBytes = 4 * 1024 * 1024, opacity = input$alpha_sn)
-    proxy %>% addLegend(pal = pal, values = seq(1, 0, -0.05), group = "AFTdensity", title="AFT density (0-1)")
-    
-    
-    # Add Gu and Gi layer 
+
+    # Gu and Gi layer 
     alpha = input$sn_alpha
     beta = input$sn_beta
     gugi_info = aft_params_df_l[[p.idx]][aft_selected, ]
     
-    Gu =  gugi_info$givingUpDistributionMean
-    Gi =  gugi_info$givingInDistributionMean
     
-    gu_new =  Gu + dt_1_r * alpha + beta 
-    gi_new =  Gi + dt_1_r * alpha + beta 
+    if (input$outputlayer_sn == "AFT density") { 
+      # proxy %>% hideGroup("GuMean") %>% hideGroup("GiMean")%>% hideGroup("AFTdensity")
+      # Add AFT density layer 
+      pal = colorNumeric(input$colors_sn, domain = c(0,1), na.color = "transparent")
+      proxy %>%  
+        addRasterImage(dt_1_r, colors = pal, project = FALSE, group = "AFTdensity", method="ngb", 
+                       , maxBytes = 4 * 1024 * 1024, opacity = input$alpha_sn)
+      proxy %>% addLegend(pal = pal, values = seq(1, 0, -0.05), group = "AFTdensity", title="AFT density (0-1)")
+      
+    } else if (input$outputlayer_sn == "Giving-up mean") { 
+       
+      
+      Gu =  gugi_info$givingUpDistributionMean
+      
+      gu_new =  Gu + dt_1_r * alpha + beta 
+      
+      dt_gu_new  = getValues(gu_new)
+      dt_gu_new_rng = range(dt_gu_new, na.rm = T)
+      
+
+      print(dt_gu_new_rng)
+      
+      pal_gu = colorNumeric(input$colors_sn, reverse = T, domain = dt_gu_new_rng, na.color = "transparent")
+      
+      proxy %>%
+        addRasterImage(gu_new, project = FALSE, colors =pal_gu, method = "ngb", group = "GuMean'"
+                       , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024)
+      proxy %>%
+        addLegend(pal = pal_gu, values = quantile(dt_gu_new, probs=seq(1, 0, -0.05), na.rm=T), layerId = "GuMean_Legend",  group = "GuMean", title = paste0("Gu Mean"))
+      
+      
+    } else if (input$outputlayer_sn == "Giving-in mean") { 
+       
+      
+      Gi =  gugi_info$givingInDistributionMean
+      gi_new =  Gi + dt_1_r * alpha + beta 
+      dt_gi_new  = getValues(gi_new)
+      dt_gi_new_rng = range(dt_gi_new, na.rm = T)
+      print(dt_gi_new_rng)
+      pal_gi = colorNumeric(input$colors_sn, reverse = T, domain = dt_gi_new_rng, na.color = "transparent")
+      
+      proxy %>%
+        addRasterImage(gi_new, project = FALSE, colors =pal_gi, method = "ngb", group = "GiMean'"
+                       , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024)
+       
+      proxy %>%
+        addLegend(pal = pal_gi, values = quantile(dt_gi_new, probs=seq(1, 0, -0.05), na.rm=T), layerId = "GiMean_Legend", group = "GiMean", title = paste0("Gi Mean"))
+    }
     
-    dt_gu_new  = getValues(gu_new)
-    dt_gu_new_rng = range(dt_gu_new, na.rm = T)
-    
-    dt_gi_new  = getValues(gi_new)
-    dt_gi_new_rng = range(dt_gi_new, na.rm = T)
-    
-    print(dt_gu_new_rng)
-    print(dt_gi_new_rng)
-    
-    pal_gu = colorNumeric(input$colors_sn, reverse = T, domain = dt_gu_new_rng, na.color = "transparent")
-    pal_gi = colorNumeric(input$colors_sn, reverse = T, domain = dt_gi_new_rng, na.color = "transparent")
-    
+    # Add AFT layer
     proxy %>%
-      addRasterImage(gu_new, project = FALSE, colors =pal_gu, method = "ngb", group = "GuMean'"
-                     , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024)
-    proxy %>%
-      addRasterImage(gi_new, project = FALSE, colors =pal_gu, method = "ngb", group = "GiMean'"
-                     , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024) 
-    
-    proxy %>% 
-      addLegend(pal = pal_gu, values = quantile(dt_gu_new, probs=seq(1, 0, -0.05), na.rm=T), layerId = "GuMean_Legend",  group = "GuMean", title = paste0("Gu Mean"))
-    proxy %>% 
-      addLegend(pal = pal_gi, values = quantile(dt_gi_new, probs=seq(1, 0, -0.05), na.rm=T), layerId = "GiMean_Legend", group = "GiMean", title = paste0("Gi Mean"))
-    
-    #             , title = paste0("Input ", input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelInput")
+      addRasterImage(dt == aft_selected, project = FALSE, colors = c("transparent", "black"), group = "AFT"
+                     , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024, , method="ngb")
     
     
     
+  })
+  observe({
+    # dt = providernew()
+    proxy <- leafletProxy("TabUK_MapPane", data = providernew_sn())
+    proxy %>% clearTiles() %>% addProviderTiles(input$background_sn, options = providerTileOptions(noWrap = TRUE), group = "TileLayer")
+    # proxy %>% clearControls() 
     
   })
   

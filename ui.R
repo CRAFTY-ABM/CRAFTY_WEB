@@ -255,7 +255,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                       )
            )
            ,  
-           tabPanel("SN experiment", 
+           tabPanel("New social network (experimental)", 
                     # Run info
                     # , verbatimTextOutput("PaneRuninfo")
                     
@@ -284,10 +284,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    ), 
                                    
                                    fluidPage(br(), h4("SN model customisation"))
+                                   , selectInput("outputlayer_sn", "Output layer",
+                                                 c("AFT density","Social capital", "Giving-up mean", "Giving-in mean"), selected="AFT density")   
                                    , selectInput("type_sn", "Target AFT",
                                                  aft.names.fromzero, selected = aft.names.fromzero[2]
                                    )
-                                   , fluidPage(br(), h5("Adjusted G (G')"),  h5("G' = G_0 + alpha * D + beta"), h5(", where G_0 is the default Gu (and Gi), D is the density of the same agent types within the buffer"))
+                                   , fluidPage(br(), h5("Adjusted G (G')"),  h5("G' = G_0 + alpha * D + beta"), h5(", where G_0 is the default Gu (and Gi), D is the density of the same agent types within the buffer [0,1]"))
                                    , sliderInput("socialnet_width", 
                                                  "Size of Social Network Buffer (15-200 km):",
                                                  min = 15, 
@@ -343,6 +345,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                 value = 0.8, step = 0.1
                                     ),
                                     selectInput("colors_sn", label = "Color palette (cont.)", selected = "RdYlGn", choices =        rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+                                    ), 
+                                    selectInput("background_sn", "Background tiles", choices =
+                                                  provider_names, selected=providers$OpenStreetMap.Mapnik
                                     )
                                     
                                     # , radioButtons("plotType", "Plot type",
