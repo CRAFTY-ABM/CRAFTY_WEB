@@ -285,11 +285,11 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    
                                    fluidPage(br(), h4("SN model customisation"))
                                    , selectInput("outputlayer_sn", "Output layer",
-                                                 c("AFT density","Social capital", "Giving-up mean", "Giving-in mean"), selected="AFT density")   
+                                                 c("AFT density","Social.capital"), selected="AFT density")   
                                    , selectInput("type_sn", "Target AFT",
                                                  aft.names.fromzero, selected = aft.names.fromzero[2]
                                    )
-                                   , fluidPage(br(), h5("Adjusted G (G')"),  h5("G' = G_0 + alpha * D + beta"), h5(", where G_0 is the default Gu (and Gi), D is the density of the same agent types within the buffer [0,1]"))
+                                   , fluidPage(br(), h5("Adjusted C (C')"),  h5("C' = C_0 + C_0 * (1+D) * alpha + beta"), h5(", where C_0 is the default capital value, D is the density of the same agent types within the buffer in [0,1]"))
                                    , sliderInput("socialnet_width", 
                                                  "Size of Social Network Buffer (15-200 km):",
                                                  min = 15, 
@@ -299,9 +299,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
 
                                    
                                    , sliderInput("sn_alpha", 
-                                                 "alpha [-10, 10]",
-                                                 min = -10, 
-                                                 max = 10, sep = "", 
+                                                 "alpha [-1, 1]",
+                                                 min = -1E1, 
+                                                 max = 1E1, sep = "", 
                                                  value = 1, step = 0.1)
                                    , sliderInput("sn_beta", 
                                                  "beta [-10, 10]",
