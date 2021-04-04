@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+rsconnect
+
+Data/
+
+.httr-oauth
+
+Tables/
