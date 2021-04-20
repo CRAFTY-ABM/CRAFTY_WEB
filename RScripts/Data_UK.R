@@ -1,16 +1,59 @@
+library(dplyr)
+library(gplots)
+library(leaflet)
+library(raster)
 
-
-
+# CRAFTY run ID 
 runid="0"
-data_prefix = "8Apr2021/"
+# A seed used in the CRAFTY runs 
+seedid = "99"
+
+# number of threads to process raster
+n_thread = 4
 
 
-fname.default = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
+# 
+location_UK = "Local"
+
+# dropbox relative path 
+path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
+
+# local data archive
+path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
+
+# data version
+data_prefix = "18Apr2021/"
+
+# absolute path (for local)
+path_data_local = paste0(path_localstorage, data_prefix)
+
+# relative path (for dropbox)
+path_data_dropbox = paste0(path_dropbox, data_prefix)
+
+path_shinywd = "~/shiny_tmp"
+path_filecache = paste0(path_shinywd, "/filetmp/")
+path_rastercache = paste0(path_shinywd, "/rastertmp/")
+
+# dummy name
+default_fname = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
 
 getFname = function(foodprice, paramset, scenario, fooddemand, year ) { 
   
-  fs::path_expand(paste0( fooddemand, "/" ,foodprice,"/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
+  # fs::path_expand(paste0( fooddemand, "/" ,foodprice,"/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
+  fs::path_expand(paste0( "Normal/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
+  
 }
+
+
+scenarioname.default = "Baseline"
+r_default = raster("GISData/UK_default.tif")
+
+# ext = extent(projectRaster(r.default, crs = proj4.LL))
+ext = c(-8.439121, 2.794859, 49.77235, 60.93977 )
+
+
+drop_token_name = "Authentication/droptoken.rds"
+
 
 
 #import data
@@ -41,14 +84,14 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 
 # Scenarios (total 8)
 scenario.names = c("Baseline"
-                   # , "RCP2_6-SSP1", "RCP2_6-SSP4", "RCP4_5-SSP1"
+                   , "Baseline-SSP1", "Baseline-SSP2", "Baseline-SSP4", "Baseline-SSP5"
                    , "RCP4_5-SSP2", "RCP4_5-SSP4"
                    # "RCP8_5-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
 foodprice.names = c("") # c("Normal", "Increased", "Decreased")  # 50%
 # fooddemand.names = c("Normal", "LowMeatDemand")
-fooddemand.names = c("Normal", "IncFoodDemand", "DecFoodDemand")
+fooddemand.names = c("Normal")#, "IncFoodDemand", "DecFoodDemand")
 
 
 paramsets.fullnames = c("Behavioural baseline", "Thresholds") # , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
@@ -108,6 +151,14 @@ indicators_categorical = indicator.names[c(28)]
 
 
 
+capital_colours =  (c("Ext_AF" = "yellowgreen", "IA"  = "yellow1", "Int_AF" =  "darkolivegreen1", "Int_Fa" = "lightgoldenrod1",  "IP" = "red1", "MF" =  "green3", "Min_man" = "lightyellow3",  "Mix_Fa" = "darkgoldenrod",  "Mix_For" = "green4",   "Mix_P" = "violetred",  "Multifun" = "blueviolet", "NNBroadleaf"="orange", "NBroadleaf" = "lightblue", "UMF" = "darkgreen", "Ur" = "black", "VEP" = "red4", "EP" = "red3")) # , "Lazy FR" = "black")
+# 
+
+
+
+ 
+
+
 aftnames = data.frame(rbind(c("AF", "Agroforestry", "Agroforestry"),
                             c("Bioenergy", "Bioenergy", "Bioenergy"),
                             c("EA", "EA", "Extensive Agriculture"),
@@ -150,7 +201,7 @@ capital_names = data.frame(Capital = c("Human",
                                        "NNConifer.suit", 
                                        "NConifer.suit", 
                                        "NNBroadleaf.suit", 
-                                       "Nbroadleaf.suit", 
+                                       "NBroadleaf.suit", 
                                        "Tree.suit"
 ))
 
@@ -160,16 +211,33 @@ aft_tb = read.csv("Tables/AgentColors.csv", strip.white = T, stringsAsFactors = 
 
 aft_tb[aft_tb$Name == "Lazy FR", ]$Name = "Unmanaged"
 
+
+
 aft_colors_alpha = aft_tb$Color[match( aft.shortnames.fromzero, aft_tb$Name)]
 
 aft_colors_fromzero = col2hex(paste0("#", substr(aft_colors_alpha, start = 4, stop = 10), substr(aft_colors_alpha, start = 2, stop = 3))) # ignore alpha channel
 
+
+aft_colors_fromzero[aft.shortnames.fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
+
+
 target_years_aggcsv = seq(2020, 2100, 10)
 target_years_other =  seq(2020, 2100, 10)
 
+
+
+aft_colors_fromzero_ts = aft_colors_fromzero
+aft_colors_fromzero_ts[17] = "black" 
+aft_lty_ts = c(rep(1, 16), 2)
+
+n_cell_total = nrow(uk_coords)
+
+
 aft.pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
 
-aft.pal(6)
+# aft.pal(6)
+
+
 
 
 
@@ -177,12 +245,12 @@ aft.pal(6)
 
 # gugi_values 
 
-aft_params_df_l = lapply(paramsets, FUN = function(paramset) {
-  dt = read.csv(paste0("Tables/", paramset, ".csv"))
-  rownames(dt) = dt$Name 
-  dt[aft.shortnames.fromzero, ]
-}
-)
+# aft_params_df_l = lapply(paramsets, FUN = function(paramset) {
+#   dt = read.csv(paste0("Tables/", paramset, ".csv"))
+#   rownames(dt) = dt$Name 
+#   dt[aft.shortnames.fromzero, ]
+# }
+# )
 
 
 # aft_parms_df

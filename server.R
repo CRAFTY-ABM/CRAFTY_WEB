@@ -4,14 +4,14 @@
 
 
 library(shiny)
-
+source("RScripts/Data_UK.R")
 source("RScripts/Functions_CRAFTY_WEB.R")
 
 accessDropbox()
 
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   
   # Reactive expression for the data subsetted to what the user selected
@@ -47,13 +47,14 @@ shinyServer(function(input, output) {
   
   
   
-  # observeEvent(input$deleteCache, {
-  #   # session$sendCustomMessage(type = 'testmessage',
-  #   # message = 'Thank you for clicking')
-  #   unlink(path.rastertmp)
-  #   unlink(path.droptmp)
-  #   
-  # })
+  observeEvent(input$deleteCache, {
+    session$sendCustomMessage(type = 'message',
+                              message = 'deleteCache')
+    print("delete cache")
+    unlink(paste0(path_rastercache, "/*"), recursive = T)
+    unlink(paste0(path_filecache, "/*"), recursive = T)
+    
+  })
   
   
   output$PaneRuninfo <- renderText({
@@ -93,27 +94,26 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   rnew_input <- reactive({
+    print("rnew_input called")
     
     # runid = which(scenario.names == input$scenario) - 1
     runid = 0
     
     p.idx = which(input$paramset_full == paramsets.fullnames)
     
-    # if (input$food != "Normal") {
     fname_changed = getFname(input$foodprice, paramsets[p.idx], input$scenario, input$fooddemand, input$year)
     
     
     
-    # }
-    
-    
     indicator_idx = which (input$inputlayer == indicator.names)
-    r_changed = getRaster(fname_changed, band.idx = indicator_idx)
+    r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   } )
   
   providernew <- reactive({
+    print("providernew called")
+    
     input$background
   })
   # providernew_sn <- reactive({
@@ -142,6 +142,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   output$Tab1_StatisticsPane <- renderPlot({
+    print("draw stat pane")
     
     target_data = rnew()
     
@@ -171,16 +172,24 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   output$Tab1_BehaviouralTablePane <- renderDataTable(
     {
+      print("draw behavioural pane")
       
       
       # runid = which(scenario.names == input$scenario) - 1
       runid=0
       p.idx = which(input$paramset_full == paramsets.fullnames)
       
-      p_name = paste0("Tables/Paramset", p.idx, ".csv")
+      # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
+      foldername_tmp = paste0("Tables/agents/", paramsets[p.idx], "/", input$scenario)
       
-      p_tb = read.csv(p_name)
+      aftparams_df = sapply(aft.shortnames.fromzero[-17], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
       
+      aftparams_df = data.frame(aftparams_df)
+      aftparams_df$productionCsvFile = NULL
+      # p_name = paste0("Tables/Paramset", p.idx, ".csv")
+      # 
+      # p_tb = read.csv(p_name)
+      # 
       
       # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
       
@@ -191,7 +200,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       # tb1 =     table(getValues(target_data))
       # print(tb1)
       
-      DT::datatable(p_tb, options= list(paging = FALSE),  editable = F )
+      DT::datatable(aftparams_df, options= list(paging = FALSE),  editable = F )
     })
   
   
@@ -205,6 +214,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   # })
   
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
+    print("draw timeseries pane")
     
     runid = 0 # which(scenario.names == input$scenario_ts ) - 1
     # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
@@ -212,15 +222,16 @@ Please see the further details of the parameters in Table A4 of the following pa
     p.idx = which(input$paramset_full_ts == paramsets.fullnames)
     
     
-    aft_csvname_changed = fs::path_expand(paste0(input$fooddemand_ts, "/" ,input$foodprice_ts,"/", paramsets[p.idx], "/", input$scenario_ts, "/",  input$scenario_ts, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+    aft_csvname_changed = fs::path_expand(paste0("Normal/", paramsets[p.idx], "/", input$scenario_ts, "/",  input$scenario_ts, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
     
-    aftcomp_dt = getCSV(aft_csvname_changed)
+    aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
     
-    demand_csvname_changed = fs::path_expand(paste0(input$fooddemand_ts, "/" ,input$foodprice_ts,"/", paramsets[p.idx], "/", input$scenario_ts, "/"  , input$scenario_ts, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
     
-    demand_dt = getCSV(demand_csvname_changed)
+    demand_csvname_changed = fs::path_expand(paste0("Normal/", paramsets[p.idx], "/", input$scenario_ts, "/"  , input$scenario_ts, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
+    
+    demand_dt = getCSV(demand_csvname_changed, location = location_UK)
     demand_m = t(as.matrix(sapply(demand_dt[, -c(ncol(demand_dt) - 1:0)] , FUN = function(x) as.numeric(as.character(x)))))
     
     str(demand_m)
@@ -240,21 +251,28 @@ Please see the further details of the parameters in Table A4 of the following pa
     par(mfrow=c(3,2), mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,9.5), oma=c(1,1,1,1))
     
     # par(mfrow=c(4,2), xpd = T, mar = par()$mar + c(0,0,0,7))
-        # par( mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,8))
+    # par( mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,8))
     
     
     # AFT changes
-    aftcomp_perc_m =  aftcomp_m/colSums(aftcomp_m) * 100
+    n_cell_unmanaged = n_cell_total - colSums(aftcomp_m) 
+    
+    aftcomp_m = rbind(aftcomp_m, n_cell_unmanaged)
+    
+    rownames(aftcomp_m)
+    
+    aftcomp_perc_m =  aftcomp_m/n_cell_total * 100
     
     # str(aftcomp_perc_m)
     
-    plot(aftcomp_dt$Tick, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="Proportion (%)", col = aft_colors_fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT composition changes", xaxt="n")
+    
+    plot(aftcomp_dt$Tick, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="Proportion (%)", col = aft_colors_fromzero_ts[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT composition changes", xaxt="n", lty= aft_lty_ts)
     axis(side=1, at = target_years_other, labels = target_years_other)
     
     for (a.idx in 2:nrow(aftcomp_perc_m)) {
-      lines(aftcomp_dt$Tick, aftcomp_perc_m[a.idx,],   col = aft_colors_fromzero[a.idx])
+      lines(aftcomp_dt$Tick, aftcomp_perc_m[a.idx,], col = aft_colors_fromzero_ts[a.idx], lty=aft_lty_ts[a.idx])
     }
-    legend("topright", aft.shortnames.fromzero, col = aft_colors_fromzero, lty=1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
+    legend("topright", aft.shortnames.fromzero, col = aft_colors_fromzero_ts, lty=aft_lty_ts, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=1.5)
     
     
     # par( mar = c(5.1, 4.1, 4, 1)  + c(0,0,0,8))
@@ -285,7 +303,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     supdem_range = range(cbind(supply_m_norm))
     print(supdem_range)
     
-    y_lim_max = max(5, max(abs(supdem_range)) * 1.2)
+    y_lim_max = max(3, max(abs(supdem_range)) * 1.2)
     y_lim_v = c(-y_lim_max, y_lim_max)
     # barplot(height = supply_m_norm, beside=T, ylab= "Relative to 2020's supply (%)", ylim= y_lim_v, col = serviceColours, main = "Service Supply", names= demand_dt$Tick, border=NA)
     # legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), border=NA)
@@ -301,14 +319,14 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
     
-           
-           
-           
+    
+    
+    
     dem_range = range(cbind(demand_m_norm))
     print(dem_range)
     
     y_lim_max = max(5, max(abs(dem_range)) * 1.2)
-    y_lim_v = c(-y_lim_max, y_lim_max)
+    y_lim_v = c(max(-100, -y_lim_max), y_lim_max)
     
     # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
     
@@ -316,6 +334,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     axis(side=1, at = target_years_other, labels = target_years_other)
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)
+    abline(h = -100, lty=2)
     
     for (a.idx in c(1:nrow(demand_m_norm))) {
       lines(demand_dt$Tick, demand_m_norm[a.idx,],   col = serviceColours[a.idx])
@@ -374,6 +393,38 @@ Please see the further details of the parameters in Table A4 of the following pa
     legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
     
     
+    ########## Mean capital levels
+    
+    # capital_csvname_changed = "Baseline-0-99-UK-AggregateCapital.csv"
+    capital_csvname_changed = "RCP4_5-SSP2-0-99-UK-AggregateCapital.csv"
+    capital_csvname_changed = fs::path_expand(paste0(input$scenario_ts, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
+    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
+    
+    str(capital_scene_tmp)
+    if (nrow(capital_scene_tmp) > 1) { 
+      capital_scene_tmp[,-1] = sapply(1:length(baseline_capital_tmp[-1]), FUN = function(x) capital_scene_tmp[,x+1] /  baseline_capital_tmp[x+1])
+      
+      
+      ylim_cap = max(sapply(capital_scene_tmp[,-1], max, na.rm=T))
+      
+      plot(capital_scene_tmp$Tick, capital_scene_tmp[,2] * 100, type="l", col = capital_colours[1], ylim=c(0, ylim_cap * 100), xlab="Year", ylab="Relative to 2020 (%)",  main = "Mean input capitals changes", las=1, xaxt="n", lwd=1.5)
+      # title(ylab="Production shortfall (%)", mgp=c(3, 1, 0))
+      # mtext(side = 2, text ="Production shortfall (%)", line = 4, cex=0.8)
+      
+      axis(side=1, at = target_years_other, labels = target_years_other)
+      # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
+      abline(h = 0, lty=2)
+      
+      for (a.idx in c(3:ncol(capital_scene_tmp))) {
+        lines(capital_scene_tmp$Tick, capital_scene_tmp[,a.idx] * 100,   col = capital_colours[a.idx])
+      }
+      
+      legend("topright", legend = capital_names$Capital[], col=capital_colours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
+    } else {   # baseline 
+      capital_scene_tmp$X = 2020
+      colnames(capital_scene_tmp) = c("Tick", capital_names$Capital)
+      capital_scene_tmp[-1] = capital_scene_tmp[-1] / capital_scene_tmp[-1] #all 1 
+    }
     
     # print("fragmentation statistics")
     # 
@@ -570,16 +621,18 @@ Please see the further details of the parameters in Table A4 of the following pa
   # })
   
   output$Tab1_MapPane <- renderLeaflet({
- 
+    print("draw mappane 1")
+    
     leaflet() %>%
       clearImages() %>% clearControls() %>%
       #addTiles()
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
-      ) %>%
-      # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-      addRasterImage(r_dummy, project = FALSE, group="OutputLayer", colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
-      addLegend( pal = aft.pal, values = 1:n_aft, labels = aft.names.fromzero, title = "AFT")
+      ) %>%   
+      fitBounds(ext[1], ext[3], ext[2], ext[4] )
+    # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
+    # addRasterImage(r_dummy, project = FALSE, group="OutputLayer", opacity=0, colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
+    # addLegend(pal = aft.pal, values = 1:n_aft, labels = aft.names.fromzero, title = "AFT")
     # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
     #%>%
     # addMarkers(data = points())
@@ -589,6 +642,8 @@ Please see the further details of the parameters in Table A4 of the following pa
   # 
   # 
   observe({
+    print("draw tile layer")
+    
     # dt = providernew()
     proxy <- leafletProxy("Tab1_MapPane", data = providernew())
     proxy %>% clearTiles() %>% addProviderTiles(input$background, options = providerTileOptions(noWrap = TRUE), group = "TileLayer")
@@ -598,10 +653,11 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   # should be managed in its own observer.
   observe({
+    print("redraw output layer")
     dt = rnew()
     # print(which (input$indicator == indicator.names))
     
-    proxy <- leafletProxy("Tab1_MapPane", data =rnew())
+    proxy <- leafletProxy("Tab1_MapPane", data =dt)
     proxy %>% clearImages() %>% clearControls()
     
     # touches
@@ -610,57 +666,66 @@ Please see the further details of the parameters in Table A4 of the following pa
     # Layers control
     proxy %>% addLayersControl(
       # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
-      baseGroups = c("ModelOutput", "ModelInput"),  # , "OutputLayer"),
-      # overlayGroups = c(  "TileLayer"),
+      baseGroups = c("ModelResult",  "Basemap"),
+      # overlayGroups = c("TileLayer"),
       options = layersControlOptions(collapsed = FALSE)
     )
     
+    
+    # proxy %>% hideGroup("ModelInput")
+    
     # print(dt)
     
-    
-    # Add output layer
-    
-    if (input$outputlayer  == indicator.names[28]) {  # land use index
+    if (input$outputGroup == "print_out") { 
       
+      # Add output layer
       
-      proxy %>% addRasterImage(dt, project = FALSE, colors = aft.pal, group = "ModelOutput"
-                               , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
-      if (input$legend) { 
+      if (input$outputlayer == indicator.names[28]) {  # land use index
         
-        proxy %>% addLegend(colors = col2hex(as.character(aft_colors_fromzero)), labels = aft.shortnames.fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelOutput", opacity = input$alpha)
+        proxy %>% addRasterImage(dt, project = FALSE, colors = aft.pal, group = "ModelResult"
+                                 , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+        if (input$legend) {
+          
+          proxy %>% addLegend(colors = col2hex(as.character(aft_colors_fromzero)), labels = aft.shortnames.fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
+        }
+      } else {
+        dt.v = getValues(dt)
+        dt.rng = range(dt.v, na.rm = T)
+        print(dt.rng)
+        pal = colorNumeric(input$colors,reverse = input$InvertColour, domain = dt.rng,  na.color = "transparent")
+        
+        proxy %>%
+          addRasterImage(dt, project = FALSE, colors =pal, group = "ModelResult", method = "bilinear"
+                         , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+        if (input$legend) { proxy %>%
+            addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T),
+                      , title = paste0("Output ", input$outputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult", opacity=input$alpha)
+        }
       }
-    } else {
-      dt.v = getValues(dt)
-      dt.rng = range(dt.v, na.rm = T)
-      print(dt.rng)
-      pal = colorNumeric(input$colors,reverse = input$InvertColour, domain = dt.rng,  na.color = "transparent")
+    }
+    
+    if (input$outputGroup == "print_in") { 
+      # Add input layer
+      dt_input = rnew_input()
+      dt_input.v = getValues(dt_input)
+      dt_input.rng = range(dt_input.v, na.rm = T)
+      # print(dt_input.rng)
+      
+      pal_input = colorNumeric(input$colors, reverse = input$InvertColour, domain = dt_input.rng, na.color = "transparent")
       
       proxy %>%
-        addRasterImage(dt, project = FALSE, colors =pal, group = "ModelOutput", method = "bilinear"
-                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024) 
+        addRasterImage(dt_input, project = FALSE, colors =pal_input, method = "bilinear", group = "ModelResult"
+                       , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
       if (input$legend) { proxy %>%
-          addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T),
-                    , title = paste0("Output ", input$outputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelOutput", opacity=input$alpha)
+          addLegend(pal = pal_input, values = quantile(dt_input.v, probs=seq(1, 0, -0.05), na.rm=T),
+                    , title = paste0("Input ", input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult")
       }
     }
     
     
-    # Add input layer
-    dt_input = rnew_input()
-    dt_input.v = getValues(dt_input)
-    dt_input.rng = range(dt_input.v, na.rm = T)
-    print(dt_input.rng)
+    # add empty layer 
     
-    pal_input = colorNumeric(input$colors, reverse = input$InvertColour, domain = dt_input.rng, na.color = "transparent")
-    
-    proxy %>%
-      addRasterImage(dt_input, project = FALSE, colors =pal_input, method = "bilinear", group = "ModelInput"
-                     , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
-    if (input$legend) { proxy %>%
-        addLegend(pal = pal_input, values = quantile(dt_input.v, probs=seq(1, 0, -0.05), na.rm=T),
-                  , title = paste0("Input ", input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelInput")
-    }
-    
+    proxy %>% addRasterImage(r_dummy, project = FALSE, group = "Basemap", opacity = 0) %>% addMiniMap(position = "bottomleft", zoomAnimation = T, toggleDisplay = TRUE)  %>% addMeasure()
   })
   
   # Incremental changes to the map (in this case, replacing the
@@ -801,8 +866,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   rnew <- reactive( {
+    print("Rnew called")
     
-    input$background # touch
+    # input$background # touch
     runid = 0 #  which(scenario.names == input$scenario) - 1
     
     p.idx = which(input$paramset_full == paramsets.fullnames)
@@ -810,7 +876,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     fname_changed =getFname(input$foodprice, paramsets[p.idx], input$scenario, input$fooddemand, input$year)   
     
     indicator_idx = which (input$outputlayer == indicator.names)
-    r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_WEB)
+    r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   })

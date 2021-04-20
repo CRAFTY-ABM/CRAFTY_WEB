@@ -4,6 +4,7 @@ library(shiny)
 
 source("RScripts/Data_UK.R")
 source("RScripts/Functions_CRAFTY_WEB.R")
+
 # 
 # absolutePanel(
 #   top = 0, left = 0, right = 0,
@@ -135,33 +136,40 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                     "Year:",
                                                     min = 2020,
                                                     max = 2100, sep = "",
-                                                    value = 2020, step=5, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                    value = 2020, step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
                                       selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                   choices = paramsets.fullnames, selected = paramsets.fullnames[1]
                                       ),
                                       selectInput("scenario", "Climate and socio-economic scenario",
                                                   scenario.names[], selected = scenario.names[1]
                                       ),
-                                      selectInput("foodprice", "Food price",
-                                                  foodprice.names, selected = foodprice.names[1]
+                                      # selectInput("foodprice", "Food price",
+                                      #             foodprice.names[1], selected = foodprice.names[1]
+                                      # ),
+                                      # 
+                                      #   selectInput("fooddemand", "Meat demand (applies to Baseline)", 
+                                      #             fooddemand.names[1], selected = fooddemand.names[1]
+                                      # ),
+                                      
+                                      radioButtons("outputGroup", "Print layer",
+                                                    c("Output"="print_out", "Input"="print_in")
                                       ),
-                                      selectInput("fooddemand", "Meat demand (applies to Baseline)",
-                                                  fooddemand.names, selected = fooddemand.names[1]
-                                      ),
+                                      # actionButton(inputId = "REFRESH", label = "Refresh map")
+                                      # ,
                                       fluidPage(br(), h4("Map customisation"))
-                                      , selectInput("outputlayer", "Model Output",
+                                      , selectInput("outputlayer", "Model Output", 
                                                     indicator.names[c(28, 1:13)], selected=indicator.names[28]
                                       )                                  
                                       , selectInput("inputlayer", "Model Input",
                                                     indicator.names[14:27], selected=indicator.names[27]
                                       ),
                                       
-                                      selectInput("background", "Background tiles", choices =
+                                      selectInput("background", "Basemap", choices =
                                                     provider_names, selected=providers$OpenStreetMap.Mapnik
                                       )
                                       , htmlOutput("ReferenceToScenarios")
                                       
-                                      # , actionLink("deleteCache", "Delete cached files")
+                                      # , actionButton(inputId = "deleteCache", label = "Delete cached files")
                                       
                          ),
                          # 
@@ -216,12 +224,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
 
                                               # Map view options
                                      )
-                                     ,
-                                     tabPanel("Statistics",
-                                              # Time series info
-                                              plotOutput("Tab1_StatisticsPane")
-                                              # Map view options
-                                     )
+                                     # ,
+                                     # tabPanel("Statistics",
+                                     #          # Time series info
+                                     #          plotOutput("Tab1_StatisticsPane")
+                                     #          # Map view options
+                                     # )
                                    )))
            )
            , tabPanel("Time-series",
@@ -235,12 +243,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    selectInput("scenario_ts", "Climate and socio-economic scenario",
                                                scenario.names[], selected = scenario.names[1]
                                    )
-                                   , selectInput("foodprice_ts", "Food price",
-                                                 foodprice.names, selected = foodprice.names[1]
-                                   )
-                                   , selectInput("fooddemand_ts", "Food demand",
-                                                 fooddemand.names, selected = fooddemand.names[1]
-                                   )
+                                   # , selectInput("foodprice_ts", "Food price",
+                                   #               foodprice.names, selected = foodprice.names[1]
+                                   # )
+                                   # , selectInput("fooddemand_ts", "Food demand",
+                                   #               fooddemand.names, selected = fooddemand.names[1]
+                                   # )
                                    # ,
                                    # selectInput("inputlayer_ts", "Model Input",
                                    #             indicator.names[8:14], selected=indicator.names[9]
