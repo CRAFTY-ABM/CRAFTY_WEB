@@ -1,0 +1,18 @@
+,Name,Description,Group,Type
+1,AF,Agroforestry,,Extensive
+2,Bioenergy,Bioenergy,,Intensive
+3,EA,Extensive Agriculture,,Extensive
+4,EP,Extensive Pastoral,,Extensive
+5,IAfodder,Intensive Agriculture Fodder,Intensive Agriculture,Intensive
+6,IAfood,Intensive Agriculture Food,Intensive Agriculture,Intensive
+7,IP,Intensive Pastoral,,Intensive
+8,MW,Mixed woodland,Productive Woodland,Extensive
+9,NWCons,Natural woodland Conservation,,Extensive
+10,PNB,Productive N Broadleaf,Productive Woodland,Extensive
+11,PNC,Productive N Conifer,Productive Woodland,Extensive
+12,PNNB,Productive NN Broadleaf,Productive Woodland,Extensive
+13,PNNC,Productive NN Conifer,Productive Woodland,Extensive
+14,SusAr,Sustainable Agriculture,,Extensive
+15,VEP,Very Extensive Pastoral,,Extensive
+16,Urban,Urban,,Urban
+17,NOT_ASSIGNED,Unmanaged,,Extensive

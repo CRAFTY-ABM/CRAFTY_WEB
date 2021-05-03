@@ -11,7 +11,7 @@ seedid = "99"
 # number of threads to process raster
 n_thread = 4
 
-
+region_names = c("England", "Scotland", "Wales")
 # 
 location_UK = "Local"
 
@@ -22,7 +22,7 @@ path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 
 # data version
-data_prefix = "18Apr2021/"
+data_prefix = "1May2021/"
 
 # absolute path (for local)
 path_data_local = paste0(path_localstorage, data_prefix)
@@ -37,7 +37,7 @@ path_rastercache = paste0(path_shinywd, "/rastertmp/")
 # dummy name
 default_fname = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
 
-getFname = function(foodprice, paramset, scenario, fooddemand, year ) { 
+getFname = function( paramset, scenario, fooddemand, year ) { 
   
   # fs::path_expand(paste0( fooddemand, "/" ,foodprice,"/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
   fs::path_expand(paste0( "Normal/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
@@ -83,20 +83,20 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 
 
 # Scenarios (total 8)
-scenario.names = c("Baseline"
-                   , "Baseline-SSP1", "Baseline-SSP2", "Baseline-SSP4", "Baseline-SSP5"
+scenario_names = c("Baseline"
+                   , "Baseline-SSP1", "Baseline-SSP2", "Baseline-SSP3", "Baseline-SSP4", "Baseline-SSP5"
                    , "RCP4_5-SSP2", "RCP4_5-SSP4"
                    # "RCP8_5-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
-foodprice.names = c("") # c("Normal", "Increased", "Decreased")  # 50%
-# fooddemand.names = c("Normal", "LowMeatDemand")
-fooddemand.names = c("Normal")#, "IncFoodDemand", "DecFoodDemand")
+foodprice_names = c("") # c("Normal", "Increased", "Decreased")  # 50%
+# fooddemand_names = c("Normal", "LowMeatDemand")
+fooddemand_names = c("Normal")#, "IncFoodDemand", "DecFoodDemand")
 
 
-paramsets.fullnames = c("Behavioural baseline", "Thresholds") # , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
+paramsets_fullnames = c("Behavioural baseline", "Thresholds") # , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
 
-n.paramset = length(paramsets.fullnames)
+n_paramset = length(paramsets_fullnames)
 # paramsets = paste0("Paramset", 1:n.paramset)
 paramsets =  c("BehaviouralBaseline", "Thresholds")
 
@@ -128,11 +128,10 @@ capitalNames = capital_tb$Name
 
 # Tick,X,Y,Service:Food.crops,Service:Fodder.crops,Service:GF.redMeat,Service:Fuel,Service:Softwood,Service:Hardwood,Service:Biodiversity,Service:Carbon,Service:Recreation,Service:Flood.reg,Service:Employment,Service:Ldiversity,Service:GF.milk,Capital:Human,Capital:Social,Capital:Manufactured,Capital:Financial,Capital:Arable.suit,Capital:Igrass.suit,Capital:SNGrass.suit,Capital:Bioenergy.suit,Capital:AgroForestry.suit,Capital:NNConifer.suit,Capital:NConifer.suit,Capital:NNBroadleaf.suit,Capital:Nbroadleaf.suit,Capital:Tree.suit,LandUseIndex,Agent
 
+indicator_names = c(paste0("Service:", serviceNames), paste0("Capital:", capitalNames), "LandUseIndex") #, "Agent")
+indicator_names_dot = c(paste0("Service.", serviceNames), paste0("Capital.", capitalNames), "LandUseIndex") #, "Agent")
 
-indicator.names = c(paste0("Service:", serviceNames), paste0("Capital:", capitalNames), "LandUseIndex") #, "Agent")
 
-
-indicators_categorical = indicator.names[c(28)]
 
 
 
@@ -156,7 +155,7 @@ capital_colours =  (c("Ext_AF" = "yellowgreen", "IA"  = "yellow1", "Int_AF" =  "
 
 
 
- 
+
 
 
 aftnames = data.frame(rbind(c("AF", "Agroforestry", "Agroforestry"),
@@ -181,13 +180,13 @@ aftnames = data.frame(rbind(c("AF", "Agroforestry", "Agroforestry"),
 colnames(aftnames) = c("AFT", "AFT_cb", "Description")
 
 
-aft.shortnames.fromzero = as.character(aftnames$AFT)
-aft.shortnames.fromzero[17] = "Unmanaged"
+aft_shortnames_fromzero = as.character(aftnames$AFT)
+aft_shortnames_fromzero[17] = "Unmanaged"
 
-aft.names.fromzero =  as.character(aftnames$Description)
+aft_names_fromzero =  as.character(aftnames$Description)
 
 
-n_aft = length(aft.shortnames.fromzero)
+n_aft = length(aft_shortnames_fromzero)
 
 capital_names = data.frame(Capital = c("Human", 
                                        "Social", 
@@ -213,12 +212,15 @@ aft_tb[aft_tb$Name == "Lazy FR", ]$Name = "Unmanaged"
 
 
 
-aft_colors_alpha = aft_tb$Color[match( aft.shortnames.fromzero, aft_tb$Name)]
+aft_colors_alpha = aft_tb$Color[match( aft_shortnames_fromzero, aft_tb$Name)]
 
 aft_colors_fromzero = col2hex(paste0("#", substr(aft_colors_alpha, start = 4, stop = 10), substr(aft_colors_alpha, start = 2, stop = 3))) # ignore alpha channel
 
+# 17 colours
+aft_colors_fromzero_17 = aft_colors_fromzero
 
-aft_colors_fromzero[aft.shortnames.fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
+# reduced colours
+aft_colors_fromzero[aft_shortnames_fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
 
 
 target_years_aggcsv = seq(2020, 2100, 10)
@@ -233,13 +235,21 @@ aft_lty_ts = c(rep(1, 16), 2)
 n_cell_total = nrow(uk_coords)
 
 
-aft.pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
+aft_pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
 
 # aft.pal(6)
 
 
+# reduced
+aft_group_colors =  aft_colors_fromzero_17[ c(1:5, 7:9, 14:17)]
+aft_group_colors[7] = "darkblue"
 
-
+aft_group_names = c( aft_names_fromzero)[ c(1:5, 7:9, 14:17)]
+aft_group_names[5] = "Intensive Agriculture"
+aft_group_names[7] = "Productive Woodland"
+aft_group_shortnames = c( aft_shortnames_fromzero  )[ c(1:5, 7:9, 14:17)]
+aft_group_shortnames[5] = "IA"
+aft_group_shortnames[7] = "PW"
 
 #### 
 

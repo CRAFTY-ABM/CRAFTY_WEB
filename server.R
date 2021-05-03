@@ -4,7 +4,6 @@
 
 
 library(shiny)
-source("RScripts/Data_UK.R")
 source("RScripts/Functions_CRAFTY_WEB.R")
 
 accessDropbox()
@@ -33,14 +32,14 @@ shinyServer(function(input, output, session) {
   # 
   
   runinfo <- reactive({
-    p.idx = which(input$paramset_full == paramsets.fullnames)
+    p.idx = which(input$paramset_full == paramsets_fullnames)
     
     paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", input$paramset_full, " parameters and ",  input$scenario, " climate scenario." )
   })
   
   
   runinfo_ts <- reactive({
-    p.idx = which(input$paramset_full_ts == paramsets.fullnames)
+    p.idx = which(input$paramset_full_ts == paramsets_fullnames)
     
     paste0("Simulation with the ", input$paramset_full_ts, " parameters and ",  input$scenario_ts, " climate scenario." )
   })
@@ -67,7 +66,7 @@ shinyServer(function(input, output, session) {
   
   
   output$ReferenceToParameters <- renderText({
-    "<br/>Behavioural parameter set 1 is the default from which main results are derived; in this setup agents respond directly to benefit values with no additional individual or typological behaviour. In parameter set 2, giving-up and giving-in thresholds are altered to introduce abandonmentof land when benefit values fall below the giving-up threshold value, and resistance to change unless a competing land use has an additional benefit value of at least the giving-in threshold. Intensive land use agents are parameterised to be less tolerantof low benefit values, and more willing to switch to a land use with higher benefit values. In parameter set 3, individual agents differ from one another in terms of their abilities to produce different ecosystem services, and their giving-up and giving-in thresholds. Parameter sets 4 and 5 replicate parameter sets 2 and 3 respectively, but with larger values for thresholds and variations.<p/>
+    "<br/>Behavioural parameter set 1 is the default from which main results are derived; in this setup agents respond directly to benefit values with no additional individual or typological behaviour. In parameter set 2, giving-up and giving-in thresholds are altered to introduce abandonment of land when benefit values fall below the giving-up threshold value, and resistance to change unless a competing land use has an additional benefit value of at least the giving-in threshold. Intensive land use agents are parameterised to be less tolerantof low benefit values, and more willing to switch to a land use with higher benefit values. <p/>
 
 Please refer to the following paper to understand the behavioural model used in CRAFTY:
 
@@ -78,7 +77,7 @@ Please refer to the following paper to understand the behavioural model used in 
 Please see the further details of the parameters in Table A4 of the following paper: <p/>
 <i>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics, (accepted), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a>"
   })
-  
+  # In parameter set 3, individual agents differ from one another in terms of their abilities to produce different ecosystem services, and their giving-up and giving-in thresholds. Parameter sets 4 and 5 replicate parameter sets 2 and 3 respectively, but with larger values for thresholds and variations.
   
   
   output$ReferenceToAFT <- renderText({
@@ -96,17 +95,13 @@ Please see the further details of the parameters in Table A4 of the following pa
   rnew_input <- reactive({
     print("rnew_input called")
     
-    # runid = which(scenario.names == input$scenario) - 1
-    runid = 0
-    
-    p.idx = which(input$paramset_full == paramsets.fullnames)
-    
-    fname_changed = getFname(input$foodprice, paramsets[p.idx], input$scenario, input$fooddemand, input$year)
     
     
+    p.idx = which(input$paramset_full == paramsets_fullnames)
     
-    indicator_idx = which (input$inputlayer == indicator.names)
-    r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_WEB, location = location_UK)
+    fname_changed = getFname(  paramsets[p.idx], input$scenario, input$fooddemand, input$year)
+    
+    r_changed = getRaster(fname_changed, band.name = input$inputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   } )
@@ -128,8 +123,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   # Combine the selected variables into a new data frame
   # selectedData <- reactive({
   #   
-  #   runid = which(scenario.names == input$scenario) - 1 
-  #   p.idx = which(input$paramset_full == paramsets.fullnames)
+  #   p.idx = which(input$paramset_full == paramsets_fullnames)
   #   
   #   fname_changed =  paste0("Data/",  input$foodprice, "/", paramsets[p.idx], "/",  input$scenario, "/", input$fooddemand, "/",  input$scenario, "-",runid, "-99-UK-Cell-", input$year, ".csv")
   #   spdf_changed = getSPDF_UK(fname_changed)
@@ -146,8 +140,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     target_data = rnew()
     
-    # runid = which(scenario.names == input$scenario) - 1
-    # p.idx = which(input$paramset_full == paramsets.fullnames)
+    # runid = which(scenario_names == input$scenario) - 1
+    # p.idx = which(input$paramset_full == paramsets_fullnames)
     #
     # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
     # spdf_changed = getSPDF(fname_changed)
@@ -170,19 +164,55 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   
+  output$Tab1_AFTTablePane <- renderDataTable(
+    {
+      print("draw AFT pane")
+      
+      
+      # p.idx = which(input$paramset_full == paramsets_fullnames)
+      # 
+      # # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
+      # foldername_tmp = paste0("Tables/agents/", paramsets[p.idx], "/", input$scenario)
+      # 
+      # aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
+      # 
+      # aftparams_df = data.frame(aftparams_df)
+      # aftparams_df$productionCsvFile = NULL
+      # p_name = paste0("Tables/Paramset", p.idx, ".csv")
+      # 
+      
+      AFT_tb = read.csv("Tables/AFT_Names_UK.csv")
+      # 
+      
+      # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
+      
+      # spdf_changed = getSPDF(fname_changed)
+      # target_val = spdf_changed[4:22]
+      # 
+      # str(getValues(target_data))
+      # tb1 =     table(getValues(target_data))
+      # print(tb1)
+      
+      DT::datatable(AFT_tb[,c("Name", "Description", "Group", "Type")], options= list(paging = FALSE),  editable = F) 
+      # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
+      # %>% formatStyle(
+      #   'Name',
+      #   backgroundColor =  aft_colors_fromzero_17
+      # )
+    })
+  
   output$Tab1_BehaviouralTablePane <- renderDataTable(
     {
       print("draw behavioural pane")
       
       
-      # runid = which(scenario.names == input$scenario) - 1
-      runid=0
-      p.idx = which(input$paramset_full == paramsets.fullnames)
+      
+      p.idx = which(input$paramset_full == paramsets_fullnames)
       
       # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
       foldername_tmp = paste0("Tables/agents/", paramsets[p.idx], "/", input$scenario)
       
-      aftparams_df = sapply(aft.shortnames.fromzero[-17], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
+      aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
       
       aftparams_df = data.frame(aftparams_df)
       aftparams_df$productionCsvFile = NULL
@@ -200,9 +230,31 @@ Please see the further details of the parameters in Table A4 of the following pa
       # tb1 =     table(getValues(target_data))
       # print(tb1)
       
-      DT::datatable(aftparams_df, options= list(paging = FALSE),  editable = F )
+      DT::datatable(aftparams_df, options= list(paging = FALSE),  editable = F) 
+      # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
     })
   
+  output$Tab1_ProductionTablePane <- renderDataTable(
+    {
+      print("draw production pane")
+      
+      p.idx = which(input$paramset_full == paramsets_fullnames)
+      
+      foldername_tmp = ("Tables/production/Baseline")
+      foldername_tmp = paste0("Tables/production/", input$scenario)
+      
+      productionparams_l = lapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/", x, ".csv"))) 
+      
+      a_idx = 1 
+      x = productionparams_l[[a_idx]]
+      
+      
+      
+      
+      colnames(x)[1] = "Service"
+      DT::datatable(x, options= list(paging = F),  editable = F, rownames = F, caption = aft_names_fromzero[a_idx]) 
+      # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
+    })
   
   
   # observe({
@@ -213,26 +265,83 @@ Please see the further details of the parameters in Table A4 of the following pa
   #   
   # })
   
-  output$Tab2_TimeseriesPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
+  output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
     print("draw timeseries pane")
     
-    runid = 0 # which(scenario.names == input$scenario_ts ) - 1
-    # csvname_changed = "Data/Paramset1/Baseline/Baseline-0-99-EU-AggregateServiceDemand.csv"
-    
-    p.idx = which(input$paramset_full_ts == paramsets.fullnames)
+    p.idx = which(input$paramset_full_ts == paramsets_fullnames)
     
     
-    aft_csvname_changed = fs::path_expand(paste0("Normal/", paramsets[p.idx], "/", input$scenario_ts, "/",  input$scenario_ts, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+    # scenario_tmp = "Baseline-SSP3"
+    # scenario_tmp = "RCP4_5-SSP4"
+    scenario_tmp = "Baseline"
+    # 
+    paramset_tmp = "BehaviouralBaseline"
     
-    aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
+    paramset_tmp = paramsets[p.idx]
+    scenario_tmp = input$scenario_ts
+    # File names
+    
+    
+    if (!str_detect(scenario_tmp, "SSP3")) {
+      # aft composition
+      aft_csvname_changed = fs::path_expand(paste0("Normal/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+      
+      # supply and demand files
+      demand_csvname_changed = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
+      
+      aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
+      demand_dt = getCSV(demand_csvname_changed, location = location_UK)
+      
+    } else { 
+      
+      # aft composition
+      aft_csvname_changed_v = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
+      
+      aftcomp_dt_l = lapply(aft_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
+      
+      aftcomp_dt = cbind(aftcomp_dt_l[[1]][,c("Tick", "Region")],  Reduce("+", lapply(aftcomp_dt_l, FUN = function(x) x[,-c(1:2)])))
+      
+      
+      
+      # supply and demand files
+      demand_csvname_changed_v = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
+      demand_dt_l = lapply(demand_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
+      
+      rem_col_idx = match(c("Tick", "Region"), colnames(demand_dt_l[[1]]))
+      
+      demand_dt = cbind(Tick = demand_dt_l[[1]][,c("Tick")],  Reduce("+", lapply(demand_dt_l, FUN = function(x) x[,-rem_col_idx ])))
+      
+      
+    }
+    
+    
+    
+    # mean capital level
+    capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
+    
+    # read csv files
+    
+    
+    
+
+    # reclassify
+    aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
+    aftcomp_dt[,"AFT.IAfodder"] = NULL
+    
+    aftcomp_dt[,"AFT.MW"] = aftcomp_dt[,"AFT.PNB"] + aftcomp_dt[,"AFT.PNC"] + aftcomp_dt[,"AFT.PNNB"] + aftcomp_dt[,"AFT.PNNC"]
+    aftcomp_dt[, c("AFT.PNB", "AFT.PNC","AFT.PNNB","AFT.PNNC")] = NULL
+    
+    colnames(aftcomp_dt)[  colnames(aftcomp_dt) == "AFT.IAfood"] = "AFT.IA"
+    colnames(aftcomp_dt)[  colnames(aftcomp_dt) == "AFT.MW"] = "AFT.PW"
+    
+    
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
+    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
     
     
-    
-    demand_csvname_changed = fs::path_expand(paste0("Normal/", paramsets[p.idx], "/", input$scenario_ts, "/"  , input$scenario_ts, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
-    
-    demand_dt = getCSV(demand_csvname_changed, location = location_UK)
+    # process csv files
     demand_m = t(as.matrix(sapply(demand_dt[, -c(ncol(demand_dt) - 1:0)] , FUN = function(x) as.numeric(as.character(x)))))
+    
     
     str(demand_m)
     ncold = nrow(demand_m)
@@ -246,9 +355,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     # # ggplot(aftcomp_dt)
     
     
-    LEGEND_MAR = -0.4
-    LEGEND_CEX = 1
-    par(mfrow=c(3,2), mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,9.5), oma=c(1,1,1,1))
+    
+    
+    par(mfrow=c(3,2), mar = c(5.1, 5.1, 2, 0)  + c(0,0,0,10), oma=c(0,0,0,0))
     
     # par(mfrow=c(4,2), xpd = T, mar = par()$mar + c(0,0,0,7))
     # par( mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,8))
@@ -266,13 +375,13 @@ Please see the further details of the parameters in Table A4 of the following pa
     # str(aftcomp_perc_m)
     
     
-    plot(aftcomp_dt$Tick, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="Proportion (%)", col = aft_colors_fromzero_ts[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT composition changes", xaxt="n", lty= aft_lty_ts)
+    plot(aftcomp_dt$Tick, aftcomp_perc_m[1,], type="l", xlab= "Year", ylab="Proportion (%)", col = aft_group_colors[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT composition changes", xaxt="n", lty= aft_lty_ts)
     axis(side=1, at = target_years_other, labels = target_years_other)
     
     for (a.idx in 2:nrow(aftcomp_perc_m)) {
-      lines(aftcomp_dt$Tick, aftcomp_perc_m[a.idx,], col = aft_colors_fromzero_ts[a.idx], lty=aft_lty_ts[a.idx])
+      lines(aftcomp_dt$Tick, aftcomp_perc_m[a.idx,], col = aft_group_colors[a.idx], lty=aft_lty_ts[a.idx])
     }
-    legend("topright", aft.shortnames.fromzero, col = aft_colors_fromzero_ts, lty=aft_lty_ts, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=1.5)
+    legend("topright", aft_group_shortnames, col = aft_group_colors, lty=aft_lty_ts, cex=LEGEND_CEX, bty="n", xpd = TRUE, inset=c(LEGEND_MAR,0), lwd=1.5)
     
     
     # par( mar = c(5.1, 4.1, 4, 1)  + c(0,0,0,8))
@@ -395,12 +504,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     ########## Mean capital levels
     
-    # capital_csvname_changed = "Baseline-0-99-UK-AggregateCapital.csv"
-    capital_csvname_changed = "RCP4_5-SSP2-0-99-UK-AggregateCapital.csv"
-    capital_csvname_changed = fs::path_expand(paste0(input$scenario_ts, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
-    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
     
-    str(capital_scene_tmp)
+    
+    # str(capital_scene_tmp)
     if (nrow(capital_scene_tmp) > 1) { 
       capital_scene_tmp[,-1] = sapply(1:length(baseline_capital_tmp[-1]), FUN = function(x) capital_scene_tmp[,x+1] /  baseline_capital_tmp[x+1])
       
@@ -416,10 +522,12 @@ Please see the further details of the parameters in Table A4 of the following pa
       abline(h = 0, lty=2)
       
       for (a.idx in c(3:ncol(capital_scene_tmp))) {
-        lines(capital_scene_tmp$Tick, capital_scene_tmp[,a.idx] * 100,   col = capital_colours[a.idx])
+        lines(capital_scene_tmp$Tick, capital_scene_tmp[,a.idx] * 100,   col = capital_colours[a.idx-1])
       }
       
       legend("topright", legend = capital_names$Capital[], col=capital_colours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
+      
+      
     } else {   # baseline 
       capital_scene_tmp$X = 2020
       colnames(capital_scene_tmp) = c("Tick", capital_names$Capital)
@@ -446,159 +554,114 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
-  # output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
-  #   
-  #   
-  #   runid_from = which(scenario.names == input$scenario_from ) - 1 
-  #   runid_to = which(scenario.names == input$scenario_to ) - 1 
-  #   
-  #   p_from.idx = which(input$paramset_full_from == paramsets.fullnames)
-  #   p_to.idx = which(input$paramset_full_to  == paramsets.fullnames)
-  #   
-  #   indicator_trans_idx = which (input$outputlayer_transition == indicator.names)
-  #   # indicator_trans_idx = 20
-  #   # fname_from =  paste0("Data/", paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-  #   # fname_to =  paste0("Data/", paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
-  #   
-  #   
-  #   # if (input$food != "Normal") { 
-  #   fname_from =  paste0("Data/", input$foodprice_from, "/",  input$fooddemand_from, "/",paramsets[p_from.idx], "/", input$scenario_from  , "/", input$scenario_from  , "-",runid_from, "-99-EU-Cell-", input$year_from, ".csv")
-  #   fname_to =  paste0("Data/", input$foodprice_to, "/",  input$fooddemand_to, "/",paramsets[p_to.idx], "/", input$scenario_to  , "/", input$scenario_to   , "-",runid_to, "-99-EU-Cell-", input$year_to, ".csv")
-  #   
-  #   # }
-  #   
-  #   
-  #   # demand.colors = rich.colors(7)
-  #   # # library(ggplot2)
-  #   # # ggplot(aftcomp_dt)
-  #   
-  #   par(mfrow=c(1,1), mar = c(5.1, 4.1, 4, 1))
-  #   
-  #   # plot(target_years_aggcsv, aftcomp_perc_m[1,], type="l", ylab="%", col = aft.colors.fromzero[1], ylim=c(0, max(aftcomp_perc_m, na.rm = T) * 1.1), main = "AFT (17) composition changes")
-  #   # 
-  #   # for (a.idx in 2:8) { 
-  #   #   lines(target_years_aggcsv, aftcomp_perc_m[a.idx,],   col = aft.colors.fromzero[a.idx])
-  #   # }
-  #   # legend("topright", aft.shortnames.fromzero, col = aft.colors.fromzero, lty=1, cex=0.7, bty="n")
-  #   # 
-  #   
-  #   
-  #   #### Transsition matrix 
-  #   # @todo simply the processing by eliminating raster processing.. 
-  #   # spdf.from = getSPDF(fname_from)
-  #   # rs.from.LL <- stack(spdf.from)[[4:22]]
-  #   # print(rs.from.LL)
-  #   
-  #   
-  #   rs.from.LL = getRaster(fname_from, indicator_trans_idx)
-  #   
-  #   print(indicator_trans_idx)
-  #   r.from = projectRaster(rs.from.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
-  #   
-  #   # spdf.to = getSPDF(fname_to)
-  #   # rs.to.LL <- stack(spdf.to)[[4:22]]
-  #   
-  #   rs.to.LL = getRaster(fname_to, indicator_trans_idx)
-  #   
-  #   r.to = projectRaster(rs.to.LL[[1]], crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 2.5E4)
-  #   
-  #   
-  #   aft.old = getValues(r.from)
-  #   aft.new = getValues(r.to)
-  #   
-  #   aft.tr.df = cbind(aft.old, aft.new)
-  #   
-  #   aft.tr.df = aft.tr.df[!is.na(rowSums(aft.tr.df)),]
-  #   aft.tr.df = data.frame(cbind(1:nrow(aft.tr.df), aft.tr.df))
-  #   colnames(aft.tr.df)[1] = "rowid"
-  #   # Create the transition matrix that 
-  #   # is the basis for the transition plot
-  #   
-  #   # print( table(aft.old))
-  #   # print(table(aft.new))
-  #   
-  #   aft_tb_oldandnew = table(aft.old, aft.new)
-  #   
-  #   # non rectangular tables.. 
-  #   if (dim(aft_tb_oldandnew)[1] != dim(aft_tb_oldandnew)[2]) {
-  #     # if (nrow(aft_tb_oldandnew)!= nrow(aft_tb_oldandnew)){
-  #     # print(aft_tb_oldandnew)
-  #     print(dim(aft_tb_oldandnew)) 
-  #     
-  #     if (dim(aft_tb_oldandnew)[1] > dim(aft_tb_oldandnew)[2]) {
-  #       
-  #       missing_class = setdiff(rownames(aft_tb_oldandnew), colnames(aft_tb_oldandnew))
-  #       
-  #       aft_tb_oldandnew= cbind(rep(0, nrow(aft_tb_oldandnew)), aft_tb_oldandnew)
-  #       
-  #       
-  #       colnames(aft_tb_oldandnew)[1] = missing_class
-  #       
-  #     } else {
-  #       
-  #       missing_class = setdiff(colnames(aft_tb_oldandnew), rownames(aft_tb_oldandnew))
-  #       
-  #       aft_tb_oldandnew= rbind(rep(0, ncol(aft_tb_oldandnew)), aft_tb_oldandnew)
-  #       
-  #       
-  #       rownames(aft_tb_oldandnew)[1] = missing_class
-  #     }
-  #     
-  #   }
-  #   
-  #   trn_mtrx <- with(aft.tr.df, aft_tb_oldandnew)
-  #   # str(aft_tb_oldandnew)
-  #   
-  #   if (nrow(aft_tb_oldandnew)> 17 ) { 
-  #     tr.colors = c("grey30", aft.colors.fromzero)
-  #     tr_names = c("LazyFR", aft.names.fromzero)
-  #   } else if (nrow(aft_tb_oldandnew)== 17){
-  #     tr.colors =  aft.colors.fromzero 
-  #     tr_names = c( aft.names.fromzero)
-  #     
-  #   } else {
-  #     tr.colors =  aft.colors.8classes  
-  #     tr_names = c(aft.names.8classes)
-  #     
-  #   }
-  #   
-  #   
-  #   aft_old_prop = paste0( round(table(aft.old) / sum(aft.old, na.rm = T) * 100, 2  ), "%")
-  #   aft.new_prop = paste0(round(table(aft.new) / sum(aft.new, na.rm = T)* 100, 2   ), "%")
-  #   
-  #   
-  #   
-  #   # Setup proportions
-  #   box_prop <- cbind(aft_old_prop, aft.new_prop)
-  #   # str(box_prop)
-  #   par(mfrow=c(2,1))
-  #   plot.new()
-  #   
-  #   transitionPlot(trn_mtrx,new_page=T,   fill_start_box =  tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop,  overlap_add_width = 1, tot_spacing = 0.07, box_label = c(input$year_from, input$year_to)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
-  #   
-  #   plot.new()
-  #   
-  #   
-  #   legend("center", tr_names, col = tr.colors, pch=15, cex=1)
-  #   
-  #   # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
-  #   # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft.colors.8classes, main = "AFT composition", names= target_years_aggcsv)
-  #   # 
-  #   # plot(target_years_aggcsv, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft.colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
-  #   # 
-  #   # for (a.idx in 2:8) { 
-  #   #   lines(target_years_aggcsv, aftcomp_8classes_perc_m[a.idx,],   col = aft.colors.8classes[a.idx])
-  #   # }
-  #   # legend("topright", aft.fullnames.8classes, col = aft.colors.8classes, lty=1, cex=0.7, bty="n")
-  #   # 
-  #   # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
-  #   # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
-  #   # 
-  #   # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
-  #   # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
-  #   
-  #   
-  # })
+  output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
+    
+    
+    p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
+    p_to.idx = which(input$paramset_full_to  == paramsets_fullnames)
+    
+    fname_from = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
+    fname_to = "Normal/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv"
+    
+    fname_from =  getFname(paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
+    fname_to   =  getFname(paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
+    
+    
+    #### Transition matrix
+ 
+    csv_from = getCSV(fname_from, location = location_UK)
+    csv_to = getCSV(fname_to, location = location_UK)
+    
+    # already 1 km grid in projected space (for the UK model)
+    aft_old = csv_from$LandUseIndex
+    aft_new = csv_to$LandUseIndex
+    
+    
+    # deal with -1 
+    aft_old[aft_old==-1] = 16
+    aft_new[aft_new==-1] = 16 
+    
+    # deal with zero
+    aft_old = aft_old + 1
+    aft_new = aft_new + 1
+    
+    # reclassify
+    aft_old[aft_old==6] = 5
+    aft_old[aft_old %in% c(8, 10:13)] = 8
+    
+    aft_new[aft_new==6] = 5
+    aft_new[aft_new %in% c(8, 10:13)] = 8
+    
+    
+
+     
+    
+    
+    aft_tr.df = cbind(aft_old, aft_new)
+    
+    aft_tr.df = aft_tr.df[!is.na(rowSums(aft_tr.df)),]
+    aft_tr.df = data.frame(cbind(1:nrow(aft_tr.df), aft_tr.df))
+    colnames(aft_tr.df)[1] = "rowid"
+    # Create the transition matrix that
+    # is the basis for the transition plot
+    
+    # print( table(aft_old))
+    # print(table(aft_new))
+    
+    
+    
+    aft_old_f = factor(aft_old, levels = c(1:5, 7:9, 14:17))
+    aft_new_f = factor(aft_new, levels = c(1:5, 7:9, 14:17))
+    
+    aft_tb_oldandnew = table(aft_old_f, aft_new_f)
+   
+    trn_mtrx <- with(aft_tr.df, aft_tb_oldandnew)
+    str(aft_tb_oldandnew)
+    
+    # reduce 
+    tr.colors =  aft_group_colors
+    tr_names =  aft_group_names
+    
+    
+    aft_old_tb = rowSums(trn_mtrx)
+    aft_new_tb = colSums(trn_mtrx)
+    
+     
+    aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 3  ), "%")
+    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T)* 100, 3   ), "%")
+    
+    
+    
+    # Setup proportions
+    box_prop <- cbind(aft_old_prop, aft_new_prop)
+    # str(box_prop)
+    # par(mfrow=c(1,1), mar = c(5.1, 4.1, 4, 1))
+    par(mfrow=c(1,1))
+    plot.new()
+    
+    transitionPlot(trn_mtrx,new_page=T, fill_start_box =  tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop, overlap_add_width = 1, tot_spacing = 0.07, min_lwd = unit(0.005, "mm"), max_lwd = unit(10, "mm"),  box_label = c(input$year_from, input$year_to),)
+     
+    
+    legend("center", tr_names, col = tr.colors, pch=15, cex=0.9)
+    
+    # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
+    # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft_colors.8classes, main = "AFT composition", names= target_years_aggcsv)
+    #
+    # plot(target_years_aggcsv, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft_colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
+    #
+    # for (a.idx in 2:8) {
+    #   lines(target_years_aggcsv, aftcomp_8classes_perc_m[a.idx,],   col = aft_colors.8classes[a.idx])
+    # }
+    # legend("topright", aft_fullnames_8classes, col = aft_colors.8classes, lty=1, cex=0.7, bty="n")
+    #
+    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
+    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
+    #
+    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
+    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
+    
+    
+  })
   
   # output$Tab1_MapPane <- renderLeaflet({
   #   r_dummy  = raster(extent(r.default))
@@ -613,9 +676,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   #     ) %>%
   #     # %>%
   #     # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-  #     addRasterImage(r_dummy, project = FALSE, group="OutputLayer") # , colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
-  #   #  addLegend( pal = aft.pal, values = 1:17, labels = aft.names.fromzero, title = "AFT")
-  #   # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
+  #     addRasterImage(r_dummy, project = FALSE, group="OutputLayer") # , colors = aft_pal, maxBytes = 4 * 1024 * 1024) %>%
+  #   #  addLegend( pal = aft_pal, values = 1:17, labels = aft_names_fromzero, title = "AFT")
+  #   # addLegend(colors = col2hex(as.character(aft_colors.fromzero)), labels = aft_names_fromzero, title = indicator_names[17])
   #   #%>%
   #   # addMarkers(data = points())
   # })
@@ -631,9 +694,9 @@ Please see the further details of the parameters in Table A4 of the following pa
       ) %>%   
       fitBounds(ext[1], ext[3], ext[2], ext[4] )
     # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-    # addRasterImage(r_dummy, project = FALSE, group="OutputLayer", opacity=0, colors = aft.pal, maxBytes = 4 * 1024 * 1024) %>%
-    # addLegend(pal = aft.pal, values = 1:n_aft, labels = aft.names.fromzero, title = "AFT")
-    # addLegend(colors = col2hex(as.character(aft.colors.fromzero)), labels = aft.names.fromzero, title = indicator.names[17])
+    # addRasterImage(r_dummy, project = FALSE, group="OutputLayer", opacity=0, colors = aft_pal, maxBytes = 4 * 1024 * 1024) %>%
+    # addLegend(pal = aft_pal, values = 1:n_aft, labels = aft_names_fromzero, title = "AFT")
+    # addLegend(colors = col2hex(as.character(aft_colors.fromzero)), labels = aft_names_fromzero, title = indicator_names[17])
     #%>%
     # addMarkers(data = points())
   })
@@ -655,7 +718,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   observe({
     print("redraw output layer")
     dt = rnew()
-    # print(which (input$indicator == indicator.names))
+    # print(which (input$indicator == indicator_names))
     
     proxy <- leafletProxy("Tab1_MapPane", data =dt)
     proxy %>% clearImages() %>% clearControls()
@@ -680,13 +743,13 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       # Add output layer
       
-      if (input$outputlayer == indicator.names[28]) {  # land use index
+      if (input$outputlayer == "LandUseIndex") {  # land use index
         
-        proxy %>% addRasterImage(dt, project = FALSE, colors = aft.pal, group = "ModelResult"
+        proxy %>% addRasterImage(dt, project = FALSE, colors = aft_pal, group = "ModelResult"
                                  , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
         if (input$legend) {
           
-          proxy %>% addLegend(colors = col2hex(as.character(aft_colors_fromzero)), labels = aft.shortnames.fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          proxy %>% addLegend(colors = col2hex(as.character(aft_colors_fromzero)), labels = aft_shortnames_fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
         }
       } else {
         dt.v = getValues(dt)
@@ -753,11 +816,11 @@ Please see the further details of the parameters in Table A4 of the following pa
   #   proxy %>% clearControls()
   #   
   #   if (input$legend) {
-  #     #proxy %>% addLegend(colors = col2hex(aft_colors_fromzero), labels = aft.names.fromzero, title = "AFT")
+  #     #proxy %>% addLegend(colors = col2hex(aft_colors_fromzero), labels = aft_names_fromzero, title = "AFT")
   #     
   #     if (input$outputlayer %in% c("LandUseIndex")) {
   #       proxy %>%
-  #         addLegend(colors = col2hex(aft_colors_fromzero), labels = aft.shortnames.fromzero, title = input$indicator)
+  #         addLegend(colors = col2hex(aft_colors_fromzero), labels = aft_shortnames_fromzero, title = input$indicator)
   #     } else {
   #       dt.v = getValues(dt)
   #       dt.rng = range(dt.v, na.rm = T)
@@ -774,22 +837,18 @@ Please see the further details of the parameters in Table A4 of the following pa
   # output$downloadData <- downloadHandler(
   #   
   #   filename = function() {
-  #     # runid = 0 
-  #     runid = which(scenario.names == input$scenario) - 1
   #     
-  #     indicator_idx = which (input$outputlayer == indicator.names)
-  #     p.idx = which(input$paramset_full == paramsets.fullnames)
+  #     indicator_idx = which (input$outputlayer == indicator_names)
+  #     p.idx = which(input$paramset_full == paramsets_fullnames)
   #     
   #     fname_changed =  paste0("CRAFTY-EU_", paramsets[p.idx], "_", input$scenario, "_", "FoodPrice_", input$foodprice, "_", "MeatDemand_", input$fooddemand, "_", input$year, "_", input$outputlayer, ".tif")
   #     
   #     # fname_changed      
   #   },
   #   content = function(file) {
-  #     # runid = 0 
   #     
-  #     runid = which(scenario.names == input$scenario) - 1
-  #     indicator_idx = which (input$outputlayer == indicator.names)
-  #     p.idx = which(input$paramset_full == paramsets.fullnames)
+  #     indicator_idx = which (input$outputlayer == indicator_names)
+  #     p.idx = which(input$paramset_full == paramsets_fullnames)
   #     
   #     # fname_changed =  paste0("Data/",paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
   #     
@@ -836,9 +895,8 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   # rnew <- reactive({
   #   
-  #   runid = which(scenario.names == input$scenario) - 1
-  #   # runid = 0
-  #   p.idx = which(input$paramset_full == paramsets.fullnames)
+  
+  #   p.idx = which(input$paramset_full == paramsets_fullnames)
   #   
   #   # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
   #   # if (input$food != "Normal") { 
@@ -853,7 +911,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   #   # print(indicator_idx)
   #   
   #   
-  #   indicator_idx = which (input$outputlayer == indicator.names)
+  #   indicator_idx = which (input$outputlayer == indicator_names)
   #   r_changed = getRaster(fname_changed, band.idx = indicator_idx)
   #   
   #   # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
@@ -869,14 +927,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     print("Rnew called")
     
     # input$background # touch
-    runid = 0 #  which(scenario.names == input$scenario) - 1
     
-    p.idx = which(input$paramset_full == paramsets.fullnames)
+    p.idx = which(input$paramset_full == paramsets_fullnames)
     
-    fname_changed =getFname(input$foodprice, paramsets[p.idx], input$scenario, input$fooddemand, input$year)   
+    fname_changed =getFname( paramsets[p.idx], input$scenario, input$fooddemand, input$year)   
     
-    indicator_idx = which (input$outputlayer == indicator.names)
-    r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_WEB, location = location_UK)
+    r_changed = getRaster(fname_changed, band.name = input$outputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   })
@@ -886,14 +942,13 @@ Please see the further details of the parameters in Table A4 of the following pa
   # rnew_UK_density <- reactive( {
   #   
   #   input$background_sn # touch
-  #   runid = which(scenario.names == input$scenario_sn) - 1
   #   
-  #   p.idx = which(input$paramset_sn == paramsets.fullnames)
+  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
   #   
   #   fname_changed = paste0("Data/", input$foodprice_sn, "/",  input$fooddemand_sn, "/", paramsets[p.idx], "/", input$scenario_sn, "/", input$scenario_sn, "-",runid, "-99-EU-Cell-", input$year_sn, ".csv")
   #   
   # 
-  #     indicator_idx = which ("Land Use (17 AFTs)" == indicator.names)
+  #     indicator_idx = which ("Land Use (17 AFTs)" == indicator_names)
   # 
   #   r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_SN)
   #   
@@ -912,10 +967,10 @@ Please see the further details of the parameters in Table A4 of the following pa
   #   
   #   dt = rnew_UK()
   #   dt_density = rnew_UK_density()
-  #   # print(which (input$indicator == indicator.names))
+  #   # print(which (input$indicator == indicator_names))
   #   
   #   proxy <- leafletProxy("TabUK_MapPane", data =rnew_UK())
-  #   p.idx = which(input$paramset_sn == paramsets.fullnames)
+  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
   #   
   #   
   #   # touches
@@ -933,7 +988,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   #   proxy %>% clearImages() %>% clearControls() 
   #   
   #   
-  #   aft_selected = match(values$type, aft.names.fromzero)
+  #   aft_selected = match(values$type, aft_names_fromzero)
   #   
   #   sp_1 = SpatialPoints(rasterToPoints(dt, fun=function(x){x==aft_selected}))
   #   proj4string(sp_1) = proj4string(dt)
@@ -1061,9 +1116,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   # })
   # 
   # output$PaneSNinfoGugi <- renderText({
-  #   p.idx = which(input$paramset_sn == paramsets.fullnames)
+  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
   #   
-  #   aft_selected = match(values$type, aft.names.fromzero)
+  #   aft_selected = match(values$type, aft_names_fromzero)
   #   gugi_info = aft_params_df_l[[p.idx]][aft_selected, ]
   #   gugi_info_txt = paste0(names(gugi_info), "=",  as.character(gugi_info), collapse = "  \t")
   #   paste0(  gugi_info_txt)# line break

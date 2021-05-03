@@ -8,6 +8,8 @@ library(raster)
 library(rgdal)
 library(rgeos)
 
+library(stringr)
+
 library(maptools)
 library(spatstat) # density map
 
@@ -34,6 +36,11 @@ MAINPANEL_WIDTH = 12 - SIDEBAR_WIDTH
 TRANSPARENCY_DEFAULT = 0.9 
 
 
+
+
+LEGEND_MAR = -0.4
+LEGEND_CEX = 1
+
 # Lon-Lat projection 
 proj4.LL <- CRS("+proj=longlat +datum=WGS84")
 
@@ -49,6 +56,9 @@ proj4.OSGB1936 ="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_
 # WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI
 proj4.spherical = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs" # EPSG:3857
 
+
+
+source("RScripts/Data_UK.R")
 
 r_dummy  = raster(extent(r_default))
 r_dummy = setValues(r_dummy, values = 0)
@@ -66,7 +76,7 @@ app_init <- function() {
   }
   
   # begin cluster for raster processing
-  endCluster()
+  # endCluster()
   beginCluster(n_thread)
 }
 
@@ -92,15 +102,15 @@ provider_names = c(
   "OpenStreetMap.Mapnik"
   , "OpenTopoMap"  
   , "Stamen.Terrain"
-  , "Thunderforest"      
+  # , "Thunderforest"      
   , "Esri.WorldImagery"             
   , "Esri.WorldPhysical"              
   , "Esri.NatGeoWorldMap" 
   # , "CartoDB"
-  , "NASAGIBS.ModisTerraTrueColorCR"
-  , "NASAGIBS.ModisTerraBands367CR"      
+  # , "NASAGIBS.ModisTerraTrueColorCR"
+  # , "NASAGIBS.ModisTerraBands367CR"      
   , "NASAGIBS.ViirsEarthAtNight2012"
-  , "Wikimedia"      
+  # , "Wikimedia"      
 )
 
 capital_csvname_baseline = "Baseline-0-99-UK-AggregateCapital.csv"
@@ -161,23 +171,34 @@ getCSV = function(filename_in, location = "Dropbox") {
 getSPDF_UK <- function(tmp_in_name, location = "Dropbox") {
   
   # Target outcome
-  # result.tmp <- read.csv(paste0( tmp_in_name))
-  result.tmp = getCSV(tmp_in_name, location)
+  # tmp_in_name = "~/Dropbox/KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/1May2021/Normal/BehaviouralBaseline/Baseline-SSP3/Baseline-SSP3-0-99-UK-Cell-2050.csv"
+  # result_raw <- read.csv(paste0( tmp_in_name))
   
+  result_raw = getCSV(tmp_in_name, location)
+  
+  result_joined = inner_join(uk_coords[, 3:4], result_raw, by = c("X_col" = "X", "Y_row" = "Y"))
+ 
+  result_tmp = result_joined[, indicator_names_dot]
+  
+   
   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-  result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = crs(proj4.OSGB1936)), data = data.frame(result.tmp[,-c(1:3)]))# , tolerance = 0.0011)
+  result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = crs(proj4.OSGB1936)), data = data.frame(result_tmp))# , tolerance = 0.0011)
   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
   return(result.spdf)
 }
 
 
 
-getRaster<- function(fname, band.idx, location = location_UK, resolution = RESOLUTION_WEB) {
+getRaster<- function(fname, band.name, location = location_UK, resolution = RESOLUTION_WEB, printPath=TRUE) {
+   
   
+  localtif_path = paste0(path_rastercache, fname, "_", band.name, ".tif")
+  band.name_dot = indicator_names_dot[match(band.name, indicator_names)]
+  print(band.name_dot)
   
-  localtif_path = paste0(path_rastercache, fname, "_", band.idx, ".tif")
-  
-  print(localtif_path)
+  if (printPath) { 
+    print(localtif_path)
+  }
   
   if(!file.exists(localtif_path)) {
     
@@ -186,27 +207,26 @@ getRaster<- function(fname, band.idx, location = location_UK, resolution = RESOL
       dir.create(localdir_path, recursive = T)
     }
     
-    
-    print(location)
-    print(fname)
-    
+    if (printPath) { 
+      print(location)
+      print(fname)
+    }
     spdf.out = getSPDF_UK(fname, location = location)
     
     
     # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-    rs.LL <- stack(spdf.out)[[-29]]
+    rs.LL <- stack(spdf.out)
     print(rs.LL)
-    # agent_8classes.v= factor(aft.lookup.17to8[getValues(rs.LL[[17]]) + 2, 2 ], levels = aft.fullnames.8classes, labels = aft.fullnames.8classes)
-    # stopifnot(length(agent_8classes.v) == ncell(rs.LL))
-    # rs.LL[[20]] = agent_8classes.v
+ 
     
-    print("reproject")
-    # cl <- getCluster()  
-    out.reproj = projectRaster(rs.LL[[band.idx]], crs = proj4.spherical, method = "ngb", res = resolution)
+    print("reprojection")
+     
+    # print(names(rs.LL))
+    
+    out.reproj = projectRaster(rs.LL[[band.name_dot]], crs = proj4.spherical, method = "ngb", res = resolution)
     writeRaster(out.reproj, filename = localtif_path, overwrite=T)
-    # endCluster()
-    
-    print("reproject done")  
+     
+    print("reprojection done")  
   } else {
     out.reproj = raster(localtif_path) 
   }
@@ -236,10 +256,10 @@ createChangedNumberTable <- function() {
   
   library(openxlsx)
   
-  foreach(price = foodprice.names, .errorhandling ="stop") %do% {
+  foreach(price = foodprice_names, .errorhandling ="stop") %do% {
     print(price)
     
-    foreach(demand = fooddemand.names) %do% { 
+    foreach(demand = fooddemand_names) %do% { 
       print(demand)
       
       foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
@@ -251,11 +271,11 @@ createChangedNumberTable <- function() {
           dir.create(tb_localdir_path, recursive = T)
         }
         
-        res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling="stop") %dopar% { 
+        res1 = foreach(scenario = scenario_names, .combine = "cbind", .errorhandling="stop") %dopar% { 
           
-          runid_tmp = which(scenario.names == scenario) - 1 
+          runid_tmp = which(scenario_names == scenario) - 1 
           
-          res=  stack(lapply(target_years_other, FUN = function(year) getRaster(getFname(foodprice = "", paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), 20, location = location_UK)))
+          res=  stack(lapply(target_years_other, FUN = function(year) getRaster(getFname(  paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), 20, location = location_UK)))
           
           res_m = as.matrix(res)
           res_m = res_m[!is.na(res_m[,1]),]
@@ -290,21 +310,24 @@ createTempFiles <- function() {
   
   
   endCluster()
+  library(parallel)
   library(doMC)
-  registerDoMC()
+  registerDoMC(16)
   
-  
-  foreach(paramset = paramsets, .errorhandling = "stop") %dopar% {
+  foreach(paramset = paramsets, .errorhandling = "stop") %do% {
     print(paramset)
     
-    res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling = "stop") %dopar% {
+    res1 = foreach(scenario = scenario_names[-4],  .errorhandling = "stop") %do% {
+      print(scenario)
+      res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names, FUN = function(b_name) {
+        res3 = getRaster(getFname(  paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
+        return(TRUE);
+      }))
       
-      res2 = sapply(target_years_other, FUN = function(year) sapply(1:28, FUN = function(b_idx) getRaster(getFname(foodprice = "", paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), band.idx =  b_idx, location = location_UK)))
+      print("ok")
       
-      
-      return(res2)
+      return(res)
     }
-    
     
     
   }
@@ -328,10 +351,10 @@ createTempFiles <- function() {
 #   library(openxlsx) # excel 
 #   library(SDMTools) # fragmentation statistics
 #   
-#   foreach(price = foodprice.names, .errorhandling ="stop") %do% {
+#   foreach(price = foodprice_names, .errorhandling ="stop") %do% {
 #     print(price)
 #     
-#     foreach(demand = fooddemand.names) %do% { 
+#     foreach(demand = fooddemand_names) %do% { 
 #       print(demand)
 #       
 #       foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
@@ -343,9 +366,9 @@ createTempFiles <- function() {
 #           dir.create(tb_localdir_path, recursive = T)
 #         }
 #         
-#         res1 = foreach(scenario = scenario.names, .combine = "cbind", .errorhandling = "stop") %dopar% { 
+#         res1 = foreach(scenario = scenario_names, .combine = "cbind", .errorhandling = "stop") %dopar% { 
 #           
-#           runid_tmp = which(scenario.names == scenario) - 1 
+#           runid_tmp = which(scenario_names == scenario) - 1 
 #           
 #           
 #           res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
@@ -355,7 +378,7 @@ createTempFiles <- function() {
 #           
 #           
 #           colnames(tmp_fragstat_m) = target_years_other
-#           rownames(tmp_fragstat_m) = aft.names.8classes
+#           rownames(tmp_fragstat_m) = aft_names.8classes
 #           write.xlsx(tmp_fragstat_m, file = paste0(tb_localdir_path, "/", scenario, "_FragStats.xlsx"))
 #           
 #           return(NULL)
@@ -393,7 +416,7 @@ createTempFiles <- function() {
 #   fileName <- sprintf("%s_%s.csv", as.integer(Sys.time()), digest::digest(data))
 #   # Write the data to a temporary file locally
 #   filePath <- file.path(tempdir(), fileName)
-#   write.csv(data, filePath, row.names = FALSE, quote = TRUE)
+#   write.csv(data, filePath, row_names = FALSE, quote = TRUE)
 #   # Upload the file to Dropbox
 #   drop_upload(filePath, path = outputDir)
 # }
