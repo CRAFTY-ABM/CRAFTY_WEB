@@ -22,20 +22,21 @@ path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 
 # data version
-data_prefix = "1May2021/"
+data_prefix = "11May2021/"
 
+ 
 # absolute path (for local)
 path_data_local = paste0(path_localstorage, data_prefix)
 
 # relative path (for dropbox)
 path_data_dropbox = paste0(path_dropbox, data_prefix)
 
-path_shinywd = "~/shiny_tmp"
+path_shinywd = "~/shiny_tmp_dev"
 path_filecache = paste0(path_shinywd, "/filetmp/")
 path_rastercache = paste0(path_shinywd, "/rastertmp/")
 
 # dummy name
-default_fname = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
+default_fname = "Normal/Thresholds/Baseline/Baseline-0-99-UK-Cell-2020.csv"
 
 getFname = function( paramset, scenario, fooddemand, year ) { 
   
@@ -86,7 +87,7 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 scenario_names = c("Baseline"
                    , "Baseline-SSP1", "Baseline-SSP2", "Baseline-SSP3", "Baseline-SSP4", "Baseline-SSP5"
                    , "RCP4_5-SSP2", "RCP4_5-SSP4"
-                   # "RCP8_5-SSP3"
+                   , "RCP8_5-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
 foodprice_names = c("") # c("Normal", "Increased", "Decreased")  # 50%
@@ -94,11 +95,11 @@ foodprice_names = c("") # c("Normal", "Increased", "Decreased")  # 50%
 fooddemand_names = c("Normal")#, "IncFoodDemand", "DecFoodDemand")
 
 
-paramsets_fullnames = c("Behavioural baseline", "Thresholds") # , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
+paramsets_fullnames = c("Thresholds") #"Behavioural baseline",  , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
 
 n_paramset = length(paramsets_fullnames)
 # paramsets = paste0("Paramset", 1:n.paramset)
-paramsets =  c("BehaviouralBaseline", "Thresholds")
+paramsets =  c("Thresholds") # "BehaviouralBaseline", 
 
 
 service_tb = read.csv("Tables/Services.csv") %>% as.data.frame
@@ -230,7 +231,7 @@ target_years_other =  seq(2020, 2100, 10)
 
 aft_colors_fromzero_ts = aft_colors_fromzero
 aft_colors_fromzero_ts[17] = "black" 
-aft_lty_ts = c(rep(1, 16), 2)
+aft_lty_ts = c(rep(1, 11), 2)
 
 n_cell_total = nrow(uk_coords)
 
@@ -243,6 +244,7 @@ aft_pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.
 # reduced
 aft_group_colors =  aft_colors_fromzero_17[ c(1:5, 7:9, 14:17)]
 aft_group_colors[7] = "darkblue"
+aft_group_colors[12] = "black"
 
 aft_group_names = c( aft_names_fromzero)[ c(1:5, 7:9, 14:17)]
 aft_group_names[5] = "Intensive Agriculture"

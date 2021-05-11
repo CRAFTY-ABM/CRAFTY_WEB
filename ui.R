@@ -129,8 +129,11 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
                       sidebarPanel(width=SIDEBAR_WIDTH,
-                                   fluidPage(br(), h4("Scenario customisation"))
                                    
+                                   fluidPage(br(), h4("Scenario customisation"))
+                                   # , selectInput("version", "Version",
+                                   #             version_names[], selected = version_names[1]
+                                   # ),
                                    , sliderInput("year",
                                                  "Year:",
                                                  min = 2020,
@@ -164,7 +167,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    )
                                    , htmlOutput("ReferenceToScenarios")
                                    
-                                   # , actionButton(inputId = "deleteCache", label = "Delete cached files")
+                                   , actionButton(inputId = "deleteCache", label = "Delete cached files")
                                    
                       ),
                       # 
@@ -307,7 +310,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      selectInput("scenario_to", "Climate and socio-economic scenario",
                                                  scenario_names[], selected = scenario_names[2]
                                      )
- 
+                                     
                                      
                         ),
                         #
