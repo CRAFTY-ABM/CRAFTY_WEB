@@ -22,9 +22,12 @@ path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 
 # data version
-data_prefix = "11May2021/"
+# data_prefix = "15May2021_v4_NewProduction_SN_originaldemand/"
+# data_prefix = "16May2021_v5_NewProduction_SN2_originaldemand/"
+# data_prefix = "16May2021_v6_NewProduction_originaldemand/"
+# data_prefix = "20May2021_v8_SusProd/"
+data_prefix = "21May2021_v9_NotRemovingNegative/"
 
- 
 # absolute path (for local)
 path_data_local = paste0(path_localstorage, data_prefix)
 
@@ -85,9 +88,10 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 
 # Scenarios (total 8)
 scenario_names = c("Baseline"
-                   , "Baseline-SSP1", "Baseline-SSP2", "Baseline-SSP3", "Baseline-SSP4", "Baseline-SSP5"
+                   , "RCP2_6-SSP1"
+                   # "Baseline-SSP4", "Baseline-SSP5"
                    , "RCP4_5-SSP2", "RCP4_5-SSP4"
-                   , "RCP8_5-SSP3"
+                   , "RCP6_0-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
 foodprice_names = c("") # c("Normal", "Increased", "Decreased")  # 50%
@@ -110,7 +114,7 @@ serviceNames = service_tb$Name
 
 # serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
 # serviceColours = c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity"="turquoise", "Timber" = "tan4","Carbon"="black", "Urban" = "grey","Recreation"="dodgerblue2")
-serviceColours = c("Food.crops" = "coral1", "Fodder.crops" ="goldenrod1", "GF.redMeat" = "turquoise", "Fuel" = "tan4", "Softwood" = "black", "Hardwood" = "grey", "Biodiversity" = "dodgerblue2", "Carbon"="darkgreen", "Recreation" = "orange", "Flood.reg" = "lightblue", "Employment" = "purple", "Ldiversity" = "brown", "GF.milk" = "green")
+serviceColours = c("Food.crops" = "coral1", "Fodder.crops" ="goldenrod1", "GF.redMeat" = "turquoise", "Fuel" = "tan4", "Softwood" = "black", "Hardwood" = "grey", "Biodiversity" = "dodgerblue2", "Carbon"="darkgreen", "Recreation" = "orange", "Flood.reg" = "lightblue", "Employment" = "purple", "Ldiversity" = "brown", "GF.milk" = "green", "Sus.Prod" = "pink")
 
 
 capital_tb = read.csv("Tables/Capitals.csv") %>% as.data.frame

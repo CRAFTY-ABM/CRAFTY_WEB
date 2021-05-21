@@ -160,10 +160,10 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    # ,
                                    fluidPage(br(), h4("Map customisation"))
                                    , selectInput("outputlayer", "Model Output", 
-                                                 indicator_names[c(28, 1:13)], selected=indicator_names[28]
+                                                 indicator_names[c(29, 1:14)], selected=indicator_names[28]
                                    )                                  
                                    , selectInput("inputlayer", "Model Input",
-                                                 indicator_names[14:27], selected=indicator_names[27]
+                                                 indicator_names[15:28], selected=indicator_names[28]
                                    )
                                    , htmlOutput("ReferenceToScenarios")
                                    
@@ -218,6 +218,11 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                              
                                            )
                                   )
+                                  , tabPanel("Time-series",
+                                             plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                                             
+                                             # Map view options
+                                  )
                                   
                                   , tabPanel("Behavioural parameters",
                                              # Time series info
@@ -226,6 +231,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                              
                                              # Map view options
                                   )
+                                  
+                       
+                                  
                                   # , tabPanel("Production parameters",
                                   #            # Time series info
                                   #            dataTableOutput('Tab1_ProductionTablePane')
@@ -240,41 +248,41 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                   # )
                                 )))
            )
-           , tabPanel("Time-series",
-                      
-                      # Sidebar layout with input and output definitions ----
-                      sidebarLayout(
-                        sidebarPanel(width=SIDEBAR_WIDTH,
-                                     selectInput("paramset_full_ts", label = "Behavioural parameters",
-                                                 choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                     ),
-                                     selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                                 scenario_names[], selected = scenario_names[1]
-                                     )
-                                     # , selectInput("foodprice_ts", "Food price",
-                                     #               foodprice_names, selected = foodprice_names[1]
-                                     # )
-                                     # , selectInput("fooddemand_ts", "Food demand",
-                                     #               fooddemand_names, selected = fooddemand_names[1]
-                                     # )
-                                     # ,
-                                     # selectInput("inputlayer_ts", "Model Input",
-                                     #             indicator_names[8:14], selected=indicator_names[9]
-                                     # ),
-                                     # selectInput("outputlayer_ts", "Model Output",
-                                     #             indicator_names[c(20, 17, 1:7, 19)], selected=indicator_names[20]
-                                     # )
-                                     
-                        ),
-                        #
-                        # # Main panel for displaying outputs ----
-                        mainPanel(width = MAINPANEL_WIDTH,
-                                  # Show a plot of the generated distribution
-                                  plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
-                                  # , verbatimTextOutput("PaneRuninfo_ts")
-                        )
-                      )
-           )
+           # , tabPanel("Time-series",
+           #            
+           #            # Sidebar layout with input and output definitions ----
+           #            sidebarLayout(
+           #              sidebarPanel(width=SIDEBAR_WIDTH,
+           #                           selectInput("paramset_full_ts", label = "Behavioural parameters",
+           #                                       choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+           #                           ),
+           #                           selectInput("scenario_ts", "Climate and socio-economic scenario",
+           #                                       scenario_names[], selected = scenario_names[1]
+           #                           )
+           #                           # , selectInput("foodprice_ts", "Food price",
+           #                           #               foodprice_names, selected = foodprice_names[1]
+           #                           # )
+           #                           # , selectInput("fooddemand_ts", "Food demand",
+           #                           #               fooddemand_names, selected = fooddemand_names[1]
+           #                           # )
+           #                           # ,
+           #                           # selectInput("inputlayer_ts", "Model Input",
+           #                           #             indicator_names[8:14], selected=indicator_names[9]
+           #                           # ),
+           #                           # selectInput("outputlayer_ts", "Model Output",
+           #                           #             indicator_names[c(20, 17, 1:7, 19)], selected=indicator_names[20]
+           #                           # )
+           #                           
+           #              ),
+           #              #
+           #              # # Main panel for displaying outputs ----
+           #              mainPanel(width = MAINPANEL_WIDTH,
+           #                        # Show a plot of the generated distribution
+           #                        plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+           #                        # , verbatimTextOutput("PaneRuninfo_ts")
+           #              )
+           #            )
+           # )
            
            , tabPanel("Land Use Transition",
                       # Show a transition plot of the selected

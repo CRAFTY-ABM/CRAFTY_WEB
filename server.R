@@ -38,12 +38,12 @@ shinyServer(function(input, output, session) {
   })
   
   
-  runinfo_ts <- reactive({
-    p.idx = which(input$paramset_full_ts == paramsets_fullnames)
-    
-    paste0("Simulation with the ", input$paramset_full_ts, " parameters and ",  input$scenario_ts, " climate scenario." )
-  })
-  
+  # runinfo_ts <- reactive({
+  #   p.idx = which(input$paramset_full_ts == paramsets_fullnames)
+  #   
+  #   paste0("Simulation with the ", input$paramset_full_ts, " parameters and ",  input$scenario_ts, " climate scenario." )
+  # })
+  # 
   
   
   observeEvent(input$deleteCache, {
@@ -60,10 +60,10 @@ shinyServer(function(input, output, session) {
     runinfo()
   })
   
-  output$PaneRuninfo_ts <- renderText({
-    # runinfo_ts()
-  })
-  
+  # output$PaneRuninfo_ts <- renderText({
+  #   # runinfo_ts()
+  # })
+  # 
   
   output$ReferenceToParameters <- renderText({
     "<br/>Behavioural parameter set 1 is the default from which main results are derived; in this setup agents respond directly to benefit values with no additional individual or typological behaviour. In parameter set 2, giving-up and giving-in thresholds are altered to introduce abandonment of land when benefit values fall below the giving-up threshold value, and resistance to change unless a competing land use has an additional benefit value of at least the giving-in threshold. Intensive land use agents are parameterised to be less tolerantof low benefit values, and more willing to switch to a land use with higher benefit values. <p/>
@@ -268,17 +268,18 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
     print("draw timeseries pane")
     
-    p.idx = which(input$paramset_full_ts == paramsets_fullnames)
+    p.idx = which(input$paramset_full == paramsets_fullnames)
     
     
     # scenario_tmp = "Baseline-SSP3"
     # scenario_tmp = "RCP4_5-SSP4"
-    scenario_tmp = "Baseline"
+    # scenario_tmp = "Baseline"
     # 
-    paramset_tmp = "BehaviouralBaseline"
+    paramset_tmp = "Thresholds"
     
+    scenario_tmp = input$scenario
     paramset_tmp = paramsets[p.idx]
-    scenario_tmp = input$scenario_ts
+    
     # File names
     
     
@@ -309,7 +310,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       rem_col_idx = match(c("Tick", "Region"), colnames(demand_dt_l[[1]]))
       
-      demand_dt = cbind(Tick = demand_dt_l[[1]][,c("Tick")],  Reduce("+", lapply(demand_dt_l, FUN = function(x) x[,-rem_col_idx ])))
+      demand_dt = cbind( Reduce("+", lapply(demand_dt_l, FUN = function(x) x[,-rem_col_idx ])), Region= "UK", Tick = demand_dt_l[[1]][,c("Tick")])
       
       
     }
@@ -357,7 +358,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     
-    par(mfrow=c(3,2), mar = c(5.1, 5.1, 2, 0)  + c(0,0,0,10), oma=c(0,0,0,0))
+    par(mfrow=c(4,2), mar = c(5.1, 5.1, 2, 0)  + c(0,0,0,10), oma=c(0,0,0,0))
     
     # par(mfrow=c(4,2), xpd = T, mar = par()$mar + c(0,0,0,7))
     # par( mar = c(5.1, 4.1, 4, 0)  + c(0,0,0,8))
@@ -407,7 +408,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     supply_m_norm = (demand_m[idx_sup_st,] / demand_m[idx_sup_st,1] - 1) * 100
-    demand_m_norm = (demand_m[idx_dem_st,]/ demand_m[idx_sup_st,1]-1) * 100
+    demand_m_norm = (demand_m[idx_dem_st,] / demand_m[idx_dem_st,1]-1) * 100
     
     supdem_range = range(cbind(supply_m_norm))
     print(supdem_range)
@@ -439,7 +440,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
     
-    plot(demand_dt$Tick, demand_m_norm[1,], type="l", col = serviceColours[1], ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's supply (%)",  main = "Service Demand", las=1, xaxt="n" )
+    plot(demand_dt$Tick, demand_m_norm[1,], type="l", col = serviceColours[1], ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's demand (%)",  main = "Service Demand", las=1, xaxt="n" )
     axis(side=1, at = target_years_other, labels = target_years_other)
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)
@@ -453,6 +454,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
     
     
+    #### SDGAP
     
     sdgap  = (demand_m[idx_dem_st,] - demand_m[idx_sup_st,])
     # sdgap = (sdgap /demand_m[idx_sup_st,1]  ) * 100
@@ -478,6 +480,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     
+    
+    ###### PRODUCTION SHORTFALL 
     
     shortfall_range = range(shortfall_m[,], na.rm = T)
     range(shortfall_m)
@@ -533,6 +537,39 @@ Please see the further details of the parameters in Table A4 of the following pa
       colnames(capital_scene_tmp) = c("Tick", capital_names$Capital)
       capital_scene_tmp[-1] = capital_scene_tmp[-1] / capital_scene_tmp[-1] #all 1 
     }
+    
+    
+    ######### FOOD PRODUCTION 
+    
+    # Food as a sum of food crops, fodder crops, GF milk & GF meat, as a percentage of the baseline total? Maybe we can convert them to real quantities later...
+    
+    # food_names = C("Food.crops", "Fodder.crops", "GF.redMeat", "GF.milk") # Sus.Prod? 
+    
+    food_production = colSums(demand_m[c(1,2,3,13),])
+    
+    food_production = ((food_production / food_production[1]) -1) * 100  
+    
+    food_range = range(food_production)
+    print(food_range)
+    
+    y_lim_max = max(3, max(abs(food_range)) * 1.2)
+    y_lim_v = c(max(-100, -y_lim_max), y_lim_max)
+    
+    # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
+    
+    plot(demand_dt$Tick, food_production, type="l", col = "black", ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's production (%)",  main = "Food production", las=1, xaxt="n" )
+    axis(side=1, at = target_years_other, labels = target_years_other)
+    # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
+    abline(h = 0, lty=2)
+    abline(h = -100, lty=2)
+ 
+    
+    # legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), border=NA)
+    # legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
+    
+    
+    
+    
     
     # print("fragmentation statistics")
     # 
