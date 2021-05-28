@@ -130,29 +130,24 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                     sidebarLayout(
                       sidebarPanel(width=SIDEBAR_WIDTH,
                                    
-                                   fluidPage(br(), h4("Scenario customisation"))
-                                   # , selectInput("version", "Version",
-                                   #             version_names[], selected = version_names[1]
-                                   # ),
+
+                                   selectInput("version", "Version",
+                                               version_names, selected = version_names[1]
+                                   )
+                                   , fluidPage(br(), h4("Scenario customisation"))
                                    , sliderInput("year",
                                                  "Year:",
                                                  min = 2020,
                                                  max = 2100, sep = "",
                                                  value = 2020, step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+
                                    selectInput("paramset_full", label = "Behavioural parameter set-up",
                                                choices = paramsets_fullnames, selected = paramsets_fullnames[1]
                                    ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
                                                scenario_names[], selected = scenario_names[1]
                                    ),
-                                   # selectInput("foodprice", "Food price",
-                                   #             foodprice_names[1], selected = foodprice_names[1]
-                                   # ),
-                                   # 
-                                   #   selectInput("fooddemand", "Meat demand (applies to Baseline)", 
-                                   #             fooddemand_names[1], selected = fooddemand_names[1]
-                                   # ),
-                                   
+
                                    radioButtons("outputGroup", "Print layer",
                                                 c("Output"="print_out", "Input"="print_in")
                                    ),
@@ -293,6 +288,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      
                                      fluidPage(br(), h4("Land use transition from"))
                                      
+                                     , selectInput("version_from", "Version",
+                                                 version_names, selected = version_names[1]
+                                     )
                                      , sliderInput("year_from",
                                                    "Year",
                                                    min = 2020,
@@ -307,6 +305,9 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      )
                                      , fluidPage(br(), h4("To"))
                                      
+                                     , selectInput("version_to", "Version",
+                                                 version_names, selected = version_names[1]
+                                     )
                                      ,  sliderInput("year_to",
                                                     "Year",
                                                     min = 2020,

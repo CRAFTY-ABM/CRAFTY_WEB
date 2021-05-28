@@ -25,8 +25,16 @@ path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 # data_prefix = "15May2021_v4_NewProduction_SN_originaldemand/"
 # data_prefix = "16May2021_v5_NewProduction_SN2_originaldemand/"
 # data_prefix = "16May2021_v6_NewProduction_originaldemand/"
-# data_prefix = "20May2021_v8_SusProd/"
-data_prefix = "21May2021_v9_NotRemovingNegative/"
+data_prefix = ""
+# data_prefix = "21May2021_v9_NotRemovingNegative/"
+
+version_names = c("(default) SN_Removal", "SN_NoRemoval", "NoSN_Removal", "NoSN_NoRemoval")
+
+version_prefix =c("SN_Removal", "SN_NoRemoval", "NoSN_Removal", "NoSN_NoRemoval") 
+
+
+version_default = version_names[1]
+
 
 # absolute path (for local)
 path_data_local = paste0(path_localstorage, data_prefix)
@@ -39,12 +47,12 @@ path_filecache = paste0(path_shinywd, "/filetmp/")
 path_rastercache = paste0(path_shinywd, "/rastertmp/")
 
 # dummy name
-default_fname = "Normal/Thresholds/Baseline/Baseline-0-99-UK-Cell-2020.csv"
+default_fname = paste0(version_default, "/Thresholds/Baseline/Baseline-0-99-UK-Cell-2020.csv")
 
-getFname = function( paramset, scenario, fooddemand, year ) { 
+getFname = function(version, paramset, scenario, year ) { 
   
   # fs::path_expand(paste0( fooddemand, "/" ,foodprice,"/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
-  fs::path_expand(paste0( "Normal/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
+  fs::path_expand(paste0(version_prefix[match(version,version_names)], "/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
   
 }
 
@@ -94,9 +102,6 @@ scenario_names = c("Baseline"
                    , "RCP6_0-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
-foodprice_names = c("") # c("Normal", "Increased", "Decreased")  # 50%
-# fooddemand_names = c("Normal", "LowMeatDemand")
-fooddemand_names = c("Normal")#, "IncFoodDemand", "DecFoodDemand")
 
 
 paramsets_fullnames = c("Thresholds") #"Behavioural baseline",  , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
@@ -271,4 +276,36 @@ aft_group_shortnames[7] = "PW"
 
 # aft_parms_df
 # str(aft_parms_df)
+
+
+
+### Intensity plot
+
+impact_coeff = data.frame(rbind(
+  c("Urban",	1.0), 
+  c("IAfood", 0.8),
+  c("IAfodder",	0.80),
+  c("IP",	0.70),
+  c("AF",	0.65),
+  c("Bioenergy",	0.60),
+  c("PNNB", 0.5),
+  c("PNNC",	0.50),
+  c("EP", 0.40),
+  c("EA", 0.4),
+  c("SusAr", 	0.40),
+  c("PNB", 0.2),
+  c("PNC",	0.20),
+  c("MW",	0.15),
+  c("VEP",	0.10),
+  c("NWCons",	0.01),
+  c("Unmanaged",	0.0)
+))
+
+colnames(impact_coeff) = c("AFT", "Impact")
+
+
+
+
+
+
 

@@ -242,59 +242,57 @@ getRaster<- function(fname, band.name, location = location_UK, resolution = RESO
 
 
 
-
-# call once on a local workstation
-createChangedNumberTable <- function() { 
-  
-  # price = "Normal"
-  # demand = "Normal"
-  # paramset = "Paramset1"
-  # scenario = "RCP8_5-SSP3"  
-  # 
-  library(doMC)
-  registerDoMC()
-  
-  library(openxlsx)
-  
-  foreach(price = foodprice_names, .errorhandling ="stop") %do% {
-    print(price)
-    
-    foreach(demand = fooddemand_names) %do% { 
-      print(demand)
-      
-      foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
-        print(paramset)
-        
-        tb_localdir_path =  file.path(paste0("Tables/ChangedPixelNo/", price, "/", demand, "/",paramset, "/" ))
-        
-        if (!dir.exists(tb_localdir_path)) {
-          dir.create(tb_localdir_path, recursive = T)
-        }
-        
-        res1 = foreach(scenario = scenario_names, .combine = "cbind", .errorhandling="stop") %dopar% { 
-          
-          runid_tmp = which(scenario_names == scenario) - 1 
-          
-          res=  stack(lapply(target_years_other, FUN = function(year) getRaster(getFname(  paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), 20, location = location_UK)))
-          
-          res_m = as.matrix(res)
-          res_m = res_m[!is.na(res_m[,1]),]
-          
-          tmp_changedno = sapply(2:ncol(res_m), FUN = function(x) length(res_m[res_m[,x]!=res_m[,x-1], x]))
-          names(tmp_changedno) = target_years_other[-1]
-          write.xlsx(tmp_changedno, file = paste0(tb_localdir_path, "/", scenario, "_ChangedPixelNo.xlsx"))
-          
-          return(NULL)
-        }
-        
-        
-        
-      }
-    }
-  }
-  
-  return(TRUE)
-}
+# 
+# # call once on a local workstation
+# createChangedNumberTable <- function() { 
+#    
+#   # paramset = "Paramset1"
+#   # scenario = "RCP8_5-SSP3"  
+#   # 
+#   library(doMC)
+#   registerDoMC()
+#   
+#   library(openxlsx)
+#   
+#   foreach(price = foodprice_names, .errorhandling ="stop") %do% {
+#     print(price)
+#     
+#     foreach(demand = fooddemand_names) %do% { 
+#       print(demand)
+#       
+#       foreach(paramset = paramsets, .errorhandling = "stop") %dopar% { 
+#         print(paramset)
+#         
+#         tb_localdir_path =  file.path(paste0("Tables/ChangedPixelNo/", price, "/", demand, "/",paramset, "/" ))
+#         
+#         if (!dir.exists(tb_localdir_path)) {
+#           dir.create(tb_localdir_path, recursive = T)
+#         }
+#         
+#         res1 = foreach(scenario = scenario_names, .combine = "cbind", .errorhandling="stop") %dopar% { 
+#           
+#           runid_tmp = which(scenario_names == scenario) - 1 
+#           
+#           res=  stack(lapply(target_years_other, FUN = function(year) getRaster(getFname(  paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), 20, location = location_UK)))
+#           
+#           res_m = as.matrix(res)
+#           res_m = res_m[!is.na(res_m[,1]),]
+#           
+#           tmp_changedno = sapply(2:ncol(res_m), FUN = function(x) length(res_m[res_m[,x]!=res_m[,x-1], x]))
+#           names(tmp_changedno) = target_years_other[-1]
+#           write.xlsx(tmp_changedno, file = paste0(tb_localdir_path, "/", scenario, "_ChangedPixelNo.xlsx"))
+#           
+#           return(NULL)
+#         }
+#         
+#         
+#         
+#       }
+#     }
+#   }
+#   
+#   return(TRUE)
+# }
 
 
 # 
@@ -320,7 +318,7 @@ createTempFiles <- function() {
     res1 = foreach(scenario = scenario_names[-4],  .errorhandling = "stop") %do% {
       print(scenario)
       res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names, FUN = function(b_name) {
-        res3 = getRaster(getFname(  paramset = paramset, scenario = scenario, fooddemand = "Normal",year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
+        res3 = getRaster(getFname(version_tmp, paramset = paramset, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
         return(TRUE);
       }))
       

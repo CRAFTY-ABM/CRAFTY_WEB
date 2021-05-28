@@ -99,7 +99,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     p.idx = which(input$paramset_full == paramsets_fullnames)
     
-    fname_changed = getFname(  paramsets[p.idx], input$scenario, input$fooddemand, input$year)
+    fname_changed = getFname(input$version,  paramsets[p.idx], input$scenario, input$year)
     
     r_changed = getRaster(fname_changed, band.name = input$inputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     
@@ -271,10 +271,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     p.idx = which(input$paramset_full == paramsets_fullnames)
     
     
-    # scenario_tmp = "Baseline-SSP3"
+    scenario_tmp = "RCP6_0-SSP3"
     # scenario_tmp = "RCP4_5-SSP4"
     # scenario_tmp = "Baseline"
-    # 
     paramset_tmp = "Thresholds"
     
     scenario_tmp = input$scenario
@@ -285,10 +284,10 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     if (!str_detect(scenario_tmp, "SSP3")) {
       # aft composition
-      aft_csvname_changed = fs::path_expand(paste0("Normal/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+      aft_csvname_changed = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
       
       # supply and demand files
-      demand_csvname_changed = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
+      demand_csvname_changed = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
       
       aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
       demand_dt = getCSV(demand_csvname_changed, location = location_UK)
@@ -296,7 +295,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     } else { 
       
       # aft composition
-      aft_csvname_changed_v = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
+      aft_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
       
       aftcomp_dt_l = lapply(aft_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
       
@@ -305,7 +304,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       
       # supply and demand files
-      demand_csvname_changed_v = fs::path_expand(paste0("Normal/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
+      demand_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
       demand_dt_l = lapply(demand_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
       
       rem_col_idx = match(c("Tick", "Region"), colnames(demand_dt_l[[1]]))
@@ -320,11 +319,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     # mean capital level
     capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
     
-    # read csv files
+    #@todo read csv files
     
-    # ???
+    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
     
 
+    aftcomp_dt_org = aftcomp_dt
     # reclassify
     aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
     aftcomp_dt[,"AFT.IAfodder"] = NULL
@@ -337,8 +337,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
-    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
     
+
     
     # process csv files
     demand_m = t(as.matrix(sapply(demand_dt[, -c(ncol(demand_dt) - 1:0)] , FUN = function(x) as.numeric(as.character(x)))))
@@ -461,14 +461,15 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     sdgap_range = range(sdgap, na.rm=T)
-    y_lim_max = max(1, max(abs(sdgap_range)) * 1.2,  demand_m[idx_sup_st,1])
+    y_lim_max = max(1, max(abs(sdgap_range)) * 1.2,  demand_m[idx_sup_st,1]*0.3) 
+    
     y_lim_v = c(-y_lim_max, y_lim_max)
     
     
     # barplot(height =  sdgap, beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick, ylim = y_lim_v, border=NA)
     # legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), border=NA)
     
-    plot(demand_dt$Tick, sdgap[1,], type="l", col = serviceColours[1], ylim=y_lim_v, xlab="Year", ylab="Demand - Supply (original unit)",  main = "S/D gap (=D-S)", las=1, xaxt="n" )
+    plot(demand_dt$Tick, sdgap[1,], type="l", col = serviceColours[1], ylim=y_lim_v, xlab="Year", ylab="Demand - Supply (original unit)",  main = "S/D gap (=D-S)", las=1, xaxt="n", mgp=c(4,1,0))
     axis(side=1, at = target_years_other, labels = target_years_other)
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)
@@ -533,6 +534,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       
     } else {   # baseline 
+      plot.new()
       capital_scene_tmp$X = 2020
       colnames(capital_scene_tmp) = c("Tick", capital_names$Capital)
       capital_scene_tmp[-1] = capital_scene_tmp[-1] / capital_scene_tmp[-1] #all 1 
@@ -543,7 +545,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # Food as a sum of food crops, fodder crops, GF milk & GF meat, as a percentage of the baseline total? Maybe we can convert them to real quantities later...
     
-    # food_names = C("Food.crops", "Fodder.crops", "GF.redMeat", "GF.milk") # Sus.Prod? 
+    # food_names = C("Food.crops", "Fodder.crops", "GF.redMeat", "GF.milk")  
     
     food_production = colSums(demand_m[c(1,2,3,13),])
     
@@ -567,6 +569,40 @@ Please see the further details of the parameters in Table A4 of the following pa
     # legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), border=NA)
     # legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
     
+    
+    
+    ######### INTENSITY 
+ 
+    aftcomp_org_m = t(as.matrix(sapply(aftcomp_dt_org[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
+    
+    print(rownames(aftcomp_org_m))
+    impact_idx = match(rownames(aftcomp_org_m), paste0("AFT.", impact_coeff$AFT))
+    str(impact_idx)
+    
+    intensity_v = rowSums(sapply(1:nrow(aftcomp_org_m), FUN = function(x) aftcomp_org_m[x,] * as.numeric(impact_coeff$Impact[impact_idx[x]])), na.rm=F)
+    
+    print(intensity_v)
+    str(intensity_v)
+    
+    intensity_rel_v = intensity_v / intensity_v[1] * 100 
+    
+     
+    intensity_range = range(intensity_rel_v, na.rm = T)
+    print(intensity_range)
+    
+    y_lim_max = max(3, max(abs(intensity_range)) * 1.1)
+    y_lim_min = min(intensity_range) * 0.9 
+    y_lim_v = c(y_lim_min, y_lim_max)
+    
+    # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
+    
+    plot(demand_dt$Tick, intensity_rel_v, type="l", col = "black", ylim=y_lim_v,   xlab="Year", ylab="Relative to 2020's intensity (%)",  main = "Land Use Intensity", las=1, xaxt="n" )
+    axis(side=1, at = target_years_other, labels = target_years_other)
+    # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
+    abline(h = 0, lty=2)
+    abline(h = 100, lty=2)
+    
+     
     
     
     
@@ -597,11 +633,11 @@ Please see the further details of the parameters in Table A4 of the following pa
     p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
     p_to.idx = which(input$paramset_full_to  == paramsets_fullnames)
     
-    fname_from = "Normal/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv"
-    fname_to = "Normal/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv"
+    # fname_from = paste0(input$version_tr, "/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv")
+    # fname_to =  paste0(input$version_tr, "/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv")
     
-    fname_from =  getFname(paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
-    fname_to   =  getFname(paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
+    fname_from =  getFname(input$version_from, paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
+    fname_to   =  getFname(input$version_to, paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
     
     
     #### Transition matrix
@@ -967,7 +1003,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     p.idx = which(input$paramset_full == paramsets_fullnames)
     
-    fname_changed =getFname( paramsets[p.idx], input$scenario, input$fooddemand, input$year)   
+    fname_changed =getFname(input$version, paramsets[p.idx], input$scenario,input$year)   
     
     r_changed = getRaster(fname_changed, band.name = input$outputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     
