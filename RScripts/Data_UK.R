@@ -28,10 +28,9 @@ path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 data_prefix = ""
 # data_prefix = "21May2021_v9_NotRemovingNegative/"
 
-version_names = c("(default) SN_Removal", "SN_NoRemoval", "NoSN_Removal", "NoSN_NoRemoval")
+version_names = c("Default", "Penalising overproduction", "New SN", "New SN with Penalising")
 
-version_prefix =c("SN_Removal", "SN_NoRemoval", "NoSN_Removal", "NoSN_NoRemoval") 
-
+version_prefix =c("Removal", "NoRemoval", "NewSN_Removal", "NewSN_NoRemoval") 
 
 version_default = version_names[1]
 
@@ -233,8 +232,8 @@ aft_colors_fromzero_17 = aft_colors_fromzero
 aft_colors_fromzero[aft_shortnames_fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
 
 
-target_years_aggcsv = seq(2020, 2100, 10)
-target_years_other =  seq(2020, 2100, 10)
+target_years_aggcsv = seq(2020, 2080, 10)
+target_years_other =  seq(2020, 2080, 10)
 
 
 

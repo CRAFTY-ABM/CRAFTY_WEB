@@ -596,7 +596,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
     
-    plot(demand_dt$Tick, intensity_rel_v, type="l", col = "black", ylim=y_lim_v,   xlab="Year", ylab="Relative to 2020's intensity (%)",  main = "Land Use Intensity", las=1, xaxt="n" )
+    plot(demand_dt$Tick, intensity_rel_v, type="l", col = "black", ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's intensity (%)",  main = "Land Use Intensity (old)", las=1, xaxt="n" )
     axis(side=1, at = target_years_other, labels = target_years_other)
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)

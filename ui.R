@@ -132,36 +132,34 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    
 
                                    selectInput("version", "Version",
-                                               version_names, selected = version_names[1]
+                                               version_names, selected = version_names[4]
                                    )
-                                   , fluidPage(br(), h4("Scenario customisation"))
+                                   # , fluidPage(br(), h4("Scenario"))
                                    , sliderInput("year",
                                                  "Year:",
-                                                 min = 2020,
-                                                 max = 2100, sep = "",
-                                                 value = 2020, step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                 min = min(target_years_other),
+                                                 max = max(target_years_other), sep = "",
+                                                 value = min(target_years_other), step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
 
-                                   selectInput("paramset_full", label = "Behavioural parameter set-up",
-                                               choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                   ),
                                    selectInput("scenario", "Climate and socio-economic scenario",
                                                scenario_names[], selected = scenario_names[1]
                                    ),
 
-                                   radioButtons("outputGroup", "Print layer",
-                                                c("Output"="print_out", "Input"="print_in")
-                                   ),
+                                   radioButtons("outputGroup", "Show layer",
+                                                c("Model output"="print_out", "Model input"="print_in")
+                                   )
                                    # actionButton(inputId = "REFRESH", label = "Refresh map")
                                    # ,
-                                   fluidPage(br(), h4("Map customisation"))
-                                   , selectInput("outputlayer", "Model Output", 
+                                   # , fluidPage(br(), h3("Target indicator"))
+                                   , selectInput("outputlayer", "Output", 
                                                  indicator_names[c(29, 1:14)], selected=indicator_names[28]
                                    )                                  
-                                   , selectInput("inputlayer", "Model Input",
+                                   , selectInput("inputlayer", "Input",
                                                  indicator_names[15:28], selected=indicator_names[28]
                                    )
                                    , htmlOutput("ReferenceToScenarios")
-                                   
+                                   , selectInput("paramset_full", label = "Behavioural parameter set-up", choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+                                   )
                                    , actionButton(inputId = "deleteCache", label = "Delete cached files")
                                    
                       ),
