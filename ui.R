@@ -132,7 +132,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                    
 
                                    selectInput("version", "Version",
-                                               version_names, selected = version_names[4]
+                                               version_names, selected = version_names[version_default_idx]
                                    )
                                    # , fluidPage(br(), h4("Scenario"))
                                    , sliderInput("year",
@@ -292,7 +292,7 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      , sliderInput("year_from",
                                                    "Year",
                                                    min = 2020,
-                                                   max = 2100, sep = "",
+                                                   max = 2080, sep = "",
                                                    value = 2020, step=10),
                                      selectInput("paramset_full_from", label = "Behavioural parameter set-up",
                                                  choices = paramsets_fullnames, selected = paramsets_fullnames[1]
@@ -309,8 +309,8 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      ,  sliderInput("year_to",
                                                     "Year",
                                                     min = 2020,
-                                                    max = 2100, sep = "",
-                                                    value = 2080, step=10),
+                                                    max = 2080, sep = "",
+                                                    value = 2070, step=10),
                                      selectInput("paramset_full_to", label = "Behavioural parameter set-up",
                                                  choices = paramsets_fullnames, selected = paramsets_fullnames[1]
                                      ),

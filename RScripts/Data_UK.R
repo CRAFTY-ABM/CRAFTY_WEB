@@ -28,11 +28,12 @@ path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 data_prefix = ""
 # data_prefix = "21May2021_v9_NotRemovingNegative/"
 
-version_names = c("Default", "Penalising overproduction", "New SN", "New SN with Penalising")
+version_names = c("Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
 
-version_prefix =c("Removal", "NoRemoval", "NewSN_Removal", "NewSN_NoRemoval") 
+version_prefix =c("Removal_v17", "NoRemoval_v17","Removal_v16", "NoRemoval_v16", "Removal_v15", "NoRemoval_v15")#, "Removal_v14", "NoRemoval_v14")#, "NewSN_Removal", "NewSN_NoRemoval") 
 
-version_default = version_names[1]
+version_default_idx = 5
+version_default = version_names[version_default_idx]
 
 
 # absolute path (for local)
@@ -215,10 +216,14 @@ capital_names = data.frame(Capital = c("Human",
 
 
 
-aft_tb = read.csv("Tables/AgentColors.csv", strip.white = T, stringsAsFactors = F) %>% as.data.frame
+aft_tb = read.csv("Tables/AgentColors_v2.csv", strip.white = T, stringsAsFactors = F) %>% as.data.frame
 
 aft_tb[aft_tb$Name == "Lazy FR", ]$Name = "Unmanaged"
 
+
+
+aftNames<-c("Intensive arable food/fodder","Extensive arable", "Sustainable arable", "Productive broadleaf","Productive conifer","Mixed woodland","Conservation","Intensive pastoral","Extensive pastoral","Very extensive pastoral","Agro-forestry","Bioenergy","Urban","Unmanaged")
+aftColours<-c("#E3C16B","#91714C","#C0BCAE","#BDED50","#268c20","#215737","#0a1c01","#F3EF0C","#BCB918","#7d7d47","#28b1c9","#2432d1","#EE0F05","#fafaf7")
 
 
 aft_colors_alpha = aft_tb$Color[match( aft_shortnames_fromzero, aft_tb$Name)]
@@ -229,7 +234,7 @@ aft_colors_fromzero = col2hex(paste0("#", substr(aft_colors_alpha, start = 4, st
 aft_colors_fromzero_17 = aft_colors_fromzero
 
 # reduced colours
-aft_colors_fromzero[aft_shortnames_fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
+# aft_colors_fromzero[aft_shortnames_fromzero %in% c("PNNB", "PNC", "PNNC", "PNB", "MW")] = col2hex("darkblue")
 
 
 target_years_aggcsv = seq(2020, 2080, 10)
@@ -239,7 +244,7 @@ target_years_other =  seq(2020, 2080, 10)
 
 aft_colors_fromzero_ts = aft_colors_fromzero
 aft_colors_fromzero_ts[17] = "black" 
-aft_lty_ts = c(rep(1, 11), 2)
+aft_lty_ts = c(rep(1, 13), 2)
 
 n_cell_total = nrow(uk_coords)
 
@@ -250,31 +255,57 @@ aft_pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.
 
 
 # reduced
-aft_group_colors =  aft_colors_fromzero_17[ c(1:5, 7:9, 14:17)]
-aft_group_colors[7] = "darkblue"
-aft_group_colors[12] = "black"
+aft_group_colors =  aft_colors_fromzero_17[c(1:5, 7:11, 14:17)]
+# aft_group_colors[7] = "darkblue"
+aft_group_colors[length(aft_group_colors)] = "black"
 
-aft_group_names = c( aft_names_fromzero)[ c(1:5, 7:9, 14:17)]
-aft_group_names[5] = "Intensive Agriculture"
-aft_group_names[7] = "Productive Woodland"
-aft_group_shortnames = c( aft_shortnames_fromzero  )[ c(1:5, 7:9, 14:17)]
+
+aft_group_names = c("Intensive arable food/fodder",
+                    "Extensive arable", 
+                    "Sustainable arable", 
+                    "Productive broadleaf",
+                    "Productive conifer",
+                    "Mixed woodland",
+                    "Conservation",
+                    "Intensive pastoral",
+                    "Extensive pastoral",
+                    "Very extensive pastoral",
+                    "Agro-forestry",
+                    "Bioenergy",
+                    "Urban")
+
+
+aft_group_shortnames = c( aft_shortnames_fromzero  )[  c(1:5, 7:11, 14:17)]
 aft_group_shortnames[5] = "IA"
-aft_group_shortnames[7] = "PW"
+aft_group_shortnames[9] = "PB"
+aft_group_shortnames[10] = "PC"
+
+### Halfway classes 3
+
+aft_group2_tb =t( matrix( nrow = 2, c("IAfood",  "Arable", 
+                      "IAfodder",  "Arable", 
+                      "EA",  "Arable",
+                      "Bioenergy",  "Arable",
+                      "SusAr", "Arable", 
+                      "IP", "Pastoral", 
+                      "EP", "Pastoral",
+                      "PNB", "Forest", 
+                      "PNNB", "Forest", 
+                      "PNC", "Forest", 
+                      "PNNC", "Forest", 
+                      "MW",  "Very extensive/mixed", 
+                      "VEP",  "Very extensive/mixed", 
+                      "AF", "Very extensive/mixed", 
+                      "NWCons", "Conservation",
+                      "Urban", "Urban",
+                      "Lazy FR", "Unmanaged")))
+aft_group2_names =  ( unique(aft_group_reduced_tb[,2]))
+
+
 
 #### 
 
-# gugi_values 
 
-# aft_params_df_l = lapply(paramsets, FUN = function(paramset) {
-#   dt = read.csv(paste0("Tables/", paramset, ".csv"))
-#   rownames(dt) = dt$Name 
-#   dt[aft.shortnames.fromzero, ]
-# }
-# )
-
-
-# aft_parms_df
-# str(aft_parms_df)
 
 
 

@@ -329,8 +329,14 @@ Please see the further details of the parameters in Table A4 of the following pa
     aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
     aftcomp_dt[,"AFT.IAfodder"] = NULL
     
-    aftcomp_dt[,"AFT.MW"] = aftcomp_dt[,"AFT.PNB"] + aftcomp_dt[,"AFT.PNC"] + aftcomp_dt[,"AFT.PNNB"] + aftcomp_dt[,"AFT.PNNC"]
-    aftcomp_dt[, c("AFT.PNB", "AFT.PNC","AFT.PNNB","AFT.PNNC")] = NULL
+    # aftcomp_dt[,"AFT.MW"] = aftcomp_dt[,"AFT.PNB"] + aftcomp_dt[,"AFT.PNC"] + aftcomp_dt[,"AFT.PNNB"] + aftcomp_dt[,"AFT.PNNC"]
+    # aftcomp_dt[, c("AFT.PNB", "AFT.PNC","AFT.PNNB","AFT.PNNC")] = NULL
+    
+    
+    aftcomp_dt[,"AFT.PNB"]  = aftcomp_dt[,"AFT.PNB"] + aftcomp_dt[,"AFT.PNNB"]
+    aftcomp_dt[,"AFT.PNC"] =  aftcomp_dt[,"AFT.PNC"]+ aftcomp_dt[,"AFT.PNNC"]
+    aftcomp_dt[, c("AFT.PNNB","AFT.PNNC")] = NULL
+    
     
     colnames(aftcomp_dt)[  colnames(aftcomp_dt) == "AFT.IAfood"] = "AFT.IA"
     colnames(aftcomp_dt)[  colnames(aftcomp_dt) == "AFT.MW"] = "AFT.PW"
@@ -660,16 +666,14 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # reclassify
     aft_old[aft_old==6] = 5
-    aft_old[aft_old %in% c(8, 10:13)] = 8
+    aft_old[aft_old %in% c(12)] = 10
+    aft_old[aft_old %in% c(13)] = 11
     
     aft_new[aft_new==6] = 5
-    aft_new[aft_new %in% c(8, 10:13)] = 8
+    aft_new[aft_new %in% c(12)] = 10
+    aft_new[aft_new %in% c(13)] = 11
     
-    
-
-     
-    
-    
+      
     aft_tr.df = cbind(aft_old, aft_new)
     
     aft_tr.df = aft_tr.df[!is.na(rowSums(aft_tr.df)),]
@@ -683,8 +687,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     
-    aft_old_f = factor(aft_old, levels = c(1:5, 7:9, 14:17))
-    aft_new_f = factor(aft_new, levels = c(1:5, 7:9, 14:17))
+    aft_old_f = factor(aft_old, levels = c(1:5, 7:11, 14:17))
+    aft_new_f = factor(aft_new, levels = c(1:5, 7:11, 14:17))
     
     aft_tb_oldandnew = table(aft_old_f, aft_new_f)
    
@@ -701,7 +705,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
      
     aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 3  ), "%")
-    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T)* 100, 3   ), "%")
+    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T) * 100, 3  ), "%")
     
     
     
