@@ -1,0 +1,2 @@
+aftParamId,givingInDistributionMean,givingInDistributionSD,givingUpDistributionMean,givingUpDistributionSD,serviceLevelNoiseMin,serviceLevelNoiseMax,givingUpProb,productionCsvFile
+0,0.02,0,0.001,0,0.9,1.1,0.01,.//production/%s/PNNC.csv

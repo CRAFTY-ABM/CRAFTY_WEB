@@ -6,7 +6,7 @@
 library(shiny)
 source("RScripts/Functions_CRAFTY_WEB.R")
 
-accessDropbox()
+# accessDropbox()
 
 
 # Define server logic required to draw a histogram
@@ -32,9 +32,16 @@ shinyServer(function(input, output, session) {
   # 
   
   runinfo <- reactive({
-    p.idx = which(input$paramset_full == paramsets_fullnames)
+    # p.idx = which(input$paramset_full == paramsets_fullnames)
     
-    paste0("Simulated ", input$outputlayer, " in ", input$year, " with the ", input$paramset_full, " parameters and ",  input$scenario, " climate scenario." )
+    if (input$outputGroup == "print_out") { 
+      out_name = input$outputlayer
+    }  else {
+       out_name = input$inputlayer
+    }
+    paste0("Simulated ", out_name, " in ", input$year, " with the ",
+           #input$paramset_full, " parameters and ",
+           input$scenario, " climate scenario." )
   })
   
   
@@ -45,7 +52,6 @@ shinyServer(function(input, output, session) {
   # })
   # 
   
-  
   observeEvent(input$deleteCache, {
     session$sendCustomMessage(type = 'message',
                               message = 'deleteCache')
@@ -53,6 +59,13 @@ shinyServer(function(input, output, session) {
     unlink(paste0(path_rastercache, "/*"), recursive = T)
     unlink(paste0(path_filecache, "/*"), recursive = T)
     
+  })
+  
+  observeEvent(input$createCache, {
+    session$sendCustomMessage(type = 'message',
+                              message = 'createCache')
+    print("create cache")
+    createTempFiles()
   })
   
   
@@ -81,14 +94,32 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   output$ReferenceToAFT <- renderText({
-    "<br/>Please see the detailed decription of the scenarios in Table 2 (pp. 27-28) of the following paper: <p/>
-<i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
+    ""
+    # "<br/>Please see the detailed decription of the scenarios in Table 2 (pp. 27-28) of the following paper: <p/>
+    # <i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
   })
   
   output$ReferenceToScenarios <- renderText({
-    "<br/>Please see the detailed decription of the scenarios in Table 2 (pp. 27-28) of the following paper: <p/>
-<i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
+    ""
+    #"<br/>Please see the detailed decription of the scenarios in Table 2 (pp. 27-28) of the following paper: <p/>
+    # <i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
   })
+  
+  
+  
+  output$Plot_Legend <- renderImage({
+    # When input$n is 3, filename is ./images/image3.jpeg
+    filename <- normalizePath(file.path('Tables/Legend.png'))
+    
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Legend (Shaded)"))
+  }, deleteFile = TRUE)
+  
+   
+  
+  
+  
   
   
   
@@ -96,10 +127,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     print("rnew_input called")
     
     
+    # p.idx = which(input$paramset_full == paramsets_fullnames)
+    p_idx = 1
     
-    p.idx = which(input$paramset_full == paramsets_fullnames)
+    s_idx = match(input$scenario, scenario_names)
     
-    fname_changed = getFname(input$version,  paramsets[p.idx], input$scenario, input$year)
+    fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], input$scenario, input$year)
     
     r_changed = getRaster(fname_changed, band.name = input$inputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     
@@ -163,7 +196,6 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
-  
   output$Tab1_AFTTablePane <- renderDataTable(
     {
       print("draw AFT pane")
@@ -201,16 +233,39 @@ Please see the further details of the parameters in Table A4 of the following pa
       # )
     })
   
+  output$Tab1_CapTablePane <- renderDataTable(
+    {
+      print("draw capital/service pane")
+      
+   
+      Cap_tb = read.csv("Tables/Capitals.csv")
+      # 
+      
+      # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
+      
+      # spdf_changed = getSPDF(fname_changed)
+      # target_val = spdf_changed[4:22]
+      # 
+      # str(getValues(target_data))
+      # tb1 =     table(getValues(target_data))
+      # print(tb1)
+      
+      Cap_tb = Cap_tb # AFT_tb[,c("Name", "Description", "Group", "Type")
+      DT::datatable(Cap_tb, options= list(paging = FALSE),  editable = F) 
+      # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
+      # %>% formatStyle(
+      #   'Name',
+      #   backgroundColor =  aft_colors_fromzero_17
+      # )
+    })
+  
   output$Tab1_BehaviouralTablePane <- renderDataTable(
     {
       print("draw behavioural pane")
-      
-      
-      
-      p.idx = which(input$paramset_full == paramsets_fullnames)
-      
+            # p_idx = which(input$paramset_full == paramsets_fullnames)
+      p_idx = 1
       # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
-      foldername_tmp = paste0("Tables/agents/", paramsets[p.idx], "/", input$scenario)
+      foldername_tmp = paste0("Tables/agents/", paramsets[p_idx], "/", input$scenario)
       
       aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
       
@@ -238,7 +293,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     {
       print("draw production pane")
       
-      p.idx = which(input$paramset_full == paramsets_fullnames)
+      # p_idx = which(input$paramset_full == paramsets_fullnames)
+      p_idx = 1
       
       foldername_tmp = ("Tables/production/Baseline")
       foldername_tmp = paste0("Tables/production/", input$scenario)
@@ -268,8 +324,8 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
     print("draw timeseries pane")
     
-    p.idx = which(input$paramset_full == paramsets_fullnames)
-    
+    # p_idx = which(input$paramset_full == paramsets_fullnames)
+    p_idx = 1
     
     scenario_tmp = "RCP6_0-SSP3"
     # scenario_tmp = "RCP4_5-SSP4"
@@ -277,17 +333,18 @@ Please see the further details of the parameters in Table A4 of the following pa
     paramset_tmp = "Thresholds"
     
     scenario_tmp = input$scenario
-    paramset_tmp = paramsets[p.idx]
+    paramset_tmp = paramsets[p_idx]
     
     # File names
+    s_idx = match(input$scenario, scenario_names)
     
     
     if (!str_detect(scenario_tmp, "SSP3")) {
       # aft composition
-      aft_csvname_changed = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+      aft_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
       
       # supply and demand files
-      demand_csvname_changed = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
+      demand_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
       
       aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
       demand_dt = getCSV(demand_csvname_changed, location = location_UK)
@@ -295,7 +352,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     } else { 
       
       # aft composition
-      aft_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
+      aft_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
       
       aftcomp_dt_l = lapply(aft_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
       
@@ -304,7 +361,7 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       
       # supply and demand files
-      demand_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(input$version, version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
+      demand_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
       demand_dt_l = lapply(demand_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
       
       rem_col_idx = match(c("Tick", "Region"), colnames(demand_dt_l[[1]]))
@@ -319,11 +376,14 @@ Please see the further details of the parameters in Table A4 of the following pa
     # mean capital level
     capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
     
-    #@todo read csv files
     
-    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
+    if (default_version_byscenario[s_idx] %in% c("Default_v21", "PenalsingOverProduction_v21")) { 
+      capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
+    } else {
+      capital_scene_tmp = read.csv(paste0("Tables/Summary_v18//", capital_csvname_changed))
+      
+    }
     
-
     aftcomp_dt_org = aftcomp_dt
     # reclassify
     aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
@@ -344,7 +404,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     aftcomp_m = t(as.matrix(sapply(aftcomp_dt[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
-
+    
     
     # process csv files
     demand_m = t(as.matrix(sapply(demand_dt[, -c(ncol(demand_dt) - 1:0)] , FUN = function(x) as.numeric(as.character(x)))))
@@ -570,7 +630,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)
     abline(h = -100, lty=2)
- 
+    
     
     # legend("topright", legend = serviceNames, fill=serviceColours, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), border=NA)
     # legend("topright", legend = serviceNames[], col=serviceColours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
@@ -578,7 +638,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     ######### INTENSITY 
- 
+    
     aftcomp_org_m = t(as.matrix(sapply(aftcomp_dt_org[, -c(1,2)] , FUN = function(x) as.numeric(as.character(x)))))
     
     print(rownames(aftcomp_org_m))
@@ -592,7 +652,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     intensity_rel_v = intensity_v / intensity_v[1] * 100 
     
-     
+    
     intensity_range = range(intensity_rel_v, na.rm = T)
     print(intensity_range)
     
@@ -602,13 +662,13 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # barplot(height = demand_m_norm, beside=T, ylab="Relative to 2020's supply (%)", col = serviceColours, main = "Service Demand", names= demand_dt$Tick, ylim=y_lim_v, border=NA)
     
-    plot(demand_dt$Tick, intensity_rel_v, type="l", col = "black", ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's intensity (%)",  main = "Land Use Intensity (old)", las=1, xaxt="n" )
+    plot(demand_dt$Tick, intensity_rel_v, type="l", col = "black", ylim=y_lim_v, xlab="Year", ylab="Relative to 2020's intensity (%)",  main = "Land Use Intensity", las=1, xaxt="n" )
     axis(side=1, at = target_years_other, labels = target_years_other)
     # axis(side=2, at = seq(floor(-shortfall_max), ceiling(shortfall_max), shortfall_intv))
     abline(h = 0, lty=2)
     abline(h = 100, lty=2)
     
-     
+    
     
     
     
@@ -636,18 +696,25 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
     
     
-    p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
-    p_to.idx = which(input$paramset_full_to  == paramsets_fullnames)
+    # p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
+    # p_to.idx = which(input$paramset_full_to  == paramsets_fullnames)
     
-    # fname_from = paste0(input$version_tr, "/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv")
-    # fname_to =  paste0(input$version_tr, "/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv")
+    p_from.idx = 1
+    p_to.idx = 1
+    # fname_from = paste0(default_version_byscenario_tr, "/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv")
+    # fname_to =  paste0(default_version_byscenario_tr, "/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv")
     
-    fname_from =  getFname(input$version_from, paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
-    fname_to   =  getFname(input$version_to, paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
+    s_idx_from = match(input$scenario_from, scenario_names)
+    s_idx_to = match(input$scenario_to, scenario_names)
+    
+    
+    
+    fname_from =  getFname(default_version_byscenario[s_idx_from], paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
+    fname_to   =  getFname(default_version_byscenario[s_idx_to], paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
     
     
     #### Transition matrix
- 
+    
     csv_from = getCSV(fname_from, location = location_UK)
     csv_to = getCSV(fname_to, location = location_UK)
     
@@ -673,7 +740,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     aft_new[aft_new %in% c(12)] = 10
     aft_new[aft_new %in% c(13)] = 11
     
-      
+    
     aft_tr.df = cbind(aft_old, aft_new)
     
     aft_tr.df = aft_tr.df[!is.na(rowSums(aft_tr.df)),]
@@ -691,7 +758,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     aft_new_f = factor(aft_new, levels = c(1:5, 7:11, 14:17))
     
     aft_tb_oldandnew = table(aft_old_f, aft_new_f)
-   
+    
     trn_mtrx <- with(aft_tr.df, aft_tb_oldandnew)
     str(aft_tb_oldandnew)
     
@@ -703,7 +770,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     aft_old_tb = rowSums(trn_mtrx)
     aft_new_tb = colSums(trn_mtrx)
     
-     
+    
     aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 3  ), "%")
     aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T) * 100, 3  ), "%")
     
@@ -717,7 +784,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     plot.new()
     
     transitionPlot(trn_mtrx,new_page=T, fill_start_box =  tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop, overlap_add_width = 1, tot_spacing = 0.07, min_lwd = unit(0.005, "mm"), max_lwd = unit(10, "mm"),  box_label = c(input$year_from, input$year_to),)
-     
+    
     
     legend("center", tr_names, col = tr.colors, pch=15, cex=0.9)
     
@@ -822,12 +889,87 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       if (input$outputlayer == "LandUseIndex") {  # land use index
         
-        proxy %>% addRasterImage(dt, project = FALSE, colors = aft_pal, group = "ModelResult"
+        if (input$colorsGroup == "Reduced (n=7)") { 
+          pal_out = aft_pal_group2
+          col_out = aft_group2_colours_17
+        } else if (input$colorsGroup == "Shaded (n=14)") { 
+          
+          # pal_out = aft_pal_group2
+          # col_out = aft_group2_colours_17
+          
+          
+          #### Choose the right intensity scaling
+          intens.year<-subset(intens, intens$years==input$year)
+          if(input$scenario=="Baseline") {
+            intens.year.scen = intens[1, 3:6]
+          } else if (input$scenario=="RCP2_6-SSP1") {
+            intens.year.scen<-intens.year[,3:6]
+          } else if (input$scenario=="RCP4_5-SSP2" | input$scenario=="RCP8_5-SSP2") {
+            intens.year.scen<-intens.year[,7:10]
+          } else if (input$scenario=="RCP6_0-SSP3") {
+            intens.year.scen<-intens.year[,11:14]
+          } else if (input$scenario=="RCP4_5-SSP4") {
+            intens.year.scen<-intens.year[,15:18]
+          } else if (input$scenario=="RCP8_5-SSP5") {
+            intens.year.scen<-intens.year[,19:22]
+          }
+          
+          
+          
+          # Set the arable and pastoral colours by their relative intensity
+          A.col<-"#998459"
+          #  P.col<-"#BCB918"
+          P.col<-"#c7bd00"
+          
+          IA.scale<-as.numeric(intens.year.scen[1])
+          EA.scale<-as.numeric(intens.year.scen[2])
+          IP.scale<-as.numeric(intens.year.scen[3])
+          EP.scale<-as.numeric(intens.year.scen[4])
+          
+          IA.col<-lighten(A.col,amount=(0.9-IA.scale))
+          EA.col<-lighten(A.col,amount=(0.9-EA.scale))
+          IP.col<-lighten(P.col,amount=(0.9-IP.scale))
+          EP.col<-lighten(P.col,amount=(0.9-EP.scale))
+          VEP.col<-lighten(P.col,amount=0.9)
+          
+          aftNames<-c("Intensive arable food/fodder", # 1
+                      "Extensive arable", # 2
+                      "Sustainable arable", # 3
+                      "Productive broadleaf", # 4
+                      "Productive conifer", # 5
+                      "Mixed woodland", # 6
+                      "Conservation", # 7 
+                      "Intensive pastoral", # 8 
+                      "Extensive pastoral", # 9 
+                      "Very extensive pastoral", # 10
+                      "Agro-forestry",#11
+                      "Bioenergy",#12
+                      "Urban",#13
+                      "Unmanaged")#14
+          
+          aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
+          
+          aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
+          
+          
+          pal_out = colorFactor(col2hex(as.character(aftColours_shaded_srt)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
+          
+          col_out = aftColours_shaded_srt 
+          
+        } else {
+          pal_out = aft_pal 
+          col_out = aft_colors_fromzero 
+        }
+        
+        proxy %>% addRasterImage(dt, project = FALSE, colors = pal_out, group = "ModelResult"
                                  , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
         if (input$legend) {
           
-          proxy %>% addLegend(colors = col2hex(as.character(aft_colors_fromzero)), labels = aft_shortnames_fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          proxy %>% addLegend(colors = col2hex(as.character(col_out)), labels = aft_shortnames_fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
         }
+        
+         
+        
       } else {
         dt.v = getValues(dt)
         dt.rng = range(dt.v, na.rm = T)
@@ -1005,9 +1147,12 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # input$background # touch
     
-    p.idx = which(input$paramset_full == paramsets_fullnames)
+    # p_idx = which(input$paramset_full == paramsets_fullnames)
+    p_idx = 1
     
-    fname_changed =getFname(input$version, paramsets[p.idx], input$scenario,input$year)   
+    s_idx = match(input$scenario, scenario_names)
+    
+    fname_changed =getFname(default_version_byscenario[s_idx], paramsets[p_idx], input$scenario,input$year)   
     
     r_changed = getRaster(fname_changed, band.name = input$outputlayer, resolution = RESOLUTION_WEB, location = location_UK)
     

@@ -21,6 +21,9 @@ library(shinyjs) # hidden function
 # library(wesanderson)
 library(markdown)
 
+library(colorspace) # lighten
+
+
 library(Gmisc) # transition plot 
 
 RESOLUTION_WEB = 1E3 # 1.5E4
@@ -34,7 +37,23 @@ MAINPANEL_WIDTH = 12 - SIDEBAR_WIDTH
 
 
 TRANSPARENCY_DEFAULT = 0.9 
+aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
+                       "#F3EF0C", #2 IP EP
+                       "#216E12", #3 PN
+                       "#7d7d47", #4 MW VEP AF
+                       "#0a1c01", #5 NW
+                       "#EE0F05", #6 Urban
+                       "#fafaf7") #7 Unmanaged
 
+
+aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
+                                             1,# Bio
+                                             1, # EA
+                                             2, # EP
+                                             1, # IA
+                                             1, # IA
+                                             2, # IP
+                                             4, 5, 3, 3, 3, 3, 1, 4, 6,7)]
 
 
 
@@ -308,23 +327,25 @@ createTempFiles <- function() {
   
   
   endCluster()
-  library(parallel)
+  # library(parallel)
   library(doMC)
-  registerDoMC(16)
-  
-  foreach(paramset = paramsets, .errorhandling = "stop") %do% {
-    print(paramset)
+  registerDoMC()
+  paramset_tmp = paramsets[1]
+  indicator_names_in = "LandUseIndex"  
+  version_names_in = version_names # [1:4]
+  foreach(version_tmp = version_names_in, .errorhandling = "stop") %do% {
+    print(version_tmp)
     
-    res1 = foreach(scenario = scenario_names[-4],  .errorhandling = "stop") %do% {
+    res1 = foreach(scenario = scenario_names,  .errorhandling = "stop") %dopar% {
       print(scenario)
-      res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names, FUN = function(b_name) {
-        res3 = getRaster(getFname(version_tmp, paramset = paramset, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
+      res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names_in, FUN = function(b_name) {
+        res3 = getRaster(getFname(version_tmp, paramset = paramset_tmp, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
         return(TRUE);
       }))
       
       print("ok")
       
-      return(res)
+      return(res2)
     }
     
     

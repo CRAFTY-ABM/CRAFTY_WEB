@@ -21,7 +21,7 @@ source("RScripts/Functions_CRAFTY_WEB.R")
 # https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
 
 
-navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactive web-interface (UK project 2021)", fluid = T, 
+navbarPage("CRAFTY-GB interactive web-interface", windowTitle =  "CRAFTY-GB interactive web-interface", fluid = T, 
            
            
            # # titlePanel("CRAFTY-EU"), 
@@ -129,23 +129,21 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                     # Sidebar layout with input and output definitions ----
                     sidebarLayout(
                       sidebarPanel(width=SIDEBAR_WIDTH,
-                                   
-
-                                   selectInput("version", "Version",
-                                               version_names, selected = version_names[version_default_idx]
-                                   )
+ 
+                                   # selectInput("version", "Version",
+                                   #             version_names, selected = version_names[version_default_idx]
+                                   # ),
                                    # , fluidPage(br(), h4("Scenario"))
+                                   selectInput("scenario", "Climate and socio-economic scenario",
+                                               scenario_names[], selected = scenario_names[1]
+                                   )
                                    , sliderInput("year",
                                                  "Year:",
                                                  min = min(target_years_other),
                                                  max = max(target_years_other), sep = "",
-                                                 value = min(target_years_other), step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
+                                                 value = min(target_years_other), step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL))
 
-                                   selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario_names[], selected = scenario_names[1]
-                                   ),
-
-                                   radioButtons("outputGroup", "Show layer",
+                                   , radioButtons("outputGroup", "Show layer",
                                                 c("Model output"="print_out", "Model input"="print_in")
                                    )
                                    # actionButton(inputId = "REFRESH", label = "Refresh map")
@@ -158,9 +156,10 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                  indicator_names[15:28], selected=indicator_names[28]
                                    )
                                    , htmlOutput("ReferenceToScenarios")
-                                   , selectInput("paramset_full", label = "Behavioural parameter set-up", choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                   )
-                                   , actionButton(inputId = "deleteCache", label = "Delete cached files")
+                                   # , (selectInput("paramset_full", label = "Behavioural parameter set-up", choices = paramsets_fullnames, selected = paramsets_fullnames[1])
+                                   # )
+                                   , actionButton(inputId = "deleteCache", label = "Delete cache")
+                                   , actionButton(inputId = "createCache", label = "Create cache")
                                    
                       ),
                       # 
@@ -188,10 +187,12 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                                sliderInput("alpha", "Transparency",0, 1,
                                                            value = TRANSPARENCY_DEFAULT, step = 0.1
                                                ),
+                                               selectInput("colorsGroup", "Color palette (AFT)",
+                                                           choices = c("Shaded (n=14)", "Reduced (n=7)")
+                                               ),
                                                selectInput("colors", "Color palette (cont.)",
                                                            rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                                                )
-                                               
                                                # , radioButtons("plotType", "Plot type",
                                                #              c("Scatter"="p", "Line"="l")
                                                # )
@@ -286,38 +287,39 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                                      
                                      fluidPage(br(), h4("Land use transition from"))
                                      
-                                     , selectInput("version_from", "Version",
-                                                 version_names, selected = version_names[1]
+                                     # , selectInput("version_from", "Version",
+                                     #             version_names, selected = version_names[1]
+                                     # )
+                                     , selectInput("scenario_from", "Scenario",
+                                                   scenario_names[], selected = scenario_names[1]
+                                                   
                                      )
                                      , sliderInput("year_from",
                                                    "Year",
                                                    min = 2020,
                                                    max = 2080, sep = "",
-                                                   value = 2020, step=10),
-                                     selectInput("paramset_full_from", label = "Behavioural parameter set-up",
-                                                 choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                     ),
-                                     selectInput("scenario_from", "Climate and socio-economic scenario",
-                                                 scenario_names[], selected = scenario_names[1]
-                                                 
-                                     )
-                                     , fluidPage(br(), h4("To"))
+                                                   value = 2020, step=10)
+                                     # selectInput("paramset_full_from", label = "Behavioural parameter set-up",
+                                     #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+                                     # ),
+      
+                                     , fluidPage(br(), h4("to"))
                                      
-                                     , selectInput("version_to", "Version",
-                                                 version_names, selected = version_names[1]
-                                     )
-                                     ,  sliderInput("year_to",
+                                     # , selectInput("version_to", "Version",
+                                     #             version_names, selected = version_names[1]
+                                     # ), 
+                                     , selectInput("scenario_to", "Scenario",
+                                                 scenario_names[], selected = scenario_names[4]
+                                     ) 
+                                     , sliderInput("year_to",
                                                     "Year",
                                                     min = 2020,
                                                     max = 2080, sep = "",
-                                                    value = 2070, step=10),
-                                     selectInput("paramset_full_to", label = "Behavioural parameter set-up",
-                                                 choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                     ),
-                                     selectInput("scenario_to", "Climate and socio-economic scenario",
-                                                 scenario_names[], selected = scenario_names[2]
-                                     )
-                                     
+                                                    value = 2070, step=10)
+                                     # selectInput("paramset_full_to", label = "Behavioural parameter set-up",
+                                     #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+                                     # ),
+
                                      
                         ),
                         #
@@ -330,9 +332,15 @@ navbarPage("CRAFTY interactive web-interface", windowTitle =  "CRAFTY interactiv
                         )
                       )
            )
-           , tabPanel("AFT description",
+           , tabPanel("Land Use description / Legend (temporary)",
                       # AFT info
+                      imageOutput("Plot_Legend", width = 500), 
                       dataTableOutput("Tab1_AFTTablePane")
+
+           )
+           , tabPanel("Capital/Service desctiption",
+                      # AFT info
+                      dataTableOutput("Tab1_CapTablePane")
            )
            , tabPanel("About",
                       fluidRow(

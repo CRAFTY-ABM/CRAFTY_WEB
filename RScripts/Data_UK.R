@@ -9,7 +9,7 @@ runid="0"
 seedid = "99"
 
 # number of threads to process raster
-n_thread = 4
+n_thread = 6
 
 region_names = c("England", "Scotland", "Wales")
 # 
@@ -28,12 +28,15 @@ path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 data_prefix = ""
 # data_prefix = "21May2021_v9_NotRemovingNegative/"
 
-version_names = c("Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
+version_names = c("Default_v21", "PenalsingOverProduction_v21")#,"Default_v18", "PenalsingOverProduction_v18", "Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
 
-version_prefix =c("Removal_v17", "NoRemoval_v17","Removal_v16", "NoRemoval_v16", "Removal_v15", "NoRemoval_v15")#, "Removal_v14", "NoRemoval_v14")#, "NewSN_Removal", "NewSN_NoRemoval") 
+version_prefix =c("Removal_v21", "NoRemoval_v21")#,"Removal_v18", "NoRemoval_v18","Removal_v17", "NoRemoval_v17","Removal_v16", "NoRemoval_v16", "Removal_v15", "NoRemoval_v15")#, "Removal_v14", "NoRemoval_v14")#, "NewSN_Removal", "NewSN_NoRemoval") 
 
-version_default_idx = 5
+version_default_idx = 1
 version_default = version_names[version_default_idx]
+
+
+default_version_byscenario = version_names[c(1,2,2,1,1,2,1)]
 
 
 # absolute path (for local)
@@ -222,9 +225,8 @@ aft_tb[aft_tb$Name == "Lazy FR", ]$Name = "Unmanaged"
 
 
 
-aftNames<-c("Intensive arable food/fodder","Extensive arable", "Sustainable arable", "Productive broadleaf","Productive conifer","Mixed woodland","Conservation","Intensive pastoral","Extensive pastoral","Very extensive pastoral","Agro-forestry","Bioenergy","Urban","Unmanaged")
-aftColours<-c("#E3C16B","#91714C","#C0BCAE","#BDED50","#268c20","#215737","#0a1c01","#F3EF0C","#BCB918","#7d7d47","#28b1c9","#2432d1","#EE0F05","#fafaf7")
-
+# aftNames<-c("Intensive arable food/fodder","Extensive arable", "Sustainable arable", "Productive broadleaf","Productive conifer","Mixed woodland","Conservation","Intensive pastoral","Extensive pastoral","Very extensive pastoral","Agro-forestry","Bioenergy","Urban","Unmanaged")
+# aftColours<-c("#E3C16B","#91714C","#C0BCAE","#BDED50","#268c20","#215737","#0a1c01","#F3EF0C","#BCB918","#7d7d47","#28b1c9","#2432d1","#EE0F05","#fafaf7")
 
 aft_colors_alpha = aft_tb$Color[match( aft_shortnames_fromzero, aft_tb$Name)]
 
@@ -249,7 +251,10 @@ aft_lty_ts = c(rep(1, 13), 2)
 n_cell_total = nrow(uk_coords)
 
 
+
+
 aft_pal <- colorFactor(col2hex(as.character(aft_colors_fromzero)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
+aft_pal_group2 <- colorFactor(col2hex(as.character(aft_group2_colours_17)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
 
 # aft.pal(6)
 
@@ -299,11 +304,40 @@ aft_group2_tb =t( matrix( nrow = 2, c("IAfood",  "Arable",
                       "NWCons", "Conservation",
                       "Urban", "Urban",
                       "Lazy FR", "Unmanaged")))
-aft_group2_names =  ( unique(aft_group_reduced_tb[,2]))
+aft_group2_names =  ( unique(aft_group2_tb[,2]))
+
+aftNames<-c("Arable","Pastoral","Forest","Very extensive/mixed","Conservation","Urban","Unmanaged")
+aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
+                       "#F3EF0C", #2 IP EP
+                       "#216E12", #3 PN
+                       "#7d7d47", #4 MW VEP AF
+                       "#0a1c01", #5 NW
+                       "#EE0F05", #6 Urban
+                       "#fafaf7") #7 Unmanaged
+
+
+aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
+                                             1,# Bio
+                                             1, # EA
+                                             2, # EP
+                                             1, # IA
+                                             1, # IA
+                                             2, # IP
+                                             4, 5, 3, 3, 3, 3, 1, 4, 6,7)]
 
 
 
 #### 
+intens<-read.csv("Tables/Intensity levels.csv")
+
+
+
+
+
+
+
+
+
 
 
 
