@@ -21,153 +21,86 @@ source("RScripts/Functions_CRAFTY_WEB.R")
 # https://www.cultureofinsight.com/blog/2018/03/15/2018-03-15-responsive-iframes-for-shiny-apps/
 
 
-navbarPage("CRAFTY-GB interactive web-interface", windowTitle =  "CRAFTY-GB interactive web-interface", fluid = T, 
+navbarPage("CRAFTY-GB", windowTitle =  "CRAFTY-GB interactive web-interface", fluid = T, 
            
            
            # # titlePanel("CRAFTY-EU"), 
-           # tabPanel("Main", 
-           #          
-           #          # Sidebar layout with input and output definitions ----
-           #          sidebarLayout(
-           #            sidebarPanel(width=SIDEBAR_WIDTH,
-           #                         fluidPage(br(), h4("Scenario customisation"))
-           #                         
-           #                         , sliderInput("year",
-           #                                       "Year:",
-           #                                       min = 2016,
-           #                                       max = 2086, sep = "",
-           #                                       value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL)),
-           #                         selectInput("paramset_full", label = "Behavioural parameter set-up",
-           #                                     choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-           #                         ),
-           #                         selectInput("scenario", "Climate and socio-economic scenario",
-           #                                     scenario_names[], selected = scenario_names[1]
-           #                         ),
-           #                         selectInput("foodprice", "Food price",
-           #                                     foodprice_names, selected = foodprice_names[1]
-           #                         ),
-           #                         selectInput("fooddemand", "Meat demand (applies to RCP8.5-SSP3)",
-           #                                     fooddemand_names, selected = fooddemand_names[1]
-           #                         ),
-           #                         fluidPage(br(), h4("Map customisation"))
-           #                         , selectInput("outputlayer", "Model Output",
-           #                                       indicator_names[c(20, 17, 1:7)], selected=indicator_names[20]
-           #                         )                                  
-           #                         , selectInput("inputlayer", "Model Input",
-           #                                       indicator_names[8:14], selected=indicator_names[9]
-           #                         ),
-           #                         
-           #                         selectInput("background", "Background tiles", choices =
-           #                                       provider_names, selected=providers$OpenStreetMap.Mapnik
-           #                         )
-           #                         , htmlOutput("ReferenceToScenarios")
-           #                         
-           #                         # , actionLink("deleteCache", "Delete cached files")
-           #                         
-           #            ),
-           #            # 
-           #            # # Main panel for displaying outputs ----
-           #            mainPanel(width=MAINPANEL_WIDTH, 
-           #                      tabsetPanel(
-           #                        tabPanel("Map", 
-           #                                 leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
-           #                                 # Run info
-           #                                 , verbatimTextOutput("PaneRuninfo")
-           #                                 
-           #                                 , absolutePanel(
-           #                                   top = 380, left = 20, width = 180,
-           #                                   draggable = TRUE,
-           #                                   
-           #                                   
-           #                                   wellPanel(
-           #                                     # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
-           #                                     #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
-           #                                     #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
-           #                                     #   # The slight transparency is due to `style = 'opacity: 0.92'`.
-           #                                     #   # You can put anything in absolutePanel, including inputs and outputs:"
-           #                                     # ))),
-           #                                     
-           #                                     sliderInput("alpha", "Transparency",0, 1,
-           #                                                 value = 0.8, step = 0.1
-           #                                     ),
-           #                                     selectInput("colors", "Color palette (cont.)",
-           #                                                 rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-           #                                     ),
-           #                                     
-           #                                     # , radioButtons("plotType", "Plot type",
-           #                                     #              c("Scatter"="p", "Line"="l")
-           #                                     # )
-           #                                     # , checkboxInput("legend", "Show legend", TRUE)
-           #                                     # # )
-           #                                     # sliderInput("n", "", min=3, max=20, value=5),
-           #                                     # plotOutput("plot2", height="50px")
-           #                                     downloadLink("downloadData", "Download output map (GeoTIFF)")
-           #                                   ),
-           #                                   style = "opacity: 0.5"
-           #                                   
-           #                                   
-           #                                 )
-           #                        ), 
-           #                        
-           #                        tabPanel("Behavioural parameters", 
-           #                                 # Time series info
-           #                                 dataTableOutput('Tab1_BehaviouralTablePane')
-           #                                 , htmlOutput("ReferenceToParameters")
-           #                                 
-           #                                 # Map view options
-           #                        ), 
-           #                        tabPanel("Statistics", 
-           #                                 # Time series info
-           #                                 plotOutput("Tab1_StatisticsPane")
-           #                                 # Map view options
-           #                        )
-           #                      )))
-           # )
-           # ,
-           tabPanel("Map and parameters", 
+           tabPanel("Home", 
+                    fluidRow(
+                      column(10, includeMarkdown("LandingPage.md"))
+                      #, column(2,  htmlOutput("ReferenceToScenarios"))
+                    )
                     
-                    # Sidebar layout with input and output definitions ----
-                    sidebarLayout(
-                      sidebarPanel(width=SIDEBAR_WIDTH,
- 
-                                   # selectInput("version", "Version",
-                                   #             version_names, selected = version_names[version_default_idx]
-                                   # ),
-                                   # , fluidPage(br(), h4("Scenario"))
-                                   selectInput("scenario", "Climate and socio-economic scenario",
-                                               scenario_names[], selected = scenario_names[1]
-                                   )
-                                   , sliderInput("year",
-                                                 "Year:",
-                                                 min = min(target_years_other),
-                                                 max = max(target_years_other), sep = "",
-                                                 value = min(target_years_other), step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL))
-
-                                   , radioButtons("outputGroup", "Show layer",
-                                                c("Model output"="print_out", "Model input"="print_in")
-                                   )
-                                   # actionButton(inputId = "REFRESH", label = "Refresh map")
-                                   # ,
-                                   # , fluidPage(br(), h3("Target indicator"))
-                                   , selectInput("outputlayer", "Output", 
-                                                 indicator_names[c(29, 1:14)], selected=indicator_names[28]
-                                   )                                  
-                                   , selectInput("inputlayer", "Input",
-                                                 indicator_names[15:28], selected=indicator_names[28]
-                                   )
-                                   , htmlOutput("ReferenceToScenarios")
-                                   # , (selectInput("paramset_full", label = "Behavioural parameter set-up", choices = paramsets_fullnames, selected = paramsets_fullnames[1])
-                                   # )
-                                   , actionButton(inputId = "deleteCache", label = "Delete cache")
-                                   , actionButton(inputId = "createCache", label = "Create cache")
-                                   
-                      ),
-                      # 
-                      # # Main panel for displaying outputs ----
-                      mainPanel(width=MAINPANEL_WIDTH, 
-                                tabsetPanel(
-                                  tabPanel("Map", 
-                                           leafletOutput("Tab1_MapPane", height = PLOT_HEIGHT)
+           ),
+           tabPanel("Model info", 
+                    tabsetPanel(
+                      tabPanel("Model structure", 
+                               fluidRow(
+                                 column(10, includeMarkdown("ModelStructure.md"))
+                               )
+                      )
+                      , tabPanel("Land use types",
+                                 # AFT info
+                                 # dataTableOutput("Tab1_AFTTablePane")
+                                 fluidRow(
+                                   column(10, includeMarkdown("AFT_Description.md"))
+                                 )
+                      )
+                      , tabPanel("Capitals",
+                                 # AFT info
+                                 fluidRow(
+                                   column(10, dataTableOutput("Tab1_CapTablePane"))
+                                 )
+                                 
+                      ), tabPanel("Services",
+                                  # Services info
+                                  fluidRow(
+                                    column(10, dataTableOutput("Tab1_ServiceTablePane"))
+                                  )
+                      )
+                    )
+           ),
+           
+           tabPanel("Model result",
+                    tabsetPanel(
+                      tabPanel("Maps", 
+                               
+                               # Sidebar layout with input and output definitions ----
+                               sidebarLayout(
+                                 sidebarPanel(width=SIDEBAR_WIDTH,
+                                              
+                                              # selectInput("version", "Version",
+                                              #             version_names, selected = version_names[version_default_idx]
+                                              # ),
+                                              # , fluidPage(br(), h4("Scenario"))
+                                              selectInput("scenario", "Climate and socio-economic scenario",
+                                                          scenario_names[], selected = selected_scenario_current
+                                              )
+                                              , sliderInput("year",
+                                                            "Year:",
+                                                            min = min(target_years_other),
+                                                            max = max(target_years_other), sep = "",
+                                                            value = min(target_years_other), step=10, animate =animationOptions(interval = 5000, loop = FALSE, playButton = NULL, pauseButton = NULL))
+                                              
+                                              , radioButtons("outputGroup", "Show layer",
+                                                             c("Model output"="print_out", "Model input"="print_in")
+                                              )
+                                              
+                                              , selectInput("outputlayer", "Output", 
+                                                            indicator_names[c(29, 1:14)], selected=indicator_names[28]
+                                              )                                  
+                                              , selectInput("inputlayer", "Input",
+                                                            indicator_names[15:28], selected=indicator_names[28]
+                                              )
+                                              , htmlOutput("ReferenceToScenarios")
+                                              
+                                              
+                                 ),
+                                 # 
+                                 # # Main panel for displaying outputs ----
+                                 mainPanel(width=MAINPANEL_WIDTH, 
+                                           
+                                           leafletOutput("Tab1_MapPane", height = 800)
                                            # Run info
                                            , verbatimTextOutput("PaneRuninfo")
                                            
@@ -177,12 +110,6 @@ navbarPage("CRAFTY-GB interactive web-interface", windowTitle =  "CRAFTY-GB inte
                                              
                                              
                                              wellPanel(
-                                               # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
-                                               #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
-                                               #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
-                                               #   # The slight transparency is due to `style = 'opacity: 0.92'`.
-                                               #   # You can put anything in absolutePanel, including inputs and outputs:"
-                                               # ))),
                                                
                                                sliderInput("alpha", "Transparency",0, 1,
                                                            value = TRANSPARENCY_DEFAULT, step = 0.1
@@ -211,140 +138,108 @@ navbarPage("CRAFTY-GB interactive web-interface", windowTitle =  "CRAFTY-GB inte
                                              
                                              
                                            )
-                                  )
-                                  , tabPanel("Time-series",
-                                             plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
-                                             
-                                             # Map view options
-                                  )
-                                  
-                                  , tabPanel("Behavioural parameters",
-                                             # Time series info
-                                             dataTableOutput('Tab1_BehaviouralTablePane')
-                                             , htmlOutput("ReferenceToParameters")
-                                             
-                                             # Map view options
-                                  )
-                                  
-                       
-                                  
-                                  # , tabPanel("Production parameters",
-                                  #            # Time series info
-                                  #            dataTableOutput('Tab1_ProductionTablePane')
-                                  #            # , htmlOutput("ReferenceToParameters")
-                                  # 
-                                  #            # Map view options
-                                  # )
-                                  # ,
-                                  # tabPanel("Statistics",
-                                  #          # Time series info
-                                  #          plotOutput("Tab1_StatisticsPane")
-                                  # )
-                                )))
-           )
-           # , tabPanel("Time-series",
-           #            
-           #            # Sidebar layout with input and output definitions ----
-           #            sidebarLayout(
-           #              sidebarPanel(width=SIDEBAR_WIDTH,
-           #                           selectInput("paramset_full_ts", label = "Behavioural parameters",
-           #                                       choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-           #                           ),
-           #                           selectInput("scenario_ts", "Climate and socio-economic scenario",
-           #                                       scenario_names[], selected = scenario_names[1]
-           #                           )
-           #                           # , selectInput("foodprice_ts", "Food price",
-           #                           #               foodprice_names, selected = foodprice_names[1]
-           #                           # )
-           #                           # , selectInput("fooddemand_ts", "Food demand",
-           #                           #               fooddemand_names, selected = fooddemand_names[1]
-           #                           # )
-           #                           # ,
-           #                           # selectInput("inputlayer_ts", "Model Input",
-           #                           #             indicator_names[8:14], selected=indicator_names[9]
-           #                           # ),
-           #                           # selectInput("outputlayer_ts", "Model Output",
-           #                           #             indicator_names[c(20, 17, 1:7, 19)], selected=indicator_names[20]
-           #                           # )
-           #                           
-           #              ),
-           #              #
-           #              # # Main panel for displaying outputs ----
-           #              mainPanel(width = MAINPANEL_WIDTH,
-           #                        # Show a plot of the generated distribution
-           #                        plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
-           #                        # , verbatimTextOutput("PaneRuninfo_ts")
-           #              )
-           #            )
-           # )
-           
-           , tabPanel("Land Use Transition",
-                      # Show a transition plot of the selected
-                      
-                      # Sidebar layout with input and output definitions ----
-                      sidebarLayout(
-                        sidebarPanel(width=SIDEBAR_WIDTH, height=PLOT_HEIGHT,
-                                     
-                                     fluidPage(br(), h4("Land use transition from"))
-                                     
-                                     # , selectInput("version_from", "Version",
-                                     #             version_names, selected = version_names[1]
-                                     # )
-                                     , selectInput("scenario_from", "Scenario",
-                                                   scenario_names[], selected = scenario_names[1]
-                                                   
-                                     )
-                                     , sliderInput("year_from",
-                                                   "Year",
-                                                   min = 2020,
-                                                   max = 2080, sep = "",
-                                                   value = 2020, step=10)
-                                     # selectInput("paramset_full_from", label = "Behavioural parameter set-up",
-                                     #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                     # ),
-      
-                                     , fluidPage(br(), h4("to"))
-                                     
-                                     # , selectInput("version_to", "Version",
-                                     #             version_names, selected = version_names[1]
-                                     # ), 
-                                     , selectInput("scenario_to", "Scenario",
-                                                 scenario_names[], selected = scenario_names[4]
-                                     ) 
-                                     , sliderInput("year_to",
-                                                    "Year",
-                                                    min = 2020,
-                                                    max = 2080, sep = "",
-                                                    value = 2070, step=10)
-                                     # selectInput("paramset_full_to", label = "Behavioural parameter set-up",
-                                     #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-                                     # ),
-
-                                     
-                        ),
-                        #
-                        # # Main panel for displaying outputs ----
-                        mainPanel(
-                          
-                          tabPanel("Tab3_TransitionPlotPane",
-                                   plotOutput("Tab3_TransitionPlotPane")
-                          )
-                        )
+                                           
+                                           
+                                 )
+                               )
                       )
-           )
-           , tabPanel("Land Use description / Legend (temporary)",
-                      # AFT info
-                      imageOutput("Plot_Legend", width = 500), 
-                      dataTableOutput("Tab1_AFTTablePane")
-
-           )
-           , tabPanel("Capital/Service desctiption",
-                      # AFT info
-                      dataTableOutput("Tab1_CapTablePane")
+                      ,
+                      
+                      # tabPanel("Time-series",
+                      #            plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                      # )
+                      # 
+                      # 
+                      # 
+                      
+                      
+                      tabPanel("Time-series", 
+                               
+                               sidebarLayout(
+                                 sidebarPanel(width=SIDEBAR_WIDTH,
+                                              
+                                              # selectInput("version", "Version",
+                                              #             version_names, selected = version_names[version_default_idx]
+                                              # ),
+                                              # , fluidPage(br(), h4("Scenario"))
+                                              selectInput("scenario_ts", "Climate and socio-economic scenario",
+                                                          scenario_names[], selected = selected_scenario_current
+                                              )
+                                              
+                                              
+                                 ), 
+                                 mainPanel(width=MAINPANEL_WIDTH, 
+                                           
+                                           plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
+                                 )
+                               )
+                               
+                      )
+                      
+                      
+                      
+                      
+                      , tabPanel("Land Use Transition",
+                                 # Show a transition plot of the selected
+                                 
+                                 # Sidebar layout with input and output definitions ----
+                                 sidebarLayout(
+                                   sidebarPanel(width=SIDEBAR_WIDTH, height=PLOT_HEIGHT,
+                                                
+                                                fluidPage(br(), h4("Land use transition from"))
+                                                
+                                                # , selectInput("version_from", "Version",
+                                                #             version_names, selected = version_names[1]
+                                                # )
+                                                , selectInput("scenario_from", "Scenario",
+                                                              scenario_names[], selected = scenario_names[1]
+                                                              
+                                                )
+                                                , sliderInput("year_from",
+                                                              "Year",
+                                                              min = 2020,
+                                                              max = 2080, sep = "",
+                                                              value = 2020, step=10)
+                                                # selectInput("paramset_full_from", label = "Behavioural parameter set-up",
+                                                #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+                                                # ),
+                                                
+                                                , fluidPage(br(), h4("to"))
+                                                
+                                                # , selectInput("version_to", "Version",
+                                                #             version_names, selected = version_names[1]
+                                                # ), 
+                                                , selectInput("scenario_to", "Scenario",
+                                                              scenario_names[], selected = scenario_names[4]
+                                                ) 
+                                                , sliderInput("year_to",
+                                                              "Year",
+                                                              min = 2020,
+                                                              max = 2080, sep = "",
+                                                              value = 2070, step=10)
+                                                # selectInput("paramset_full_to", label = "Behavioural parameter set-up",
+                                                #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
+                                                # ),
+                                                
+                                                
+                                   ),
+                                   #
+                                   # # Main panel for displaying outputs ----
+                                   mainPanel(
+                                     
+                                     tabPanel("Tab3_TransitionPlotPane",
+                                              plotOutput("Tab3_TransitionPlotPane")
+                                     )
+                                   )
+                                 )
+                      )
+                      
+                      
+                    )
            )
            , tabPanel("About",
                       fluidRow(
-                        column(12,
+                        column(10,
                                includeMarkdown("crafty_about.md")
                         )
                         # ,
@@ -360,132 +255,13 @@ navbarPage("CRAFTY-GB interactive web-interface", windowTitle =  "CRAFTY-GB inte
                         #          a(href="http://commons.wikimedia.org/wiki/User:Sfoskett",
                         #            "User:Sfoskett")
                         #        )
+                        , actionButton(inputId = "deleteCache", label = "Delete cache (admin only)")
+                        , actionButton(inputId = "createCache", label = "Create cache (admin only)")
+                        
                       )
            )
-           # ,
-           # tabPanel("New social network (experimental)",
-           #          # Run info
-           #          # , verbatimTextOutput("PaneRuninfo")
-           # 
-           #          # Sidebar layout with input and output definitions ----
-           #          sidebarLayout(
-           #            sidebarPanel(width=SIDEBAR_WIDTH + 1 ,
-           #                         fluidPage(br(), h4("Scenario customisation"))
-           # 
-           #                         , sliderInput("year_sn",
-           #                                       "Year:",
-           #                                       min = 2016,
-           #                                       max = 2086, sep = "",
-           #                                       value = 2016, step=10, animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL))
-           # 
-           #                         , selectInput("paramset_sn", label = "Behavioural parameter set-up",
-           #                                       choices = paramsets_fullnames, selected = paramsets_fullnames[1]
-           #                         ),
-           #                         selectInput("scenario_sn", "Climate and socio-economic scenario",
-           #                                     scenario_names[], selected = scenario_names[1]
-           #                         ),
-           #                         selectInput("foodprice_sn", "Food price",
-           #                                     foodprice_names, selected = foodprice_names[1]
-           #                         ),
-           #                         selectInput("fooddemand_sn", "Meat demand (applies to RCP8.5-SSP3)",
-           #                                     fooddemand_names, selected = fooddemand_names[1]
-           #                         ),
-           # 
-           #                         fluidPage(br(), h4("SN model customisation"))
-           #                         , selectInput("outputlayer_sn", "Output layer",
-           #                                       c("AFT density","Social.capital"), selected="AFT density")
-           #                         , selectInput("type_sn", "Target AFT",
-           #                                       aft_names.fromzero, selected = aft_names.fromzero[2]
-           #                         )
-           #                         , fluidPage(br(), h5("Adjusted C (C')"),  h5("C' = C_0 + C_0 * (1+D) * alpha + beta"), h5(", where C_0 is the default capital value, D is the density of the same agent types within the buffer in [0,1]"))
-           #                         , sliderInput("socialnet_width",
-           #                                       "Size of Social Network Buffer (15-200 km):",
-           #                                       min = 15,
-           #                                       max = 200, sep = "",
-           #                                       value = 30, step = 5,  animate =animationOptions(interval = 3000, loop = FALSE, playButton = NULL, pauseButton = NULL))
-           # 
-           # 
-           # 
-           #                         , sliderInput("sn_alpha",
-           #                                       "alpha [-1, 1]",
-           #                                       min = -1E1,
-           #                                       max = 1E1, sep = "",
-           #                                       value = 1, step = 0.1)
-           #                         , sliderInput("sn_beta",
-           #                                       "beta [-10, 10]",
-           #                                       min = -10,
-           #                                       max = 10, sep = "",
-           #                                       value = 0, step = 0.1)
-           #                         # fluidPage(br(), h4("Map customisation"))
-           #                         # , selectInput("outputlayer2", "Model Output",
-           #                         #               indicator_names[c(20, 17, 1:7)], selected=indicator_names[20]
-           #                         # )
-           #                         # , selectInput("inputlayer2", "Model Input",
-           #                         #               indicator_names[8:14], selected=indicator_names[9]
-           #                         # ),
-           #                         #
-           #                         # selectInput("background2", "Background tiles", choices =
-           #                         #               provider_names, selected=providers$OpenStreetMap.Mapnik
-           #                         # )
-           # 
-           #                         # , actionLink("deleteCache", "Delete cached files")
-           # 
-           #            ),
-           #            mainPanel(width=MAINPANEL_WIDTH - 1 ,
-           #                      tabPanel("MapUK", leafletOutput("TabUK_MapPane", height = PLOT_HEIGHT)
-           #                      )
-           #                      , textOutput("PaneSNinfo")
-           #                      , textOutput("PaneSNinfoGugi")
-           # 
-           #                      , absolutePanel(
-           #                        top = 380, left = 20, width = 180,
-           #                        draggable = TRUE,
-           # 
-           #                        wellPanel(
-           #                          # HTML(markdownToHTML(fragment.only=TRUE, text=c("contents"
-           #                          #   # "This is an absolutePanel that uses `bottom` and `right` attributes.
-           #                          #   # It also has `draggable = TRUE`, so you can drag it to move it around the page.
-           #                          #   # The slight transparency is due to `style = 'opacity: 0.92'`.
-           #                          #   # You can put anything in absolutePanel, including inputs and outputs:"
-           #                          # ))),
-           # 
-           #                          sliderInput("alpha_sn", "Transparency",0, 1,
-           #                                      value = 0.8, step = 0.1
-           #                          ),
-           #                          selectInput("colors_sn", label = "Color palette (cont.)", selected = "RdYlGn", choices =        rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-           #                          ),
-           #                          selectInput("background_sn", "Background tiles", choices =
-           #                                        provider_names, selected=providers$OpenStreetMap.Mapnik
-           #                          )
-           # 
-           #                          # , radioButtons("plotType", "Plot type",
-           #                          #              c("Scatter"="p", "Line"="l")
-           #                          # )
-           #                          # , checkboxInput("legend", "Show legend", TRUE)
-           #                          # # )
-           #                          # sliderInput("n", "", min=3, max=20, value=5),
-           #                          # plotOutput("plot2", height="50px")
-           #                        ),
-           #                        style = "opacity: 0.5"
-           #                      )
-           #            )
-           #          )
-           # 
-           # )
            
-           # ,
-           # column(3,
-           #        img(class="img-polaroid",
-           #            src=paste0("http://upload.wikimedia.org/",
-           #                       "wikipedia/commons/9/92/",
-           #                       "1919_Ford_Model_T_Highboy_Coupe.jpg")),
-           #        tags$small(
-           #          "Source: Photographed at the Bay State Antique ",
-           #          "Automobile Club's July 10, 2005 show at the ",
-           #          "Endicott Estate in Dedham, MA by ",
-           #          a(href="http://commons.wikimedia.org/wiki/User:Sfoskett",
-           #            "User:Sfoskett")
-           #        )
+           
            
            #       # , absolutePanel(
            #       #   bottom = 12, left = 15, width = 200, height = 'auto',

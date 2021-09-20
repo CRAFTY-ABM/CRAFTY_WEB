@@ -1,4 +1,3 @@
-#
 # This is the server logic of a Shiny web application. You can run the 
 # application by clicking 'Run App' above.
 
@@ -6,9 +5,7 @@
 library(shiny)
 source("RScripts/Functions_CRAFTY_WEB.R")
 
-# accessDropbox()
-
-
+ 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
@@ -43,14 +40,7 @@ shinyServer(function(input, output, session) {
            #input$paramset_full, " parameters and ",
            input$scenario, " climate scenario." )
   })
-  
-  
-  # runinfo_ts <- reactive({
-  #   p.idx = which(input$paramset_full_ts == paramsets_fullnames)
-  #   
-  #   paste0("Simulation with the ", input$paramset_full_ts, " parameters and ",  input$scenario_ts, " climate scenario." )
-  # })
-  # 
+    
   
   observeEvent(input$deleteCache, {
     session$sendCustomMessage(type = 'message',
@@ -105,22 +95,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     # <i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
   })
   
-  
-  
-  output$Plot_Legend <- renderImage({
-    # When input$n is 3, filename is ./images/image3.jpeg
-    filename <- normalizePath(file.path('Tables/Legend.png'))
+ 
     
-    # Return a list containing the filename and alt text
-    list(src = filename,
-         alt = paste("Legend (Shaded)"))
-  }, deleteFile = TRUE)
-  
-   
-  
-  
-  
-  
   
   
   rnew_input <- reactive({
@@ -131,6 +107,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     p_idx = 1
     
     s_idx = match(input$scenario, scenario_names)
+    
+    selected_scenario_current = input$scenario
     
     fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], input$scenario, input$year)
     
@@ -144,29 +122,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     input$background
   })
-  # providernew_sn <- reactive({
-  #   input$background_sn
-  # })
-  # 
-  # points <- eventReactive(input$year, {
-  # cbind(rnorm(1) * 2 + 13, rnorm(1) + 48)
-  # }, ignoreNULL = FALSE)
-  
-  
-  # Combine the selected variables into a new data frame
-  # selectedData <- reactive({
-  #   
-  #   p.idx = which(input$paramset_full == paramsets_fullnames)
-  #   
-  #   fname_changed =  paste0("Data/",  input$foodprice, "/", paramsets[p.idx], "/",  input$scenario, "/", input$fooddemand, "/",  input$scenario, "-",runid, "-99-UK-Cell-", input$year, ".csv")
-  #   spdf_changed = getSPDF_UK(fname_changed)
-  #   
-  #   target_val = spdf_changed[4:22]
-  #   
-  #   # hist(as.numeric(target_val$Service.Meat))
-  #   return(target_val)
-  # })
-  
+ 
   
   output$Tab1_StatisticsPane <- renderPlot({
     print("draw stat pane")
@@ -232,23 +188,31 @@ Please see the further details of the parameters in Table A4 of the following pa
       #   backgroundColor =  aft_colors_fromzero_17
       # )
     })
+  output$Tab1_ServiceTablePane <- renderDataTable(
+    {
+      print("draw service pane")
+      
+      
+      Service_tb = read.csv("Tables/Services.csv")
+      
+      
+      Service_tb = Service_tb # AFT_tb[,c("Name", "Description", "Group", "Type")
+      DT::datatable(Service_tb, options= list(paging = FALSE),  editable = F) 
+      # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
+      # %>% formatStyle(
+      #   'Name',
+      #   backgroundColor =  aft_colors_fromzero_17
+      # )
+    })
+  
   
   output$Tab1_CapTablePane <- renderDataTable(
     {
-      print("draw capital/service pane")
+      print("draw capital pane")
       
    
       Cap_tb = read.csv("Tables/Capitals.csv")
-      # 
-      
-      # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
-      
-      # spdf_changed = getSPDF(fname_changed)
-      # target_val = spdf_changed[4:22]
-      # 
-      # str(getValues(target_data))
-      # tb1 =     table(getValues(target_data))
-      # print(tb1)
+ 
       
       Cap_tb = Cap_tb # AFT_tb[,c("Name", "Description", "Group", "Type")
       DT::datatable(Cap_tb, options= list(paging = FALSE),  editable = F) 
@@ -305,38 +269,33 @@ Please see the further details of the parameters in Table A4 of the following pa
       x = productionparams_l[[a_idx]]
       
       
-      
-      
+       
       colnames(x)[1] = "Service"
       DT::datatable(x, options= list(paging = F),  editable = F, rownames = F, caption = aft_names_fromzero[a_idx]) 
       # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
     })
   
-  
-  # observe({
-  #   # dt.plot = selectedData()
-  #   input$
-  #   par(mar = c(5.1, 4.1, 4, 1))
-  #   plot(selectedData()@data[, input$outputlayer], main=input$indicator)
-  #   
-  # })
+   
   
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
     print("draw timeseries pane")
     
-    # p_idx = which(input$paramset_full == paramsets_fullnames)
-    p_idx = 1
+    p_idx = p_idx_default
     
     scenario_tmp = "RCP6_0-SSP3"
     # scenario_tmp = "RCP4_5-SSP4"
     # scenario_tmp = "Baseline"
     paramset_tmp = "Thresholds"
     
-    scenario_tmp = input$scenario
+    scenario_tmp = input$scenario_ts
+    
+    selected_scenario_current = input$scenario_ts
+    
+    
     paramset_tmp = paramsets[p_idx]
     
     # File names
-    s_idx = match(input$scenario, scenario_names)
+    s_idx = match(input$scenario_ts, scenario_names)
     
     
     if (!str_detect(scenario_tmp, "SSP3")) {
@@ -377,13 +336,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
     
     
-    if (default_version_byscenario[s_idx] %in% c("Default_v21", "PenalsingOverProduction_v21")) { 
-      capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
-    } else {
-      capital_scene_tmp = read.csv(paste0("Tables/Summary_v18//", capital_csvname_changed))
-      
-    }
-    
+    capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
+ 
     aftcomp_dt_org = aftcomp_dt
     # reclassify
     aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
@@ -450,24 +404,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     }
     legend("topright", aft_group_shortnames, col = aft_group_colors, lty=aft_lty_ts, cex=LEGEND_CEX, bty="n", xpd = TRUE, inset=c(LEGEND_MAR,0), lwd=1.5)
     
-    
-    # par( mar = c(5.1, 4.1, 4, 1)  + c(0,0,0,8))
-    # 
-    # ### Plotting number of changed pixels
-    # print("changed pixels")
-    # cnp_path =  paste0("Tables/ChangedPixelNo/",input$foodprice_ts, "/", input$fooddemand_ts, "/",paramsets[p.idx], "/", input$scenario_ts, "_ChangedPixelNo.xlsx")
-    # 
-    # cnp_dt = readxl::read_excel(cnp_path, sheet = 1)
-    # cnp_v = as.numeric(unlist(cnp_dt))
-    # cnp_max = max(c(500, cnp_v), na.rm = T)
-    # 
-    # 
-    # 
-    # plot(target_years_other[c(2:8)],cnp_v, ylim=c(0, cnp_max), type="l", xlab= "Year", ylab="Number of pixels changed", col = "blue", main = "Magnitude of land use change", xaxt ="n")
-    # 
-    # axis(side=1, at = target_years_other[-1], labels = target_years_other[-1])
-    # 
-    
+     
     
     
     ### Plotting service supply and demand
@@ -668,26 +605,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     abline(h = 0, lty=2)
     abline(h = 100, lty=2)
     
-    
-    
-    
-    
-    
-    # print("fragmentation statistics")
-    # 
-    # 
-    # ### fragmentation statistics
-    # frac_path =  paste0("Tables/FragStats/",input$foodprice_ts, "/", input$fooddemand_ts, "/",paramsets[p.idx], "/", input$scenario_ts, "_FragStats.xlsx")
-    # frac_dim = as.matrix( readxl::read_excel(frac_path, sheet = 1))
-    # 
-    # 
-    # frac_dim_norm =  frac_dim / frac_dim[,1] * 100  - 100
-    # 
-    # frac_v = as.numeric(colMeans(frac_dim_norm))
-    # frac_max = max(c(abs(frac_v)), na.rm = T) * 1.2
-    # # barplot(t(frac_dim), beside=T)
-    # plot(x=target_years_other, y = frac_v, ylim=c(-frac_max, frac_max), type="l",xlab="Year", ylab="Relative to 2016 (%)", col= "blue", main = "Avg. Fractal Dimension")
-    # abline(h = 0, lty=2)
+ 
     
     
   })
@@ -787,67 +705,35 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     legend("center", tr_names, col = tr.colors, pch=15, cex=0.9)
-    
-    # aftcomp_8classes_perc_m = aftcomp_8classes_m/colSums(aftcomp_8classes_m) * 100
-    # # barplot(height = aftcomp_8classes_perc_m, ylab="%", col = aft_colors.8classes, main = "AFT composition", names= target_years_aggcsv)
-    #
-    # plot(target_years_aggcsv, aftcomp_8classes_perc_m[1,], type="l", xlab= "Year", ylab="EU-28 proportion (%)", col = aft_colors.8classes[1], ylim=c(0, max(aftcomp_8classes_perc_m, na.rm = T) * 1.1), main = "AFT (8) composition changes")
-    #
-    # for (a.idx in 2:8) {
-    #   lines(target_years_aggcsv, aftcomp_8classes_perc_m[a.idx,],   col = aft_colors.8classes[a.idx])
-    # }
-    # legend("topright", aft_fullnames_8classes, col = aft_colors.8classes, lty=1, cex=0.7, bty="n")
-    #
-    # barplot(height = demand_m[1:7,], beside=T, ylab="Service Supply", col = serviceColours, main = "Service Supply", names= demand_dt$Tick)
-    # legend("topright", legend = serviceNames, fill=serviceColours, cex=0.7, bty="n")
-    #
-    # barplot(height = demand_m[8:14,], beside=T, ylab="Demand", col = serviceColours, main = "Service Demand", names= demand_dt$Tick)
-    # barplot(height = (demand_m[8:14,] - demand_m[1:7,]) , beside=T, ylab="Demand - Supply", col = serviceColours, main = "S/D gap", names= demand_dt$Tick)
+ 
     
     
   })
   
-  # output$Tab1_MapPane <- renderLeaflet({
-  #   r_dummy  = raster(extent(r.default))
-  #   r_dummy = setValues(r_dummy, values = 0)
-  #   proj4string(r_dummy) = proj4string(r.default)
-  #   
-  #   leaflet() %>%
-  #     clearImages() %>% clearControls() %>%
-  #     #addTiles()
-  #     addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
-  #                      options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
-  #     ) %>%
-  #     # %>%
-  #     # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-  #     addRasterImage(r_dummy, project = FALSE, group="OutputLayer") # , colors = aft_pal, maxBytes = 4 * 1024 * 1024) %>%
-  #   #  addLegend( pal = aft_pal, values = 1:17, labels = aft_names_fromzero, title = "AFT")
-  #   # addLegend(colors = col2hex(as.character(aft_colors.fromzero)), labels = aft_names_fromzero, title = indicator_names[17])
-  #   #%>%
-  #   # addMarkers(data = points())
-  # })
+  
+  
   
   output$Tab1_MapPane <- renderLeaflet({
     print("draw mappane 1")
     
     leaflet() %>%
-      clearImages() %>% clearControls() %>%
+      clearImages() %>% #clearControls() %>%
       #addTiles()
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
       ) %>%   
-      fitBounds(ext[1], ext[3], ext[2], ext[4] )
-    # fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat))
-    # addRasterImage(r_dummy, project = FALSE, group="OutputLayer", opacity=0, colors = aft_pal, maxBytes = 4 * 1024 * 1024) %>%
-    # addLegend(pal = aft_pal, values = 1:n_aft, labels = aft_names_fromzero, title = "AFT")
-    # addLegend(colors = col2hex(as.character(aft_colors.fromzero)), labels = aft_names_fromzero, title = indicator_names[17])
-    #%>%
-    # addMarkers(data = points())
+      addLayersControl(
+        baseGroups = c("ModelResult",  "Basemap"),
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>% 
+      fitBounds(ext[1], ext[3], ext[2], ext[4] ) %>%  
+      addRasterImage(r_default, project = FALSE, colors = pal_shaded_default, opacity = input$alpha, maxBytes = 4 * 1024 * 1024, group="ModelResult")  %>% 
+     addLegend(colors = col2hex(as.character(aft_shaded_colours_extended)), labels = aft_group_names_extended, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha) %>%  
+      addMiniMap(position = "bottomleft", zoomAnimation = T, toggleDisplay = TRUE)  %>% addMeasure()
+    
   })
-  # 
-  # 
-  # 
-  # 
+ 
+ 
   observe({
     print("draw tile layer")
     
@@ -891,12 +777,11 @@ Please see the further details of the parameters in Table A4 of the following pa
         
         if (input$colorsGroup == "Reduced (n=7)") { 
           pal_out = aft_pal_group2
-          col_out = aft_group2_colours_17
+           aft_names_legend = aft_group2_names
+          aft_colours_legend = aft_group2_colours
         } else if (input$colorsGroup == "Shaded (n=14)") { 
           
-          # pal_out = aft_pal_group2
-          # col_out = aft_group2_colours_17
-          
+            
           
           #### Choose the right intensity scaling
           intens.year<-subset(intens, intens$years==input$year)
@@ -915,57 +800,40 @@ Please see the further details of the parameters in Table A4 of the following pa
           }
           
           
-          
-          # Set the arable and pastoral colours by their relative intensity
-          A.col<-"#998459"
-          #  P.col<-"#BCB918"
-          P.col<-"#c7bd00"
-          
+
           IA.scale<-as.numeric(intens.year.scen[1])
           EA.scale<-as.numeric(intens.year.scen[2])
           IP.scale<-as.numeric(intens.year.scen[3])
           EP.scale<-as.numeric(intens.year.scen[4])
           
-          IA.col<-lighten(A.col,amount=(0.9-IA.scale))
-          EA.col<-lighten(A.col,amount=(0.9-EA.scale))
-          IP.col<-lighten(P.col,amount=(0.9-IP.scale))
-          EP.col<-lighten(P.col,amount=(0.9-EP.scale))
+          IA.col<-lighten(A.col,amount=(0.9 - IA.scale))
+          EA.col<-lighten(A.col,amount=(0.9 - EA.scale))
+          IP.col<-lighten(P.col,amount=(0.9 - IP.scale))
+          EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
           VEP.col<-lighten(P.col,amount=0.9)
           
-          aftNames<-c("Intensive arable food/fodder", # 1
-                      "Extensive arable", # 2
-                      "Sustainable arable", # 3
-                      "Productive broadleaf", # 4
-                      "Productive conifer", # 5
-                      "Mixed woodland", # 6
-                      "Conservation", # 7 
-                      "Intensive pastoral", # 8 
-                      "Extensive pastoral", # 9 
-                      "Very extensive pastoral", # 10
-                      "Agro-forestry",#11
-                      "Bioenergy",#12
-                      "Urban",#13
-                      "Unmanaged")#14
-          
+           
           aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
           
           aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
-          
-          
+           
           pal_out = colorFactor(col2hex(as.character(aftColours_shaded_srt)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
           
-          col_out = aftColours_shaded_srt 
-          
+           
+          aft_names_legend =   aft_group_names_extended
+          aft_colours_legend = aft_shaded_colours_extended
+           
         } else {
           pal_out = aft_pal 
-          col_out = aft_colors_fromzero 
+           
+          aft_names_legend = aft_colors_fromzero
+          aft_colours_legend = aft_colors_fromzero
         }
         
-        proxy %>% addRasterImage(dt, project = FALSE, colors = pal_out, group = "ModelResult"
-                                 , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+        proxy %>% addRasterImage(dt, project = FALSE, colors = pal_out, group = "ModelResult", opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
         if (input$legend) {
           
-          proxy %>% addLegend(colors = col2hex(as.character(col_out)), labels = aft_shortnames_fromzero, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          proxy %>% addLegend(colors = col2hex(as.character(aft_colours_legend)), labels = aft_names_legend  , title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
         }
         
          
@@ -1087,16 +955,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   #     writeRaster(data, file)
   #   }
   # )
-  # output$distPlot <- renderPlot({
-  # 
-  #   # generate bins based on input$bins from ui.R
-  #   x    <- faithful[, 2]
-  #   bins <- seq(min(x), max(x), length.out = 11)
-  # 
-  #   # draw the histogram with the specified number of bins
-  #   hist(x, breaks = bins, col = 'darkgray', border = 'white')
-  # 
-  # })
+ 
   
   
   
@@ -1108,39 +967,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   # })
   
   
-  
-  
-  
-  
-  # rnew <- reactive({
-  #   
-  
-  #   p.idx = which(input$paramset_full == paramsets_fullnames)
-  #   
-  #   # fname_changed =  paste0("Data/", paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-99-EU-Cell-", input$year, ".csv")
-  #   # if (input$food != "Normal") { 
-  #   
-  #   fname_changed =   paste0( input$foodprice, "/", paramsets[p.idx], "/", input$scenario, "/", input$fooddemand, "/",  input$scenario, "-", runid, "-99-UK-Cell-", input$year, ".csv")
-  #   # }
-  #   # spdf_changed = getSPDF(fname_changed)
-  #   # rs_changed = stack(spdf_changed)[[4:22]]
-  #   # 
-  #   # # r_changed= raster(paste0("Data/Maps/", input$scenario, "-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
-  #   # r_changed = rs_changed[[indicator_idx]] 
-  #   # print(indicator_idx)
-  #   
-  #   
-  #   indicator_idx = which (input$outputlayer == indicator_names)
-  #   r_changed = getRaster(fname_changed, band.idx = indicator_idx)
-  #   
-  #   # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-  #   
-  #   # return(r_changed)
-  #   
-  #   # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
-  # })
-  
-  
+   
   
   rnew <- reactive( {
     print("Rnew called")
@@ -1159,203 +986,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     return(r_changed)
   })
   
-  
-  # 
-  # rnew_UK_density <- reactive( {
-  #   
-  #   input$background_sn # touch
-  #   
-  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
-  #   
-  #   fname_changed = paste0("Data/", input$foodprice_sn, "/",  input$fooddemand_sn, "/", paramsets[p.idx], "/", input$scenario_sn, "/", input$scenario_sn, "-",runid, "-99-EU-Cell-", input$year_sn, ".csv")
-  #   
-  # 
-  #     indicator_idx = which ("Land Use (17 AFTs)" == indicator_names)
-  # 
-  #   r_changed = getRaster(fname_changed, band.idx = indicator_idx, resolution = RESOLUTION_SN)
-  #   
-  #   # r_changed_projected = projectRaster(r_changed, crs = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", method = "ngb", res = 1E4)
-  #   
-  #   return(r_changed)
-  #   # r <-   raster(paste0("Data/Maps/Baseline-0-0-EU-Cell-", input$year, "_LL.tif"), 16)
-  # })
-  # 
-  
-  
-  # 
-  # 
-  # # should be managed in its own observer.
-  # observe({
-  #   
-  #   dt = rnew_UK()
-  #   dt_density = rnew_UK_density()
-  #   # print(which (input$indicator == indicator_names))
-  #   
-  #   proxy <- leafletProxy("TabUK_MapPane", data =rnew_UK())
-  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
-  #   
-  #   
-  #   # touches
-  #   input$background_sn
-  #   
-  #   # Layers control
-  #   proxy %>% addLayersControl(
-  #     # baseGroups = c( "AFT","AFTdensity","GuMean", "GiMean"),
-  #     # baseGroups = c( "AFT"),
-  #     # overlayGroups = c( "AFTdensity", "GuMean", "GiMean"),
-  #     overlayGroups = c("AFT", "Social.capital"),
-  #     options = layersControlOptions(collapsed = FALSE)
-  #   )
+     
   #    
-  #   proxy %>% clearImages() %>% clearControls() 
-  #   
-  #   
-  #   aft_selected = match(values$type, aft_names_fromzero)
-  #   
-  #   sp_1 = SpatialPoints(rasterToPoints(dt, fun=function(x){x==aft_selected}))
-  #   proj4string(sp_1) = proj4string(dt)
-  #   
-  #   
-  #   # sp_2 <- rescale(as.ppp(sp_1), 1000, unitname = "km")
-  #   if (FALSE) { 
-  #     sp_2 <- as.ppp(sp_1)
-  #     
-  #     dt_1 = density(sp_2, eps=input$socialnet_width * 1000 ) # sigma Kernel Smoothed Intensity of Point Pattern. sigma  means Standard deviation of isotropic smoothing kernel.  eps
-  #     
-  #     dt_1_r = raster(dt_1)
-  #     proj4string(dt_1_r) = proj4string(dt)
-  #     
-  #     dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
-  #   }
-  #   
-  #   sn_width = as.integer(round(input$socialnet_width * 1E3 / RESOLUTION_SN)) # km to pixel num
-  #   
-  #   sn_width = ifelse(sn_width %% 2 == 0, yes = sn_width +1 , no = sn_width)  # make it a odd number
-  #   
-  #   sn_width = max(3, sn_width) # at least the adjacent 8 pixels
-  #   print(paste0("focal ", sn_width, " pixels"))
-  #   
-  #   r_in = dt_density==aft_selected
-  #   
-  #   
-  #   wm <-focalWeight(r_in, d=input$socialnet_width * 1E3 ,type="circle") # original weight matrix
-  #   w<-wm
-  #   w[w>0]<-1
-  #   
-  #   # dt_1_r = focal(r_in, w = matrix(data = 1, nrow =sn_width, ncol = sn_width ), pad = T, padValue=0, fun = mean, na.rm=T)
-  #   dt_1_r = focal(r_in, w = w, pad = T, padValue=0, fun = mean, na.rm=T)
-  #   
-  #   
-  #   
-  #   # dt_1_r[dt_1_r< 0] = 0
-  #   # dt_1_r[is.na(dt_1_r)] = 0
-  #   # 
-  #   dt_1_r=  mask(projectRaster(dt_1_r, dt), dt)
-  #   
-  #   
-  #   if (input$outputlayer_sn == "AFT density") { 
-  # 
-  # 
-  #     # proxy %>% hideGroup("GuMean") %>% hideGroup("GiMean")%>% hideGroup("AFTdensity")
-  #     # Add AFT density layer 
-  #     pal = colorNumeric(input$colors_sn, domain = c(0,1), na.color = "transparent")
-  #     proxy %>%  
-  #       addRasterImage(dt_1_r, colors = pal, project = FALSE, group = "AFTdensity", method="ngb", 
-  #                      , maxBytes = 4 * 1024 * 1024, opacity = input$alpha_sn)
-  #     proxy %>% addLegend(pal = pal, values = seq(1, 0, -0.05), group = "AFTdensity", title="AFT density (0-1)")
-  #     
-  #      
-  #     
-  #     # } else if (input$outputlayer_sn == "Giving-up mean") { 
-  #     #    
-  #     #   
-  #     #   Gu =  gugi_info$givingUpDistributionMean
-  #     #   
-  #     #   gu_new =  Gu + dt_1_r * alpha + beta 
-  #     #   
-  #     #   dt_gu_new  = getValues(gu_new)
-  #     #   dt_gu_new_rng = range(dt_gu_new, na.rm = T)
-  #     #   
-  #     # 
-  #     #   print(dt_gu_new_rng)
-  #     #   
-  #     #   pal_gu = colorNumeric(input$colors_sn, reverse = T, domain = dt_gu_new_rng, na.color = "transparent")
-  #     #   
-  #     #   proxy %>%
-  #     #     addRasterImage(gu_new, project = FALSE, colors =pal_gu, method = "ngb", group = "GuMean'"
-  #     #                    , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024)
-  #     #   proxy %>%
-  #     #     addLegend(pal = pal_gu, values = quantile(dt_gu_new, probs=seq(1, 0, -0.05), na.rm=T), layerId = "GuMean_Legend",  group = "GuMean", title = paste0("Gu Mean"))
-  #     #   
-  #     #   
-  #     
-  #     # Add AFT layer
-  #     proxy %>%
-  #       addRasterImage(dt == aft_selected, project = FALSE, colors = c("transparent", "black"), group = "AFT"
-  #                      , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024, , method="ngb")
-  #     
-  #     
-  #   } else if (input$outputlayer_sn == "Social.capital") { 
-  #      
-  #     sc_r = dt
-  #     
-  #     # SN model 
-  #     alpha = input$sn_alpha
-  #     beta = input$sn_beta
-  #     print(dt_1_r)
-  #     sc_new =  sc_r + sc_r * (1 + dt_1_r) * alpha + beta 
-  #     
-  #     # sc_new = sc_new / max(getValues(sc_new), na.rm=T) *  max(getValues(sc_r), na.rm=T)
-  # 
-  #     dt_input.v = getValues(sc_new)
-  #     dt_input.rng = range(dt_input.v, na.rm = T)
-  #     print(dt_input.rng)
-  #     
-  #     pal_sc = colorNumeric(input$colors_sn, reverse = T, domain = dt_input.rng, na.color = "transparent")
-  #     
-  #     proxy %>%
-  #       addRasterImage(sc_new, project = FALSE, colors =pal_sc, method = "bilinear", group = "Social.capital"
-  #                      , opacity = input$alpha_sn, maxBytes = 4 * 1024 * 1024) %>% 
-  #       addLegend(pal = pal_sc, values = quantile(dt_input.v, probs=seq(1, 0, -0.05), na.rm=T), 
-  #                 , title = paste0("Social.capital"), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "Social.capital")
-  #     
-  # 
-  #   }
-  # })
-  
-  # 
-  #   observe({
-  #     # dt = providernew()
-  #     proxy <- leafletProxy("TabUK_MapPane", data = providernew_sn())
-  #     proxy %>% clearTiles() %>% addProviderTiles(input$background_sn, options = providerTileOptions(noWrap = TRUE), group = "TileLayer")
-  #     # proxy %>% clearControls() 
-  #     
-  #   })
-  #   
-  
-  # output$PaneSNinfo <- renderText({
-  #   paste0("", input$type_sn, " in ", input$year_sn, " with the ", input$paramset_sn, " parameters and ",  input$scenario_sn, " scenario. Default AFT params: ")# line break
-  # })
-  # 
-  # output$PaneSNinfoGugi <- renderText({
-  #   p.idx = which(input$paramset_sn == paramsets_fullnames)
-  #   
-  #   aft_selected = match(values$type, aft_names_fromzero)
-  #   gugi_info = aft_params_df_l[[p.idx]][aft_selected, ]
-  #   gugi_info_txt = paste0(names(gugi_info), "=",  as.character(gugi_info), collapse = "  \t")
-  #   paste0(  gugi_info_txt)# line break
-  #   
-  #   
-  # })
-  
-  # function(input, output, session) {
-  #   output$plot <- renderPlot({
-  #     plot(cars, type=input$plotType)
-  #   })
-  #   
-  #   output$summary <- renderPrint({
-  #     summary(cars)
-  # })
-  #   
   
 })

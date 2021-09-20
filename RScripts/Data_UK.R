@@ -100,11 +100,11 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 # Scenarios (total 8)
 scenario_names = c("Baseline"
                    , "RCP2_6-SSP1"
-                   # "Baseline-SSP4", "Baseline-SSP5"
                    , "RCP4_5-SSP2", "RCP4_5-SSP4"
                    , "RCP6_0-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
+selected_scenario_current = scenario_names[1]
 
 
 paramsets_fullnames = c("Thresholds") #"Behavioural baseline",  , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
@@ -112,7 +112,7 @@ paramsets_fullnames = c("Thresholds") #"Behavioural baseline",  , "Variations (P
 n_paramset = length(paramsets_fullnames)
 # paramsets = paste0("Paramset", 1:n.paramset)
 paramsets =  c("Thresholds") # "BehaviouralBaseline", 
-
+p_idx_default = 1 
 
 service_tb = read.csv("Tables/Services.csv") %>% as.data.frame
 # serviceNames <- c("Food.crops", "Fodder.crops", "GF.redMeat", "Fuel", "Softwood", "Hardwood", "Biodiversity",
@@ -264,26 +264,82 @@ aft_group_colors =  aft_colors_fromzero_17[c(1:5, 7:11, 14:17)]
 # aft_group_colors[7] = "darkblue"
 aft_group_colors[length(aft_group_colors)] = "black"
 
-
-aft_group_names = c("Intensive arable food/fodder",
-                    "Extensive arable", 
-                    "Sustainable arable", 
-                    "Productive broadleaf",
-                    "Productive conifer",
-                    "Mixed woodland",
-                    "Conservation",
-                    "Intensive pastoral",
-                    "Extensive pastoral",
-                    "Very extensive pastoral",
-                    "Agro-forestry",
-                    "Bioenergy",
-                    "Urban")
-
+aft_group_names <-c("Intensive arable food/fodder", # 1
+            "Extensive arable", # 2
+            "Sustainable arable", # 3
+            "Productive broadleaf", # 4
+            "Productive conifer", # 5
+            "Mixed woodland", # 6
+            "Conservation", # 7 
+            "Intensive pastoral", # 8 
+            "Extensive pastoral", # 9 
+            "Very extensive pastoral", # 10
+            "Agro-forestry",#11
+            "Bioenergy",#12
+            "Urban",#13
+            "Unmanaged")#14
+ 
 
 aft_group_shortnames = c( aft_shortnames_fromzero  )[  c(1:5, 7:11, 14:17)]
 aft_group_shortnames[5] = "IA"
 aft_group_shortnames[9] = "PB"
 aft_group_shortnames[10] = "PC"
+
+
+
+
+
+# Set the arable and pastoral colours by their relative intensity
+A.col<-"#998459"
+#  P.col<-"#BCB918"
+P.col<-"#c7bd00"
+
+
+
+
+
+
+
+
+
+### Shaded
+
+aft_shaded_colours_default = c("#E9D3AA", "#EED8B0", "#d9abd3", "#BDED50", "#268c20", "#215737", "#0a1c01", "#F6EB64", "#F9EE67", "#FFFAC5", "#28b1c9", "#2432d1", "#EE0F05", "#fafaf7")
+
+
+
+
+
+
+ 
+#### 
+intens<-read.csv("Tables/Intensity levels.csv")
+
+
+
+arable_min = min(intens[, c(3,4,7,8,11,12, 15,16,19, 20)])
+arable_max = max(intens[, c(3,4,7,8,11,12, 15,16,19, 20)])
+arable_avg = mean(sapply(intens[, c(3,4,7,8,11,12, 15,16,19, 20)], as.numeric))
+
+pastoral_min = min(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2])
+pastoral_max = max(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2])
+pastoral_avg = mean(sapply(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2], as.numeric))
+
+
+Arable_cols_extended =  lighten(A.col, amount = 0.9 - c(arable_max, arable_avg, arable_min))
+Pastoral_cols_extended = lighten(P.col, amount = 0.9 - c(pastoral_max, pastoral_avg, pastoral_min))
+
+Arable_names_extended    =c("Arable (intensive)", "Arable", "Arable (extensive)")
+Pastoral_names_extended  =c("Pastoral (intensive)", "Pastoral", "Pastoral (extensive)")
+
+aft_shaded_colours_extended <-c(Pastoral_cols_extended, Arable_cols_extended, "#d9abd3","#BDED50","#268c20","#215737","#0a1c01", "#28b1c9","#2432d1","#EE0F05","#fafaf7")
+aft_group_names_extended = c(Pastoral_names_extended, Arable_names_extended, aft_group_names [c(3:7)],aft_group_names [c(11:14)])
+
+
+aft_shaded_colours_srt_default = aft_shaded_colours_default[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
+
+pal_shaded_default = colorFactor(col2hex(as.character(aft_shaded_colours_srt_default)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
+
 
 ### Halfway classes 3
 
@@ -304,9 +360,10 @@ aft_group2_tb =t( matrix( nrow = 2, c("IAfood",  "Arable",
                       "NWCons", "Conservation",
                       "Urban", "Urban",
                       "Lazy FR", "Unmanaged")))
-aft_group2_names =  ( unique(aft_group2_tb[,2]))
+# aft_group2_names =  ( unique(aft_group2_tb[,2]))
+aft_group2_names =c("Arable","Pastoral","Forest","Very extensive/mixed","Conservation","Urban","Unmanaged")
 
-aftNames<-c("Arable","Pastoral","Forest","Very extensive/mixed","Conservation","Urban","Unmanaged")
+
 aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
                        "#F3EF0C", #2 IP EP
                        "#216E12", #3 PN
@@ -327,20 +384,8 @@ aft_group2_colours_17 = aft_group2_colours[c(4,# AF
 
 
 
-#### 
-intens<-read.csv("Tables/Intensity levels.csv")
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 ### Intensity plot

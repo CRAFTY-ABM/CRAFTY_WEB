@@ -10,15 +10,15 @@ library(rgeos)
 
 library(stringr)
 
-library(maptools)
-library(spatstat) # density map
+# library(maptools)
+# library(spatstat) # density map
 
 library(dplyr)    # reshaping data frame 
 
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
 library(shinyjs) # hidden function
-# library(wesanderson)
+library(wesanderson)
 library(markdown)
 
 library(colorspace) # lighten
@@ -44,6 +44,7 @@ aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
                        "#0a1c01", #5 NW
                        "#EE0F05", #6 Urban
                        "#fafaf7") #7 Unmanaged
+
 
 
 aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
