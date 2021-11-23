@@ -28,9 +28,9 @@ path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 data_prefix = ""
 # data_prefix = "21May2021_v9_NotRemovingNegative/"
 
-version_names = c("Default_v21", "PenalsingOverProduction_v21")#,"Default_v18", "PenalsingOverProduction_v18", "Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
+version_names = c("Default_v26", "PenalsingOverProduction_v26")#,"Default_v18", "PenalsingOverProduction_v18", "Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
 
-version_prefix =c("Removal_v21", "NoRemoval_v21")#,"Removal_v18", "NoRemoval_v18","Removal_v17", "NoRemoval_v17","Removal_v16", "NoRemoval_v16", "Removal_v15", "NoRemoval_v15")#, "Removal_v14", "NoRemoval_v14")#, "NewSN_Removal", "NewSN_NoRemoval") 
+version_prefix =c("Removal_v26", "NoRemoval_v26")#,"Removal_v18", "NoRemoval_v18","Removal_v17", "NoRemoval_v17","Removal_v16", "NoRemoval_v16", "Removal_v15", "NoRemoval_v15")#, "Removal_v14", "NoRemoval_v14")#, "NewSN_Removal", "NewSN_NoRemoval") 
 
 version_default_idx = 1
 version_default = version_names[version_default_idx]
@@ -58,6 +58,16 @@ getFname = function(version, paramset, scenario, year ) {
   fs::path_expand(paste0(version_prefix[match(version,version_names)], "/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
   
 }
+
+
+# Scenarios (total 8)
+scenario_names = c("Baseline"
+                   , "RCP2_6-SSP1"
+                   , "RCP4_5-SSP2", "RCP4_5-SSP4"
+                   , "RCP6_0-SSP3"
+                   , "RCP8_5-SSP2" , "RCP8_5-SSP5")
+
+selected_scenario_current = scenario_names[1]
 
 
 scenarioname.default = "Baseline"
@@ -97,14 +107,6 @@ uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 # getPath()
 
 
-# Scenarios (total 8)
-scenario_names = c("Baseline"
-                   , "RCP2_6-SSP1"
-                   , "RCP4_5-SSP2", "RCP4_5-SSP4"
-                   , "RCP6_0-SSP3"
-                   , "RCP8_5-SSP2" , "RCP8_5-SSP5")
-
-selected_scenario_current = scenario_names[1]
 
 
 paramsets_fullnames = c("Thresholds") #"Behavioural baseline",  , "Variations (P3)", "Larger Thresholds (P4)", "Larger Variations (P5)") # , "Behavioural baseline Gu=0 (P6)",  "Behavioural baseline Gu=0.2 (P7)") #,  "Behavioural baseline YearNameFalse (P8)") 
