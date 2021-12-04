@@ -266,7 +266,7 @@ aft_group_colors =  aft_colors_fromzero_17[c(1:5, 7:11, 14:17)]
 # aft_group_colors[7] = "darkblue"
 aft_group_colors[length(aft_group_colors)] = "black"
 
-aft_group_names <-c("Intensive arable food/fodder", # 1
+aft_group_names_old <-c("Intensive arable food/fodder", # 1
             "Extensive arable", # 2
             "Sustainable arable", # 3
             "Productive broadleaf", # 4

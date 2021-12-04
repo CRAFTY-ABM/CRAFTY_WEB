@@ -682,7 +682,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # reduce 
     tr.colors =  aft_group_colors
-    tr_names =  aft_group_names
+    tr_names =  aft_group_shortnames
     
     
     aft_old_tb = rowSums(trn_mtrx)
