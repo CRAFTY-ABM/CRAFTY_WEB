@@ -197,10 +197,10 @@ getSPDF_UK <- function(tmp_in_name, location = "Dropbox") {
   result_raw = getCSV(tmp_in_name, location)
   
   result_joined = inner_join(uk_coords[, 3:4], result_raw, by = c("X_col" = "X", "Y_row" = "Y"))
- 
+  
   result_tmp = result_joined[, indicator_names_dot]
   
-   
+  
   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
   result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = crs(proj4.OSGB1936)), data = data.frame(result_tmp))# , tolerance = 0.0011)
   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
@@ -210,7 +210,7 @@ getSPDF_UK <- function(tmp_in_name, location = "Dropbox") {
 
 
 getRaster<- function(fname, band.name, location = location_UK, resolution = RESOLUTION_WEB, printPath=TRUE) {
-   
+  
   
   localtif_path = paste0(path_rastercache, fname, "_", band.name, ".tif")
   band.name_dot = indicator_names_dot[match(band.name, indicator_names)]
@@ -237,15 +237,15 @@ getRaster<- function(fname, band.name, location = location_UK, resolution = RESO
     # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
     rs.LL <- stack(spdf.out)
     print(rs.LL)
- 
+    
     
     print("reprojection")
-     
+    
     # print(names(rs.LL))
     
     out.reproj = projectRaster(rs.LL[[band.name_dot]], crs = proj4.spherical, method = "ngb", res = resolution)
     writeRaster(out.reproj, filename = localtif_path, overwrite=T)
-     
+    
     print("reprojection done")  
   } else {
     out.reproj = raster(localtif_path) 
@@ -332,25 +332,34 @@ createTempFiles <- function() {
   library(doMC)
   registerDoMC()
   paramset_tmp = paramsets[1]
-  indicator_names_in = "LandUseIndex"  
+  indicator_names_in = indicator_names #  "LandUseIndex"  
   version_names_in = version_names # [1:4]
-  foreach(version_tmp = version_names_in, .errorhandling = "stop") %do% {
-    print(version_tmp)
+  
+  default_version_byscenario
+  
+  # foreach(version_tmp = version_names_in, .errorhandling = "stop") %do% {
+  # print(version_tmp)
+  
+  res1 = foreach(s_idx = seq_along(scenario_names),  .errorhandling = "stop") %dopar% {
     
-    res1 = foreach(scenario = scenario_names,  .errorhandling = "stop") %dopar% {
-      print(scenario)
-      res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names_in, FUN = function(b_name) {
-        res3 = getRaster(getFname(version_tmp, paramset = paramset_tmp, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
-        return(TRUE);
-      }))
-      
-      print("ok")
-      
-      return(res2)
-    }
+    scenario = scenario_names[s_idx]
+    print(scenario)
+    
+    version_tmp = default_version_byscenario[s_idx]
     
     
+    res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names_in, FUN = function(b_name) {
+      res3 = getRaster(getFname(version_tmp, paramset = paramset_tmp, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
+      return(TRUE);
+    }))
+    
+    print("ok")
+    
+    return(res2)
   }
+  
+  
+  # }
   
   
   return(TRUE)
