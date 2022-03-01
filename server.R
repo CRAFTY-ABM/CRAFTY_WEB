@@ -5,10 +5,9 @@
 library(shiny)
 source("RScripts/Functions_CRAFTY_WEB.R")
 
- 
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-  
   
   # Reactive expression for the data subsetted to what the user selected
   # filteredData <- reactive({
@@ -28,19 +27,63 @@ shinyServer(function(input, output, session) {
   # })
   # 
   
+  # # synchronise selected scenario options
+  observeEvent(input$scenario,{
+    updateSelectInput(session,"scenario_ts", selected = input$scenario)
+    updateSelectInput(session,"scenario_from", selected = input$scenario)
+  }
+  )
+  #  
+  # observeEvent(input$scenario_ts,{  
+  #   updateSelectInput(session,"scenario", selected = input$scenario_ts)
+  #   updateSelectInput(session,"scenario_from", selected = input$scenario_ts)
+  # }
+  # )
+  # 
+  # observeEvent(input$scenario_from,{  
+  #   updateSelectInput(session,"scenario", selected = input$scenario_from)
+  #   updateSelectInput(session,"scenario_ts", selected = input$scenario_from)
+  # }
+  # )
+  # 
+  # synchronise selected time slice
+  observeEvent(input$year,{
+    updateSelectInput(session,"year_from", selected = input$year)
+  }
+  )
+  # 
+  # observeEvent(input$year_from,{  
+  #   updateSelectInput(session,"year", selected = input$year_from)
+  # }
+  # )
+  
+  
+  
   runinfo <- reactive({
     # p.idx = which(input$paramset_full == paramsets_fullnames)
     
+    output_idx = match(input$outputlayer, indicator_names_full)
+    output_name_tmp = indicator_names[output_idx]
+    
+    input_idx = match(input$inputlayer, indicator_names_full)
+    input_name_tmp = indicator_names[input_idx]
+    
+    
     if (input$outputGroup == "print_out") { 
-      out_name = input$outputlayer
+      out_name = output_name_tmp
     }  else {
-       out_name = input$inputlayer
+      out_name = input_name_tmp
     }
+    
+    
+    
+    s_idx = match(input$scenario, scenario_names_full)
+    
     paste0("Simulated ", out_name, " in ", input$year, " with the ",
            #input$paramset_full, " parameters and ",
-           input$scenario, " climate scenario." )
+           scenario_names[s_idx], " climate scenario." )
   })
-    
+  
   
   observeEvent(input$deleteCache, {
     session$sendCustomMessage(type = 'message',
@@ -56,6 +99,8 @@ shinyServer(function(input, output, session) {
                               message = 'createCache')
     print("create cache")
     createTempFiles()
+    print("create cache done")
+    
   })
   
   
@@ -67,6 +112,16 @@ shinyServer(function(input, output, session) {
   #   # runinfo_ts()
   # })
   # 
+  
+  output$Footer <- renderText({
+    
+    '<hr/><font size="-9">
+     <b>Disclaimer:</b> The content of the interface and any derived analysis may only be used for non-commercial purposes, and on condition that the source reference pursuant to section ‘Required citation’ is included. Any reproductions of content must include a hyperlink to the page (https://landchange.earth/CRAFTY). Any wholesale duplication, translation, reworking, processing, arrangement, transformation of the data for commercial or non-commercial purposes is not permitted without our explicit approval. With respect to information available from this website, we provide no warranty, expressed or implied, including warranties of merchantability and fitness for a particular purpose, nor do we assume any legal liability or responsibility for the accuracy, completeness, or usefulness of any information, product, or process disclosed. Users are recommended to read the info on the webpage and the paper before results are used.
+    <br/><b>Required citation:</b> <i>Brown, C., Seo, B., Alexander, P., Burton, V., Chacón-Montalván, E.A., Dunford, R., Merkle, M., Harrison, P.A., Prestele, R., Robinson, E.L., Rounsevell, M., Alternative futures need alternative models: agent-based modelling of the UK\'s land use system. In review.</i>
+<br/>
+<b>Contact:</b> Queries can be sent to Bumsuk Seo (bumsuk.seo@kit.edu) or Calum Brown (calum.brown@kit.edu).</font>'
+  })
+  
   
   output$ReferenceToParameters <- renderText({
     "<br/>Behavioural parameter set 1 is the default from which main results are derived; in this setup agents respond directly to benefit values with no additional individual or typological behaviour. In parameter set 2, giving-up and giving-in thresholds are altered to introduce abandonment of land when benefit values fall below the giving-up threshold value, and resistance to change unless a competing land use has an additional benefit value of at least the giving-in threshold. Intensive land use agents are parameterised to be less tolerantof low benefit values, and more willing to switch to a land use with higher benefit values. <p/>
@@ -95,8 +150,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     # <i><small>Brown, C., Seo, B., & Rounsevell, M. (2019). Societal breakdown as an emergent property of large-scale behavioural models of land use change. Earth System Dynamics Discussions, (May), 1–49.</i> <a href='https://doi.org/10.5194/esd-2019-24'>https://doi.org/10.5194/esd-2019-24</a></small>"
   })
   
- 
-    
+  
+  
   
   
   rnew_input <- reactive({
@@ -104,15 +159,16 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     # p.idx = which(input$paramset_full == paramsets_fullnames)
-    p_idx = 1
+    p_idx = p_idx_default
     
-    s_idx = match(input$scenario, scenario_names)
+    s_idx = match(input$scenario, scenario_names_full)
     
-    selected_scenario_current = input$scenario
+    input_idx = match(input$inputlayer, indicator_names_full)
+    input_name_tmp = indicator_names[input_idx]
     
-    fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], input$scenario, input$year)
+    fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], scenario_names[s_idx], input$year)
     
-    r_changed = getRaster(fname_changed, band.name = input$inputlayer, resolution = RESOLUTION_WEB, location = location_UK)
+    r_changed = getRaster(fname_changed, band.name = input_name_tmp, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   } )
@@ -120,9 +176,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   providernew <- reactive({
     print("providernew called")
     
-    input$background
+    input$background # @todo necessary?
   })
- 
+  
   
   output$Tab1_StatisticsPane <- renderPlot({
     print("draw stat pane")
@@ -138,8 +194,20 @@ Please see the further details of the parameters in Table A4 of the following pa
     #
     # str(getValues(target_data))
     
+    
+    output_idx = match(input$outputlayer, indicator_names_full)
+    output_name_tmp = indicator_names[output_idx]
+    
+    input_idx = match(input$inputlayer, indicator_names_full)
+    input_name_tmp = indicator_names[input_idx]
+    
+    
     par(mar = c(5.1, 4.1, 4, 1), mfrow=c(1,2))
-    hist(getValues(target_data), main="Histogram", xlab= input$outputlayer)
+    
+    
+    
+    
+    hist(getValues(target_data), main="Histogram", xlab= output_name_tmp)
     # plot(target_val@data[, input$inputlayer], main=input$inputlayer)
     
     
@@ -210,9 +278,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     {
       print("draw capital pane")
       
-   
+      
       Cap_tb = read.csv("Tables/Capitals.csv")
- 
+      
       
       Cap_tb = Cap_tb # AFT_tb[,c("Name", "Description", "Group", "Type")
       DT::datatable(Cap_tb, options= list(paging = FALSE),  editable = F) 
@@ -226,10 +294,14 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab1_BehaviouralTablePane <- renderDataTable(
     {
       print("draw behavioural pane")
-            # p_idx = which(input$paramset_full == paramsets_fullnames)
-      p_idx = 1
+      
+      # p_idx = which(input$paramset_full == paramsets_fullnames)
+      p_idx = 1 # fix 
+      s_idx = match(input$scenario, scenario_names_full)
+      
+      
       # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
-      foldername_tmp = paste0("Tables/agents/", paramsets[p_idx], "/", input$scenario)
+      foldername_tmp = paste0("Tables/agents/", paramsets[p_idx], "/", scenario_names[s_idx])
       
       aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
       
@@ -260,8 +332,11 @@ Please see the further details of the parameters in Table A4 of the following pa
       # p_idx = which(input$paramset_full == paramsets_fullnames)
       p_idx = 1
       
+      s_idx = match(input$scenario, scenario_names_full)
+      
+      
       foldername_tmp = ("Tables/production/Baseline")
-      foldername_tmp = paste0("Tables/production/", input$scenario)
+      foldername_tmp = paste0("Tables/production/", scenario_names[s_idx])
       
       productionparams_l = lapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/", x, ".csv"))) 
       
@@ -269,13 +344,13 @@ Please see the further details of the parameters in Table A4 of the following pa
       x = productionparams_l[[a_idx]]
       
       
-       
+      
       colnames(x)[1] = "Service"
       DT::datatable(x, options= list(paging = F),  editable = F, rownames = F, caption = aft_names_fromzero[a_idx]) 
       # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
     })
   
-   
+  
   
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
     print("draw timeseries pane")
@@ -287,15 +362,14 @@ Please see the further details of the parameters in Table A4 of the following pa
     # scenario_tmp = "Baseline"
     paramset_tmp = "Thresholds"
     
-    scenario_tmp = input$scenario_ts
     
-    selected_scenario_current = input$scenario_ts
+    # File names
+    s_idx = match(input$scenario_ts, scenario_names_full)
     
+    scenario_tmp = scenario_names[s_idx]
     
     paramset_tmp = paramsets[p_idx]
     
-    # File names
-    s_idx = match(input$scenario_ts, scenario_names)
     
     
     if (!str_detect(scenario_tmp, "SSP3")) {
@@ -337,7 +411,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
- 
+    
     aftcomp_dt_org = aftcomp_dt
     # reclassify
     aftcomp_dt[,"AFT.IAfood"] = aftcomp_dt[,"AFT.IAfood"] + aftcomp_dt[,"AFT.IAfodder"]
@@ -404,7 +478,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     }
     legend("topright", aft_group_shortnames, col = aft_group_colors, lty=aft_lty_ts, cex=LEGEND_CEX, bty="n", xpd = TRUE, inset=c(LEGEND_MAR,0), lwd=1.5)
     
-     
+    
     
     
     ### Plotting service supply and demand
@@ -533,13 +607,13 @@ Please see the further details of the parameters in Table A4 of the following pa
         lines(capital_scene_tmp$Tick, capital_scene_tmp[,a.idx] * 100,   col = capital_colours[a.idx-1])
       }
       
-      legend("topright", legend = capital_names$Capital[], col=capital_colours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
+      legend("topright", legend = capitalNames, col=capital_colours[], lty = 1, cex=LEGEND_CEX, bty="n", xpd = TRUE,  inset=c(LEGEND_MAR,0), lwd=2)
       
       
     } else {   # baseline 
       plot.new()
       capital_scene_tmp$X = 2020
-      colnames(capital_scene_tmp) = c("Tick", capital_names$Capital)
+      colnames(capital_scene_tmp) = c("Tick", capitalNames)
       capital_scene_tmp[-1] = capital_scene_tmp[-1] / capital_scene_tmp[-1] #all 1 
     }
     
@@ -605,13 +679,13 @@ Please see the further details of the parameters in Table A4 of the following pa
     abline(h = 0, lty=2)
     abline(h = 100, lty=2)
     
- 
+    
     
     
   })
   
   
-  output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
+  output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, execOnResize = T, res = 96, {
     
     
     # p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
@@ -622,13 +696,13 @@ Please see the further details of the parameters in Table A4 of the following pa
     # fname_from = paste0(default_version_byscenario_tr, "/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv")
     # fname_to =  paste0(default_version_byscenario_tr, "/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv")
     
-    s_idx_from = match(input$scenario_from, scenario_names)
-    s_idx_to = match(input$scenario_to, scenario_names)
+    s_idx_from = match(input$scenario_from, scenario_names_full)
+    s_idx_to = match(input$scenario_to, scenario_names_full)
     
     
     
-    fname_from =  getFname(default_version_byscenario[s_idx_from], paramsets[p_from.idx], input$scenario_from, year =  input$year_from)
-    fname_to   =  getFname(default_version_byscenario[s_idx_to], paramsets[p_to.idx], input$scenario_to, year =  input$year_to)
+    fname_from =  getFname(default_version_byscenario[s_idx_from], paramsets[p_from.idx], scenario_names[s_idx_from], year =  input$year_from)
+    fname_to   =  getFname(default_version_byscenario[s_idx_to], paramsets[p_to.idx], scenario_names[s_idx_to], year =  input$year_to)
     
     
     #### Transition matrix
@@ -671,7 +745,62 @@ Please see the further details of the parameters in Table A4 of the following pa
     # print(table(aft_new))
     
     
+    # 
+    #     #### Choose the right intensity scaling
+    #     intens.year.scen<-subset(intens, intens$years==input$scenario_from)
+    #     if(input$scenario_from=="Baseline") {
+    #       intens.year.scen = intens[1, 3:6]
+    #     } else if (input$scenario_from=="RCP2_6-SSP1") {
+    #       intens.year.scen<-intens.year[,3:6]
+    #     } else if (input$scenario_from=="RCP4_5-SSP2" | input$scenario_from=="RCP8_5-SSP2") {
+    #       intens.year.scen<-intens.year[,7:10]
+    #     } else if (input$scenario_from=="RCP6_0-SSP3") {
+    #       intens.year.scen<-intens.year[,11:14]
+    #     } else if (input$scenario_from=="RCP4_5-SSP4") {
+    #       intens.year.scen<-intens.year[,15:18]
+    #     } else if (input$scenario_from=="RCP8_5-SSP5") {
+    #       intens.year.scen<-intens.year[,19:22]
+    #     }
+    #     # #### Choose the right intensity scaling
+    #     # intens.year.scen <-subset(intens, intens$years==input$scenario_to)
+    #     # if(input$scenario_to =="Baseline") {
+    #     #   intens.year.scen = intens[1, 3:6]
+    #     # } else if (input$scenario_to=="RCP2_6-SSP1") {
+    #     #   intens.year.scen<-intens.year[,3:6]
+    #     # } else if (input$scenario_to=="RCP4_5-SSP2" | input$scenario_to=="RCP8_5-SSP2") {
+    #     #   intens.year.scen<-intens.year[,7:10]
+    #     # } else if (input$scenario_to=="RCP6_0-SSP3") {
+    #     #   intens.year.scen<-intens.year[,11:14]
+    #     # } else if (input$scenario_to=="RCP4_5-SSP4") {
+    #     #   intens.year.scen<-intens.year[,15:18]
+    #     # } else if (input$scenario_to=="RCP8_5-SSP5") {
+    #     #   intens.year.scen<-intens.year[,19:22]
+    #     # }
+    #     # 
+    #     # 
+    # 
+    #     IA.scale<-as.numeric(intens.year.scen[1])
+    #     EA.scale<-as.numeric(intens.year.scen[2])
+    #     IP.scale<-as.numeric(intens.year.scen[3])
+    #     EP.scale<-as.numeric(intens.year.scen[4])
+    # 
+    #     IA.col<-lighten(A.col,amount=(0.9 - IA.scale))
+    #     EA.col<-lighten(A.col,amount=(0.9 - EA.scale))
+    #     IP.col<-lighten(P.col,amount=(0.9 - IP.scale))
+    #     EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
+    #     VEP.col<-lighten(P.col,amount=0.9)
+    # 
+    #     
+    #     aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
+    #     
+    #     aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
+    #      
+    #     
+    #     aft_names_legend =   aft_group_names_extended
+    #     aft_colours_legend = aft_shaded_colours_extended
+    #     
     
+    ### continue from here
     aft_old_f = factor(aft_old, levels = c(1:5, 7:11, 14:17))
     aft_new_f = factor(aft_new, levels = c(1:5, 7:11, 14:17))
     
@@ -689,8 +818,8 @@ Please see the further details of the parameters in Table A4 of the following pa
     aft_new_tb = colSums(trn_mtrx)
     
     
-    aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 3  ), "%")
-    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T) * 100, 3  ), "%")
+    aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 2  ), "%")
+    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T) * 100, 2  ), "%")
     
     
     
@@ -705,7 +834,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     legend("center", tr_names, col = tr.colors, pch=15, cex=0.9)
- 
+    
     
     
   })
@@ -716,24 +845,39 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab1_MapPane <- renderLeaflet({
     print("draw mappane 1")
     
-    leaflet() %>%
+    
+    output_idx = match(input$outputlayer, indicator_names_full)
+    output_name_tmp = indicator_names[output_idx]
+    
+    input_idx = match(input$inputlayer, indicator_names_full)
+    input_name_tmp = indicator_names[input_idx]
+    
+    
+    
+    leaflet(
+      #options = leafletOptions(attributionControl=F, zoomControl=F, # turn off controls
+      # zoomSnap=0.01, #zoomDelta=0.01, 
+      # trackResize=F, #doesn't seem to work
+      # boxZoom = T
+      #                )
+    ) %>%
       clearImages() %>% #clearControls() %>%
       #addTiles()
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
       ) %>%   
       addLayersControl(
-        baseGroups = c("ModelResult",  "Basemap"),
+        baseGroups = c("ModelResult",  "Basemap"), 
         options = layersControlOptions(collapsed = FALSE)
       ) %>% 
       fitBounds(ext[1], ext[3], ext[2], ext[4] ) %>%  
       addRasterImage(r_default, project = FALSE, colors = pal_shaded_default, opacity = input$alpha, maxBytes = 4 * 1024 * 1024, group="ModelResult")  %>% 
-     addLegend(colors = col2hex(as.character(aft_shaded_colours_extended)), labels = aft_group_names_extended, title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha) %>%  
+      addLegend(colors = col2hex(as.character(aft_shaded_colours_extended)), labels = aft_group_names_extended, title = paste0(input$outputlayer),group = "ModelResult", opacity = input$alpha) %>%  
       addMiniMap(position = "bottomleft", zoomAnimation = T, toggleDisplay = TRUE)  %>% addMeasure()
     
   })
- 
- 
+  
+  
   observe({
     print("draw tile layer")
     
@@ -746,7 +890,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   # should be managed in its own observer.
   observe({
-    print("redraw output layer")
+    print("redraw Tab1_MapPane")
     dt = rnew()
     # print(which (input$indicator == indicator_names))
     
@@ -769,38 +913,44 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     # print(dt)
     
+    
+    
     if (input$outputGroup == "print_out") { 
       
       # Add output layer
       
-      if (input$outputlayer == "LandUseIndex") {  # land use index
+      output_idx = match(input$outputlayer, indicator_names_full)
+      output_name_tmp = indicator_names[output_idx]
+      
+      if (output_name_tmp == "LandUseIndex") {  # land use index
         
         if (input$colorsGroup == "Reduced (n=7)") { 
           pal_out = aft_pal_group2
-           aft_names_legend = aft_group2_names
+          aft_names_legend = aft_group2_names
           aft_colours_legend = aft_group2_colours
+          
         } else if (input$colorsGroup == "Shaded (n=14)") { 
           
-            
+          
           
           #### Choose the right intensity scaling
           intens.year<-subset(intens, intens$years==input$year)
           if(input$scenario=="Baseline") {
             intens.year.scen = intens[1, 3:6]
-          } else if (input$scenario=="RCP2_6-SSP1") {
+          } else if (input$scenario=="RCP2.6-SSP1") {
             intens.year.scen<-intens.year[,3:6]
-          } else if (input$scenario=="RCP4_5-SSP2" | input$scenario=="RCP8_5-SSP2") {
+          } else if (input$scenario=="RCP4.5-SSP2" | input$scenario=="RCP8.5-SSP2") {
             intens.year.scen<-intens.year[,7:10]
-          } else if (input$scenario=="RCP6_0-SSP3") {
+          } else if (input$scenario=="RCP6.0-SSP3") {
             intens.year.scen<-intens.year[,11:14]
-          } else if (input$scenario=="RCP4_5-SSP4") {
+          } else if (input$scenario=="RCP4.5-SSP4") {
             intens.year.scen<-intens.year[,15:18]
-          } else if (input$scenario=="RCP8_5-SSP5") {
+          } else if (input$scenario=="RCP8.5-SSP5") {
             intens.year.scen<-intens.year[,19:22]
           }
           
           
-
+          
           IA.scale<-as.numeric(intens.year.scen[1])
           EA.scale<-as.numeric(intens.year.scen[2])
           IP.scale<-as.numeric(intens.year.scen[3])
@@ -812,20 +962,20 @@ Please see the further details of the parameters in Table A4 of the following pa
           EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
           VEP.col<-lighten(P.col,amount=0.9)
           
-           
+          
           aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
           
           aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
-           
+          
           pal_out = colorFactor(col2hex(as.character(aftColours_shaded_srt)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
           
-           
+          
           aft_names_legend =   aft_group_names_extended
           aft_colours_legend = aft_shaded_colours_extended
-           
+          
         } else {
           pal_out = aft_pal 
-           
+          
           aft_names_legend = aft_colors_fromzero
           aft_colours_legend = aft_colors_fromzero
         }
@@ -833,10 +983,10 @@ Please see the further details of the parameters in Table A4 of the following pa
         proxy %>% addRasterImage(dt, project = FALSE, colors = pal_out, group = "ModelResult", opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
         if (input$legend) {
           
-          proxy %>% addLegend(colors = col2hex(as.character(aft_colours_legend)), labels = aft_names_legend  , title = paste0("Output: ", input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          proxy %>% addLegend(colors = col2hex(as.character(aft_colours_legend)), labels = aft_names_legend  , title = paste0(input$outputlayer),group = "ModelResult", opacity = input$alpha)
         }
         
-         
+        
         
       } else {
         dt.v = getValues(dt)
@@ -849,7 +999,7 @@ Please see the further details of the parameters in Table A4 of the following pa
                          , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
         if (input$legend) { proxy %>%
             addLegend(pal = pal, values = quantile(dt.v, probs=seq(1, 0, -0.05), na.rm=T),
-                      , title = paste0("Output ", input$outputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult", opacity=input$alpha)
+                      , title = paste0(input$outputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult", opacity=input$alpha)
         }
       }
     }
@@ -863,12 +1013,17 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       pal_input = colorNumeric(input$colors, reverse = input$InvertColour, domain = dt_input.rng, na.color = "transparent")
       
+      
+      input_idx = match(input$inputlayer, indicator_names_full)
+      input_name_tmp = indicator_names[input_idx]
+      
+      
       proxy %>%
         addRasterImage(dt_input, project = FALSE, colors =pal_input, method = "bilinear", group = "ModelResult"
                        , opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
       if (input$legend) { proxy %>%
           addLegend(pal = pal_input, values = quantile(dt_input.v, probs=seq(1, 0, -0.05), na.rm=T),
-                    , title = paste0("Input ", input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult")
+                    , title = paste0(input$inputlayer), labFormat = labelFormat(transform = function(x) sort(quantile(dt_input.v, probs=seq(0, 1, 0.33), na.rm=T), decreasing = FALSE)), group = "ModelResult")
       }
     }
     
@@ -955,7 +1110,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   #     writeRaster(data, file)
   #   }
   # )
- 
+  
   
   
   
@@ -967,26 +1122,31 @@ Please see the further details of the parameters in Table A4 of the following pa
   # })
   
   
-   
+  
   
   rnew <- reactive( {
     print("Rnew called")
     
+    
+    output_idx = match(input$outputlayer, indicator_names_full)
+    output_name_tmp = indicator_names[output_idx]
+    
+    
     # input$background # touch
     
     # p_idx = which(input$paramset_full == paramsets_fullnames)
-    p_idx = 1
+    p_idx = p_idx_default
     
-    s_idx = match(input$scenario, scenario_names)
+    s_idx = match(input$scenario, scenario_names_full)
     
-    fname_changed =getFname(default_version_byscenario[s_idx], paramsets[p_idx], input$scenario,input$year)   
+    fname_changed =getFname(default_version_byscenario[s_idx], paramsets[p_idx], scenario_names[s_idx],input$year)   
     
-    r_changed = getRaster(fname_changed, band.name = input$outputlayer, resolution = RESOLUTION_WEB, location = location_UK)
+    r_changed = getRaster(fname_changed, band.name = output_name_tmp, resolution = RESOLUTION_WEB, location = location_UK)
     
     return(r_changed)
   })
   
-     
+  
   #    
   
 })

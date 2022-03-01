@@ -23,6 +23,9 @@ library(markdown)
 
 library(colorspace) # lighten
 
+# library(parallel)
+library(doMC)
+
 
 library(Gmisc) # transition plot 
 
@@ -30,10 +33,13 @@ RESOLUTION_WEB = 1E3 # 1.5E4
 RESOLUTION_SN = 1.5E4
 RESOLUTION_CRAFTY = 1.5E4
 
-PLOT_HEIGHT = 1000 
+PLOT_HEIGHT = 800 
 
-SIDEBAR_WIDTH = 2
+SIDEBAR_WIDTH = 3
 MAINPANEL_WIDTH = 12 - SIDEBAR_WIDTH
+
+SIDEBAR_WIDTH_TS = 2
+MAINPANEL_WIDTH_TS = 12 - SIDEBAR_WIDTH_TS
 
 
 TRANSPARENCY_DEFAULT = 0.9 
@@ -59,7 +65,7 @@ aft_group2_colours_17 = aft_group2_colours[c(4,# AF
 
 
 LEGEND_MAR = -0.4
-LEGEND_CEX = 1
+LEGEND_CEX = 0.8
 
 # Lon-Lat projection 
 proj4.LL <- CRS("+proj=longlat +datum=WGS84")
@@ -97,7 +103,7 @@ app_init <- function() {
   
   # begin cluster for raster processing
   # endCluster()
-  beginCluster(n_thread)
+  # beginCluster(n_thread)
 }
 
 app_init()
@@ -120,10 +126,10 @@ accessDropbox <- function() {
 
 provider_names = c(
   "OpenStreetMap.Mapnik"
+  , "Esri.WorldImagery"             
   , "OpenTopoMap"  
   , "Stamen.Terrain"
   # , "Thunderforest"      
-  , "Esri.WorldImagery"             
   , "Esri.WorldPhysical"              
   , "Esri.NatGeoWorldMap" 
   # , "CartoDB"
@@ -135,7 +141,7 @@ provider_names = c(
 
 capital_csvname_baseline = "Baseline-0-99-UK-AggregateCapital.csv"
 baseline_capital_tmp =  unlist(read.csv(paste0("Tables/Summary/", capital_csvname_baseline)))
-names(baseline_capital_tmp)[-1]= as.character(capital_names$Capital)
+names(baseline_capital_tmp)[-1]= as.character(capitalNames)
 
 # @TODO IFU S3
 # simple caching @todo improve.. 
@@ -327,10 +333,9 @@ createTempFiles <- function() {
   # scenario = "RCP8_5-SSP3"
   
   
-  endCluster()
-  # library(parallel)
-  library(doMC)
+  # endCluster()
   registerDoMC()
+  
   paramset_tmp = paramsets[1]
   indicator_names_in = indicator_names #  "LandUseIndex"  
   version_names_in = version_names # [1:4]

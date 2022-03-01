@@ -1,15 +1,15 @@
-Name,Index
-Food.crops, 0
-Fodder.crops, 1
-GF.redMeat, 2
-Fuel, 3
-Softwood, 4
-Hardwood, 5
-Biodiversity, 6
-Carbon, 7
-Recreation, 8
-Flood.reg, 9
-Employment, 10
-Ldiversity, 11
-GF.milk, 12
-Sus.Prod, 13
+Name,Index, Fullname
+Food.crops, 0, Food crops
+Fodder.crops, 1, Fodder crops
+GF.redMeat, 2, Grass-fed meat
+Fuel, 3, Bioenergy fuel
+Softwood, 4, Softwood timber
+Hardwood, 5, Hardwood timber
+Biodiversity, 6, Biodiversity
+Carbon, 7, Carbon sequestration
+Recreation, 8, Recreation
+Flood.reg, 9, Flood regulation
+Employment, 10, Employment
+Ldiversity, 11, Landscape diversity
+GF.milk, 12, Grass-fed milk
+Sus.Prod, 13, Sustainable production

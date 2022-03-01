@@ -1,15 +1,15 @@
-Name,Index
-Human,0
-Social,1
-Manufactured,2
-Financial,3
-Arable.suit,4
-Igrass.suit,5
-SNGrass.suit,6
-Bioenergy.suit,7
-AgroForestry.suit,8
-NNConifer.suit,9
-NConifer.suit,10
-NNBroadleaf.suit,11
-NBroadleaf.suit,12
-Tree.suit,13
+Name,Index, Fullname
+Human,0, Human capital
+Social,1, Social capital
+Manufactured,2, Manufactured capital
+Financial,3, Financial capital
+Arable.suit,4, Arable suitability
+Igrass.suit,5, Improved grassland suitability
+SNGrass.suit,6, Semi-natural grassland suitability
+Bioenergy.suit,7, Bioenergy suitability 
+AgroForestry.suit,8, Agro-forestry tree suitability
+NNConifer.suit,9, Non-native conifer suitability
+NConifer.suit,10, Non-native broadleaf suitability
+NNBroadleaf.suit,11, Native broadleaf suitability
+NBroadleaf.suit,12, Native broadleaf suitability
+Tree.suit,13, General tree species suitability

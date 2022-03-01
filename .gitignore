@@ -1,0 +1,13 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.httr-oauth
+
+Authentication/
+
+Table_EU/
+
+GISData/.Rapp.history
+
+career-pathfinder-master/

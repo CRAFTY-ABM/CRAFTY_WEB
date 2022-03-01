@@ -22,11 +22,7 @@ path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
 
 # data version
-# data_prefix = "15May2021_v4_NewProduction_SN_originaldemand/"
-# data_prefix = "16May2021_v5_NewProduction_SN2_originaldemand/"
-# data_prefix = "16May2021_v6_NewProduction_originaldemand/"
 data_prefix = ""
-# data_prefix = "21May2021_v9_NotRemovingNegative/"
 
 version_names = c("Default_v26", "PenalsingOverProduction_v26")#,"Default_v18", "PenalsingOverProduction_v18", "Default_v17", "PenalsingOverProduction_v17", "Default_v16", "PenalsingOverProduction_v16", "Default_v15", "PenalsingOverProduction_v15")#, "Default_v14", "PenalsingOverProduction_v16")#, "New SN", "New SN with Penalising")
 
@@ -36,7 +32,7 @@ version_default_idx = 1
 version_default = version_names[version_default_idx]
 
 
-default_version_byscenario = version_names[c(1,2,2,1,1,2,1)]
+default_version_byscenario = version_names[c(2,2,2,1,1,2,1)]
 
 
 # absolute path (for local)
@@ -67,7 +63,14 @@ scenario_names = c("Baseline"
                    , "RCP6_0-SSP3"
                    , "RCP8_5-SSP2" , "RCP8_5-SSP5")
 
-selected_scenario_current = scenario_names[1]
+scenario_names_full = c("Baseline"
+                   , "RCP2.6-SSP1"
+                   , "RCP4.5-SSP2", "RCP4.5-SSP4"
+                   , "RCP6.0-SSP3"
+                   , "RCP8.5-SSP2" , "RCP8.5-SSP5")
+
+selected_scenario_current = scenario_names_full[1]
+selected_scenario_future = scenario_names_full[4]
 
 
 scenarioname.default = "Baseline"
@@ -121,6 +124,8 @@ service_tb = read.csv("Tables/Services.csv") %>% as.data.frame
 # "Carbon", "Recreation", "Flood.reg", "Employment", "Ldiversity", "GF.milk")
 serviceNames = service_tb$Name
 
+serviceNames_full = service_tb$Fullname
+
 
 # serviceColours <- c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity" = "red", "Timber" = "tan4", "Carbon" = "darkgreen", "Urban" = "grey", "Recreation" = "orange")
 # serviceColours = c("Meat" = "coral1", "Crops" = "goldenrod1", "Diversity"="turquoise", "Timber" = "tan4","Carbon"="black", "Urban" = "grey","Recreation"="dodgerblue2")
@@ -129,6 +134,12 @@ serviceColours = c("Food.crops" = "coral1", "Fodder.crops" ="goldenrod1", "GF.re
 
 capital_tb = read.csv("Tables/Capitals.csv") %>% as.data.frame
 capitalNames = capital_tb$Name
+capitalNames_full = capital_tb$Fullname
+
+ 
+
+
+
 
 # 
 # indicator.names =  c("Service.Meat","Service.Crops","Service.Diversity",
@@ -146,7 +157,7 @@ capitalNames = capital_tb$Name
 indicator_names = c(paste0("Service:", serviceNames), paste0("Capital:", capitalNames), "LandUseIndex") #, "Agent")
 indicator_names_dot = c(paste0("Service.", serviceNames), paste0("Capital.", capitalNames), "LandUseIndex") #, "Agent")
 
-
+indicator_names_full = c(serviceNames_full, capitalNames_full, "Land Uses (agent types)")
 
 
 
@@ -203,21 +214,7 @@ aft_names_fromzero =  as.character(aftnames$Description)
 
 n_aft = length(aft_shortnames_fromzero)
 
-capital_names = data.frame(Capital = c("Human", 
-                                       "Social", 
-                                       "Manufactured", 
-                                       "Financial", 
-                                       "Arable.suit", 
-                                       "Igrass.suit", 
-                                       "SNGrass.suit", 
-                                       "Bioenergy.suit", 
-                                       "AgroForestry.suit", 
-                                       "NNConifer.suit", 
-                                       "NConifer.suit", 
-                                       "NNBroadleaf.suit", 
-                                       "NBroadleaf.suit", 
-                                       "Tree.suit"
-))
+
 
 
 
@@ -287,7 +284,7 @@ aft_group_shortnames[5] = "IA"
 aft_group_shortnames[9] = "PB"
 aft_group_shortnames[10] = "PC"
 
-
+aft_group_fullnames = aft_group_names_old[c(1:4)]
 
 
 
@@ -331,11 +328,11 @@ pastoral_avg = mean(sapply(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2], as.numeri
 Arable_cols_extended =  lighten(A.col, amount = 0.9 - c(arable_max, arable_avg, arable_min))
 Pastoral_cols_extended = lighten(P.col, amount = 0.9 - c(pastoral_max, pastoral_avg, pastoral_min))
 
-Arable_names_extended    =c("Arable (intensive)", "Arable", "Arable (extensive)")
-Pastoral_names_extended  =c("Pastoral (intensive)", "Pastoral", "Pastoral (extensive)")
+Arable_names_extended    =c("˥ intensive", "Arable", "˩ extensive")
+Pastoral_names_extended  =c("˥ intensive", "Pastoral", "˩ extensive")
 
 aft_shaded_colours_extended <-c(Pastoral_cols_extended, Arable_cols_extended, "#d9abd3","#BDED50","#268c20","#215737","#0a1c01", "#28b1c9","#2432d1","#EE0F05","#fafaf7")
-aft_group_names_extended = c(Pastoral_names_extended, Arable_names_extended, aft_group_names [c(3:7)],aft_group_names [c(11:14)])
+aft_group_names_extended = c(Pastoral_names_extended, Arable_names_extended, aft_group_names_old [c(3:7)],aft_group_names_old [c(11:14)])
 
 
 aft_shaded_colours_srt_default = aft_shaded_colours_default[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
