@@ -5,12 +5,11 @@ output:
 ---
 ### Release information
 <br/>
-Release Version 1.026 (September 2021) is the first release of the CRAFTY-GB outcome files, including all the results in CSV format. The files provide summary and spatially explicit information on scenarios and outcomes for the 7 SSPs. To download results, please click the links below.
+Release Version 1.026 (September 2021) is the first release of the CRAFTY-GB outcome files, including all the results in CSV format. The files provide summary and spatially explicit information on scenarios and outcomes for the 7 SSPs. To download results, please click the links below. Data is archived in Open Science Framework: <a href="https://doi.org/10.17605/OSF.IO/CY8WE" target="_blank">https://doi.org/10.17605/OSF.IO/CY8WE</a>
 <br/>
 
-**The raw CRAFTY outcome files (CSV)**: [[link1]](https://www.dropbox.com/s/dioczww6m1mxz41/CRAFTY_GB_OUTPUT_V1.026_28Sep2021.zip?dl=1)
-
-**The GeoTIFF files (w/o summary statistics)**: [[link2]](https://www.dropbox.com/s/ozkpg8vy79m65s7/CRAFTY_GB_output_GeoTiff_final_v1.026_28Sep2021.zip?dl=1/).
+**The raw CRAFTY outcome files (CSV)**: <a href="https://osf.io/86yfw/" target="_blank">[link]</a><br/>
+**The GeoTIFF files (w/o summary statistics)**: <a href="https://osf.io/jg2h7/" target="_blank">[link]</a>
 
 
 
