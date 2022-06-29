@@ -26,7 +26,7 @@ ui <- shinyUI(
   fluidPage(
     ####make the navbar pages####
     
-    navbarPage("CRAFTY-GB", windowTitle =  "CRAFTY-GB interactive web-interface", fluid = F, 
+    navbarPage(MODEL_INFO$NAME, windowTitle = MODEL_INFO$TITLE, fluid = F, 
                #theme =  shinytheme("simplex"),
                theme = bs_theme(bootswatch = "simplex", primary = "darkgreen"),
                
@@ -42,7 +42,7 @@ ui <- shinyUI(
                tabPanel("Model info", 
                         
                         fluidRow(column(1),
-                                 column(10, includeMarkdown("crafty_paper.md"), 
+                                 column(10, includeMarkdown("crafty_about.md"), 
                                         column(1)))
                         
                         
@@ -90,9 +90,13 @@ ui <- shinyUI(
                                                  #             version_names, selected = version_names[version_default_idx]
                                                  # ),
                                                  # , fluidPage(br(), h4("Scenario"))
-                                                 selectInput("scenario", "Climate and socio-economic scenario",
-                                                             scenario_names_full[], selected = selected_scenario_current
+                                                 selectInput("scenario", "Climate and socio-economic scenario (+PA)",
+                                                             MODEL_INFO$scenario_names_full[], selected = selected_scenario_current
                                                  )
+                                                # , selectInput("scenario_pa", "Protected area scenario",
+                                                #                                                                 MODEL_INFO$pa_scenario_names_full[], selected = selected_pascenario_current
+                                                #  )
+                                                 
                                                  , sliderInput("year",
                                                                "Year:",
                                                                min = min(target_years_other),
@@ -104,12 +108,12 @@ ui <- shinyUI(
                                                  , conditionalPanel(
                                                    condition="input.outputGroup=='print_out'"
                                                    , selectInput("outputlayer", "Output", 
-                                                                 indicator_names_full[c(29, 1:14)], selected=indicator_names_full[28]
+                                                                 indicator_names_full[c(16, 1:7)], selected=indicator_names_full[16]
                                                    ))                                  
                                                  , conditionalPanel(
                                                    condition="input.outputGroup=='print_in'"
                                                    , selectInput("inputlayer", "Input",
-                                                                 indicator_names_full[15:28], selected=indicator_names_full[28]
+                                                                 indicator_names_full[8:15], selected=indicator_names_full[9]
                                                    ))
                                                  , htmlOutput("ReferenceToScenarios")
                                                  
@@ -135,13 +139,13 @@ ui <- shinyUI(
                                                   )
                                                   
                                                   , conditionalPanel(
-                                                    condition=paste0("input.outputGroup=='print_out' && input.outputlayer=='", indicator_names_full[29], "'"), 
+                                                    condition=paste0("input.outputGroup=='print_out' && input.outputlayer=='", indicator_names_full[length(indicator_names_full)], "'"), 
                                                     selectInput("colorsGroup", "Colour palette",
-                                                                choices = c("Shaded (n=14)", "Reduced (n=7)")
+                                                                choices = c("Land use (17 AFTs)")
                                                     ))
                                                   
                                                   , conditionalPanel(
-                                                    condition=paste0("input.outputGroup!='print_out' || input.outputlayer!='", indicator_names_full[29], "'"),
+                                                    condition=paste0("input.outputGroup!='print_out' || input.outputlayer!='", indicator_names_full[length(indicator_names_full)], "'"),
                                                     selectInput("colors", "Colour palette",
                                                                 rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
                                                     )
@@ -179,23 +183,24 @@ ui <- shinyUI(
                          # 
                          
                          
-                         tabPanel("Time-series", 
+                         
+                         tabPanel("Time-series"
                                   
-                                  sidebarLayout(
+                                  , sidebarLayout(
                                     sidebarPanel(width=SIDEBAR_WIDTH_TS,id = "tsmenu",
-                                                 
+
                                                  # selectInput("version", "Version",
                                                  #             version_names, selected = version_names[version_default_idx]
                                                  # ),
                                                  # , fluidPage(br(), h4("Scenario"))
                                                  selectInput("scenario_ts", "Climate and socio-economic scenario",
-                                                             scenario_names_full[], selected = selected_scenario_current
+                                                             MODEL_INFO$scenario_names_full[], selected = MODEL_INFO$scenario_default  
                                                  )
-                                                 
-                                                 
-                                    ), 
-                                    mainPanel(width=MAINPANEL_WIDTH_TS, 
-                                              
+
+
+                                    )
+                                    , mainPanel(width=MAINPANEL_WIDTH_TS,
+
                                               plotOutput("Tab2_TimeseriesPlotPane", height = PLOT_HEIGHT)
                                     )
                                   )
@@ -207,53 +212,53 @@ ui <- shinyUI(
                          
                          , tabPanel("Land Use Transition", 
                                     # Show a transition plot of the selected
-                                    
+
                                     # Sidebar layout with input and output definitions ----
                                     sidebarLayout(
-                                      sidebarPanel(width=SIDEBAR_WIDTH,  
-                                                   
+                                      sidebarPanel(width=SIDEBAR_WIDTH,
+
                                                    fluidRow("Land use transition", br(), "from:")
-                                                   
+
                                                    # , selectInput("version_from", "Version",
                                                    #             version_names, selected = version_names[1]
                                                    # )
                                                    , selectInput("scenario_from", "Scenario",
-                                                                 scenario_names_full[], selected = selected_scenario_current
-                                                                 
+                                                                 MODEL_INFO$scenario_names_full[], selected = selected_scenario_current
+
                                                    )
                                                    , sliderInput("year_from",
                                                                  "Year",
-                                                                 min = 2020,
-                                                                 max = 2080, sep = "",
-                                                                 value = 2020, step=10)
+                                                                 min = MODEL_INFO$YEAR_START,
+                                                                 max = MODEL_INFO$YEAR_END, sep = "",
+                                                                 value = MODEL_INFO$YEAR_DEFAULT, step=10)
                                                    # selectInput("paramset_full_from", label = "Behavioural parameter set-up",
                                                    #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
                                                    # ),
-                                                   
+
                                                    , fluidRow(  h5("to:"))
-                                                   
+
                                                    # , selectInput("version_to", "Version",
                                                    #             version_names, selected = version_names[1]
-                                                   # ), 
+                                                   # ),
                                                    , selectInput("scenario_to", "Scenario",
-                                                                 scenario_names_full[], selected = selected_scenario_future
-                                                   ) 
+                                                                 MODEL_INFO$scenario_names_full[], selected = selected_scenario_future
+                                                   )
                                                    , sliderInput("year_to",
                                                                  "Year",
-                                                                 min = 2020,
-                                                                 max = 2080, sep = "",
-                                                                 value = 2070, step=10)
-                                                   
+                                                                 min = MODEL_INFO$YEAR_START,
+                                                                 max = MODEL_INFO$YEAR_END, sep = "",
+                                                                 value = MODEL_INFO$YEAR_END, step=10)
+
                                                    # selectInput("paramset_full_to", label = "Behavioural parameter set-up",
                                                    #             choices = paramsets_fullnames, selected = paramsets_fullnames[1]
                                                    # ),
-                                                   
-                                                   
+
+
                                       ),
                                       #
                                       # # Main panel for displaying outputs ----
-                                      mainPanel( 
-                                        
+                                      mainPanel(
+
                                         tabPanel("Tab3_TransitionPlotPane", height=PLOT_HEIGHT,
                                                  plotOutput("Tab3_TransitionPlotPane",  height = PLOT_HEIGHT)
                                         )
