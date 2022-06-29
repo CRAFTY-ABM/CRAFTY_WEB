@@ -1,25 +1,39 @@
-library(dplyr)
-library(gplots)
-library(leaflet)
-library(raster)
+# British National Grid
+proj4.BNG = "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.1502,0.247,0.8421,-20.4894 +units=m +no_defs"
+proj4.OSGB1936 ="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"  # proj4string(LAD2019_shp) # EPSG:27700
+
+
+MODEL_INFO = character()
+MODEL_INFO$NAME = "CRAFTY-UK"
+MODEL_INFO$TITLE ="CRAFTY-UK interactive web-interface"
+MODEL_INFO$AFT_TB = "Tables/AFT_Names_UK.csv"
+MODEL_INFO$REGIONNAME = "UK"
+MODEL_INFO$PREFIX = "UK"
+MODEL_INFO$CRS = proj4.OSGB1936
 
 # CRAFTY run ID 
-runid="0"
+MODEL_INFO$runid="0"
 # A seed used in the CRAFTY runs 
-seedid = "99"
+MODEL_INFO$seedid = "99"
 
 # number of threads to process raster
 n_thread = 6
 
-region_names = c("England", "Scotland", "Wales")
+MODEL_INFO$region_names = c("England", "Scotland", "Wales")
 # 
-location_UK = "Local"
+MODEL_INFO$location = "Local"
 
 # dropbox relative path 
 path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
 
 # local data archive
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
+
+
+uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
+
+MODEL_COORDS = uk_coords[, 3:4]
+MODEL_COORDS_SPDF = cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng)
 
 # data version
 data_prefix = ""
@@ -46,12 +60,12 @@ path_filecache = paste0(path_shinywd, "/filetmp/")
 path_rastercache = paste0(path_shinywd, "/rastertmp/")
 
 # dummy name
-default_fname = paste0(version_default, "/Thresholds/Baseline/Baseline-0-99-UK-Cell-2020.csv")
+default_fname = paste0(version_default, "/Thresholds/Baseline/Baseline-0-99-", MODEL_INFO$PREFIX, "-Cell-2020.csv")
 
 getFname = function(version, paramset, scenario, year ) { 
   
   # fs::path_expand(paste0( fooddemand, "/" ,foodprice,"/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
-  fs::path_expand(paste0(version_prefix[match(version,version_names)], "/", paramset, "/", scenario, "/", scenario, "-", runid, "-99-UK-Cell-", year, ".csv"))
+  fs::path_expand(paste0(version_prefix[match(version,version_names)], "/", paramset, "/", scenario, "/", scenario, "-", MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-", MODEL_INFO$PREFIX, "-Cell-", year, ".csv"))
   
 }
 
@@ -103,7 +117,6 @@ CHESS_BNG_csv = CHESS_BNG_csv[, c("FID", "POINT_X", "POINT_Y")]
 # CHESS_LL_coords = data.frame(coordinates(CHESS_LL_sp))
 # colnames(CHESS_LL_coords) = c("Longitude", "Latitude")
 
-uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
 
 
 

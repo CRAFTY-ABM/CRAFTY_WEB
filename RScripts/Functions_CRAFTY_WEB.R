@@ -1,7 +1,11 @@
+# install.packages("properties")
+library(properties)
+
 library(rdrop2) # Dropbox access
 library(gplots) # color palette
 library(RColorBrewer)
 library(grid)
+
 library(DT)
 
 library(raster)
@@ -42,6 +46,7 @@ SIDEBAR_WIDTH_TS = 2
 MAINPANEL_WIDTH_TS = 12 - SIDEBAR_WIDTH_TS
 
 
+
 TRANSPARENCY_DEFAULT = 0.9 
 aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
                        "#F3EF0C", #2 IP EP
@@ -52,17 +57,7 @@ aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
                        "#fafaf7") #7 Unmanaged
 
 
-
-aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
-                                             1,# Bio
-                                             1, # EA
-                                             2, # EP
-                                             1, # IA
-                                             1, # IA
-                                             2, # IP
-                                             4, 5, 3, 3, 3, 3, 1, 4, 6,7)]
-
-
+drop_token_name = "Authentication/droptoken.rds"
 
 LEGEND_MAR = -0.4
 LEGEND_CEX = 0.8
@@ -75,16 +70,15 @@ proj4.LL <- CRS("+proj=longlat +datum=WGS84")
 # Reference: http://spatialreference.org/ref/epsg/3035/
 proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
-# British National Grid
-proj4.BNG = "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.1502,0.247,0.8421,-20.4894 +units=m +no_defs"
-proj4.OSGB1936 ="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"  # proj4string(LAD2019_shp) # EPSG:27700
+
 
 # WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI
-proj4.spherical = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs" # EPSG:3857
+proj4.UI = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs" # EPSG:3857
 
 
 
-source("RScripts/Data_UK.R")
+# source("RScripts/Data_UK.R")
+source("RScripts/Data_EU.R")
 
 r_dummy  = raster(extent(r_default))
 r_dummy = setValues(r_dummy, values = 0)
@@ -139,9 +133,9 @@ provider_names = c(
   # , "Wikimedia"      
 )
 
-capital_csvname_baseline = "Baseline-0-99-UK-AggregateCapital.csv"
-baseline_capital_tmp =  unlist(read.csv(paste0("Tables/Summary/", capital_csvname_baseline)))
-names(baseline_capital_tmp)[-1]= as.character(capitalNames)
+# capital_csvname_baseline = paste0("Baseline-0-", MODEL_INFO$seedid, "-", MODEL_INFO$PREFIX, "-AggregateCapital.csv")
+# baseline_capital_tmp =  unlist(read.csv(paste0("Tables/Summary/", capital_csvname_baseline)))
+# names(baseline_capital_tmp)[-1]= as.character(capitalNames)
 
 # @TODO IFU S3
 # simple caching @todo improve.. 
@@ -194,33 +188,38 @@ getCSV = function(filename_in, location = "Dropbox") {
 # }
 
 
-getSPDF_UK <- function(tmp_in_name, location = "Dropbox") {
+getSPDF <- function(tmp_in_name, location = "Dropbox") {
   
+  print(paste0("getSPDF:", tmp_in_name))
   # Target outcome
   # tmp_in_name = "~/Dropbox/KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/1May2021/Normal/BehaviouralBaseline/Baseline-SSP3/Baseline-SSP3-0-99-UK-Cell-2050.csv"
+  
   # result_raw <- read.csv(paste0( tmp_in_name))
   
   result_raw = getCSV(tmp_in_name, location)
   
-  result_joined = inner_join(uk_coords[, 3:4], result_raw, by = c("X_col" = "X", "Y_row" = "Y"))
+  
+  result_joined = inner_join(MODEL_INFO$coords, result_raw,  by = c("X", "Y"))
   
   result_tmp = result_joined[, indicator_names_dot]
   
   
   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-  result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = crs(proj4.OSGB1936)), data = data.frame(result_tmp))# , tolerance = 0.0011)
+  result.spdf <- SpatialPixelsDataFrame(points = MODEL_INFO$SP_LL, proj4string = proj4.LL, data = data.frame(result_tmp), tolerance =  0.0011)
+  
+  plot(result.spdf)
+  
   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
   return(result.spdf)
 }
 
 
 
-getRaster<- function(fname, band.name, location = location_UK, resolution = RESOLUTION_WEB, printPath=TRUE) {
+getRaster<- function(fname, band_name, location = MODEL_INFO$location, resolution_in = RESOLUTION_WEB, printPath=TRUE) {
   
-  
-  localtif_path = paste0(path_rastercache, fname, "_", band.name, ".tif")
-  band.name_dot = indicator_names_dot[match(band.name, indicator_names)]
-  print(band.name_dot)
+  localtif_path = paste0(path_rastercache, fname, "_", band_name, ".tif")
+  band_name_dot = indicator_names_dot[match(band_name, indicator_names)]
+  print(band_name_dot)
   
   if (printPath) { 
     print(localtif_path)
@@ -237,20 +236,25 @@ getRaster<- function(fname, band.name, location = location_UK, resolution = RESO
       print(location)
       print(fname)
     }
-    spdf.out = getSPDF_UK(fname, location = location)
+    spdf.out = getSPDF(fname, location = location)
     
     
     # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
     rs.LL <- stack(spdf.out)
-    print(rs.LL)
+    # print(rs.LL)
     
     
     print("reprojection")
-    
+    # 
     # print(names(rs.LL))
+    # print(band_name)
+    # print(band_name_dot)
+    # 
     
-    out.reproj = projectRaster(rs.LL[[band.name_dot]], crs = proj4.spherical, method = "ngb", res = resolution)
+    out.reproj = projectRaster(rs.LL[[band_name_dot]], crs = MODEL_INFO$CRS_UI, method = "ngb", res = resolution_in)
     writeRaster(out.reproj, filename = localtif_path, overwrite=T)
+    
+    # plot(out.reproj)
     
     print("reprojection done")  
   } else {
@@ -340,21 +344,20 @@ createTempFiles <- function() {
   indicator_names_in = indicator_names #  "LandUseIndex"  
   version_names_in = version_names # [1:4]
   
-  default_version_byscenario
   
   # foreach(version_tmp = version_names_in, .errorhandling = "stop") %do% {
   # print(version_tmp)
   
-  res1 = foreach(s_idx = seq_along(scenario_names),  .errorhandling = "stop") %dopar% {
+  res1 = foreach(s_idx = seq_along(MODEL_INFO$scenario_names),  .errorhandling = "stop") %dopar% {
     
-    scenario = scenario_names[s_idx]
+    scenario = MODEL_INFO$scenario_names[s_idx]
     print(scenario)
     
     version_tmp = default_version_byscenario[s_idx]
     
     
     res2 = sapply(target_years_other, FUN = function(year) sapply(indicator_names_in, FUN = function(b_name) {
-      res3 = getRaster(getFname(version_tmp, paramset = paramset_tmp, scenario = scenario, year =  year), band.name =  b_name, location = location_UK, printPath = FALSE); 
+      res3 = getRaster(getFname(version_tmp, paramset = paramset_tmp, scenario = scenario, year =  year), band_name =  b_name, location = MODEL_INFO$location, printPath = FALSE); 
       return(TRUE);
     }))
     
@@ -426,6 +429,18 @@ createTempFiles <- function() {
 #   
 #   return(TRUE)
 # }
+
+
+### get area per cell
+
+getCellArea <- function() { 
+  # if(is.null(MODEL_INFO$AREA_CELL)) { 
+  #   
+  #   return(rep(1, MODEL_INFO$n_cell_total))
+  # } else { 
+  return(MODEL_INFO$AREA_CELL)
+  # }
+}
 
 
 

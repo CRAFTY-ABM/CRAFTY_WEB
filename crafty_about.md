@@ -14,7 +14,7 @@ Model webpage:
 https://landchange.earth/CRAFTY
 
 Model repository:
-https://bitbucket.org/geoslurg/crafty_cobra
+https://github.com/CRAFTY-ABM
 
 Model wiki:
 https://bitbucket.org/geoslurg/crafty_wiki/wiki/Home

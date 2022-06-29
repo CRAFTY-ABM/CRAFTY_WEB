@@ -1,7 +1,6 @@
 # This is the server logic of a Shiny web application. You can run the 
 # application by clicking 'Run App' above.
 
-
 library(shiny)
 source("RScripts/Functions_CRAFTY_WEB.R")
 
@@ -77,11 +76,11 @@ shinyServer(function(input, output, session) {
     
     
     
-    s_idx = match(input$scenario, scenario_names_full)
+    s_idx = match(input$scenario, MODEL_INFO$scenario_names_full)
     
     paste0("Simulated ", out_name, " in ", input$year, " with the ",
            #input$paramset_full, " parameters and ",
-           scenario_names[s_idx], " climate scenario." )
+           MODEL_INFO$scenario_names[s_idx], " climate scenario." )
   })
   
   
@@ -151,24 +150,48 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
+  # Reactive to output layer
+  rnew_output <- reactive({
+    print("rnew_output called")
+    
+    output_idx = match(input$outputlayer, indicator_names_full)
+    output_name_tmp = indicator_names[output_idx]
+    
+    
+    # input$background # touch
+    
+    # p_idx = which(input$paramset_full == paramsets_fullnames)
+    p_idx = p_idx_default
+    s_idx = match(input$scenario, MODEL_INFO$scenario_names_full)
+    
+    fname_changed =getFname(default_version_byscenario[s_idx], paramsets[p_idx], MODEL_INFO$scenario_names[s_idx],input$year)   
+    
+    r_changed = getRaster(fname_changed, band_name = output_name_tmp, resolution_in =  MODEL_INFO$RESOLUTION_UI, location = MODEL_INFO$location)
+    
+    print("Return changed raster")
+    return(r_changed)
+  })
   
   
+  # Reactive to input layer
   
   rnew_input <- reactive({
     print("rnew_input called")
     
+    input_idx = match(input$inputlayer, indicator_names_full)
+    input_name_tmp = indicator_names[input_idx]
+    print(input_name_tmp)
     
     # p.idx = which(input$paramset_full == paramsets_fullnames)
     p_idx = p_idx_default
+    s_idx = match(input$scenario, MODEL_INFO$scenario_names_full)
     
-    s_idx = match(input$scenario, scenario_names_full)
     
-    input_idx = match(input$inputlayer, indicator_names_full)
-    input_name_tmp = indicator_names[input_idx]
+    fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], MODEL_INFO$scenario_names[s_idx], input$year)
     
-    fname_changed = getFname(default_version_byscenario[s_idx],  paramsets[p_idx], scenario_names[s_idx], input$year)
+    r_changed = getRaster(fname_changed, band_name = input_name_tmp, resolution_in = MODEL_INFO$RESOLUTION_UI, location = MODEL_INFO$location)
     
-    r_changed = getRaster(fname_changed, band.name = input_name_tmp, resolution = RESOLUTION_WEB, location = location_UK)
+    print("Return changed raster")
     
     return(r_changed)
   } )
@@ -183,9 +206,9 @@ Please see the further details of the parameters in Table A4 of the following pa
   output$Tab1_StatisticsPane <- renderPlot({
     print("draw stat pane")
     
-    target_data = rnew()
+    target_data = rnew_output()
     
-    # runid = which(scenario_names == input$scenario) - 1
+    # runid = which(MODEL_INFO$scenario_names == input$scenario) - 1
     # p.idx = which(input$paramset_full == paramsets_fullnames)
     #
     # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
@@ -203,8 +226,6 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     par(mar = c(5.1, 4.1, 4, 1), mfrow=c(1,2))
-    
-    
     
     
     hist(getValues(target_data), main="Histogram", xlab= output_name_tmp)
@@ -225,37 +246,16 @@ Please see the further details of the parameters in Table A4 of the following pa
       print("draw AFT pane")
       
       
-      # p.idx = which(input$paramset_full == paramsets_fullnames)
-      # 
-      # # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
-      # foldername_tmp = paste0("Tables/agents/", paramsets[p.idx], "/", input$scenario)
-      # 
-      # aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
-      # 
-      # aftparams_df = data.frame(aftparams_df)
-      # aftparams_df$productionCsvFile = NULL
-      # p_name = paste0("Tables/Paramset", p.idx, ".csv")
-      # 
       
-      AFT_tb = read.csv("Tables/AFT_Names_UK.csv")
-      # 
-      
-      # fname_changed =  paste0("Data/",  paramsets[p.idx], "/", input$scenario, "/", input$scenario, "-",runid, "-",seedid,"-EU-Cell-", input$year, ".csv")
-      
-      # spdf_changed = getSPDF(fname_changed)
-      # target_val = spdf_changed[4:22]
-      # 
-      # str(getValues(target_data))
-      # tb1 =     table(getValues(target_data))
-      # print(tb1)
-      
-      DT::datatable(AFT_tb[,c("Name", "Description", "Group", "Type")], options= list(paging = FALSE),  editable = F) 
+      DT::datatable(MODEL_INFO$AFT_TB[,c("Name", "Description", "Group", "Type")], options= list(paging = FALSE),  editable = F) 
       # %>%  DT::formatStyle(columns = colnames(.), fontSize = '50%')
       # %>% formatStyle(
       #   'Name',
       #   backgroundColor =  aft_colors_fromzero_17
       # )
     })
+  
+  
   output$Tab1_ServiceTablePane <- renderDataTable(
     {
       print("draw service pane")
@@ -297,11 +297,11 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       # p_idx = which(input$paramset_full == paramsets_fullnames)
       p_idx = 1 # fix 
-      s_idx = match(input$scenario, scenario_names_full)
+      s_idx = match(input$scenario, MODEL_INFO$scenario_names_full)
       
       
       # foldername_tmp = ("Tables/agents/BehaviouralBaseline/Baseline")
-      foldername_tmp = paste0("Tables/agents/", paramsets[p_idx], "/", scenario_names[s_idx])
+      foldername_tmp = paste0("Tables/agents/", paramsets[p_idx], "/", MODEL_INFO$scenario_names[s_idx])
       
       aftparams_df = sapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/AftParams_", x, ".csv"))) %>% t
       
@@ -332,11 +332,11 @@ Please see the further details of the parameters in Table A4 of the following pa
       # p_idx = which(input$paramset_full == paramsets_fullnames)
       p_idx = 1
       
-      s_idx = match(input$scenario, scenario_names_full)
+      s_idx = match(input$scenario, MODEL_INFO$scenario_names_full)
       
       
       foldername_tmp = ("Tables/production/Baseline")
-      foldername_tmp = paste0("Tables/production/", scenario_names[s_idx])
+      foldername_tmp = paste0("Tables/production/", MODEL_INFO$scenario_names[s_idx])
       
       productionparams_l = lapply(aft_shortnames_fromzero[-length(aft_shortnames_fromzero)], FUN = function(x) read.csv(paste0(foldername_tmp, "/", x, ".csv"))) 
       
@@ -353,6 +353,8 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   output$Tab2_TimeseriesPlotPane <- renderPlot(height = "auto", width = 1000, res = 96, {
+    
+    
     print("draw timeseries pane")
     
     p_idx = p_idx_default
@@ -364,9 +366,9 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     # File names
-    s_idx = match(input$scenario_ts, scenario_names_full)
+    s_idx = match(input$scenario_ts, MODEL_INFO$scenario_names_full)
     
-    scenario_tmp = scenario_names[s_idx]
+    scenario_tmp = MODEL_INFO$scenario_names[s_idx]
     
     paramset_tmp = paramsets[p_idx]
     
@@ -374,32 +376,32 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     if (!str_detect(scenario_tmp, "SSP3")) {
       # aft composition
-      aft_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-UK-AggregateAFTComposition.csv"))
+      aft_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/",paramset_tmp , "/", scenario_tmp, "/",  scenario_tmp, "-",MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-",MODEL_INFO$PREFIX,"-AggregateAFTComposition.csv"))
       
       # supply and demand files
-      demand_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-UK-AggregateServiceDemand.csv"))
+      demand_csvname_changed = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-",MODEL_INFO$PREFIX,"-AggregateServiceDemand.csv"))
       
-      aftcomp_dt = getCSV(aft_csvname_changed, location = location_UK)
-      demand_dt = getCSV(demand_csvname_changed, location = location_UK)
+      aftcomp_dt = getCSV(aft_csvname_changed, location = MODEL_INFO$location)
+      demand_dt = getCSV(demand_csvname_changed, location = MODEL_INFO$location)
       
     } else { 
       
       # aft composition
-      aft_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", runid, "-99-", region_names, "-AggregateAFTComposition.csv"))
+      aft_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/",  scenario_tmp, "-", MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-", MODEL_INFO$region_names, "-AggregateAFTComposition.csv"))
       
-      aftcomp_dt_l = lapply(aft_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
+      aftcomp_dt_l = lapply(aft_csvname_changed_v, FUN = function(x) getCSV(x, location = MODEL_INFO$location))
       
       aftcomp_dt = cbind(aftcomp_dt_l[[1]][,c("Tick", "Region")],  Reduce("+", lapply(aftcomp_dt_l, FUN = function(x) x[,-c(1:2)])))
       
       
       
       # supply and demand files
-      demand_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", runid, "-99-", region_names, "-AggregateServiceDemand.csv"))
-      demand_dt_l = lapply(demand_csvname_changed_v, FUN = function(x) getCSV(x, location = location_UK))
+      demand_csvname_changed_v = fs::path_expand(paste0(version_prefix[match(default_version_byscenario[s_idx], version_names)], "/", paramset_tmp, "/", scenario_tmp, "/", scenario_tmp, "-", MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-", MODEL_INFO$region_names, "-AggregateServiceDemand.csv"))
+      demand_dt_l = lapply(demand_csvname_changed_v, FUN = function(x) getCSV(x, location = MODEL_INFO$location))
       
       rem_col_idx = match(c("Tick", "Region"), colnames(demand_dt_l[[1]]))
       
-      demand_dt = cbind( Reduce("+", lapply(demand_dt_l, FUN = function(x) x[,-rem_col_idx ])), Region= "UK", Tick = demand_dt_l[[1]][,c("Tick")])
+      demand_dt = cbind( Reduce("+", lapply(demand_dt_l, FUN = function(x) x[,-rem_col_idx ])), Region= MODEL_INFO$REGIONNAME, Tick = demand_dt_l[[1]][,c("Tick")])
       
       
     }
@@ -407,7 +409,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     
     
     # mean capital level
-    capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", runid, "-", seedid, "-UK-AggregateCapital.csv"))
+    capital_csvname_changed = fs::path_expand(paste0(scenario_tmp, "-", MODEL_INFO$runid, "-", MODEL_INFO$seedid, "-", MODEL_INFO$PREFIX , "-AggregateCapital.csv"))
     
     
     capital_scene_tmp = read.csv(paste0("Tables/Summary/", capital_csvname_changed))
@@ -685,173 +687,77 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
-  output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, execOnResize = T, res = 96, {
+  
+  
+  output$Tab3_TransitionPlotPane <- renderPlot(height = PLOT_HEIGHT, res = 96, {
     
     
-    # p_from.idx = which(input$paramset_full_from == paramsets_fullnames)
-    # p_to.idx = which(input$paramset_full_to  == paramsets_fullnames)
+    p_from_idx = 1
+    p_to_idx = 1
     
-    p_from.idx = 1
-    p_to.idx = 1
-    # fname_from = paste0(default_version_byscenario_tr, "/BehaviouralBaseline/Baseline/Baseline-0-99-UK-Cell-2020.csv")
-    # fname_to =  paste0(default_version_byscenario_tr, "/BehaviouralBaseline/RCP4_5-SSP4/RCP4_5-SSP4-0-99-UK-Cell-2080.csv")
+    s_idx_from = match(input$scenario_from, MODEL_INFO$scenario_names)
+    s_idx_to = match(input$scenario_to, MODEL_INFO$scenario_names)
     
-    s_idx_from = match(input$scenario_from, scenario_names_full)
-    s_idx_to = match(input$scenario_to, scenario_names_full)
+    fname_from = "//Baseline - EPAs/Baseline-0-99-EU-Cell-2026.csv"
+    fname_to = "//Baseline - EPAs/Baseline-0-99-EU-Cell-2086.csv"
+ 
+    fname_from =  getFname(default_version_byscenario[s_idx_from], paramsets[p_from_idx], MODEL_INFO$scenario_names[s_idx_from], year =  input$year_from)
+    fname_to   =  getFname(default_version_byscenario[s_idx_to], paramsets[p_to_idx], MODEL_INFO$scenario_names[s_idx_to], year =  input$year_to)
     
-    
-    
-    fname_from =  getFname(default_version_byscenario[s_idx_from], paramsets[p_from.idx], scenario_names[s_idx_from], year =  input$year_from)
-    fname_to   =  getFname(default_version_byscenario[s_idx_to], paramsets[p_to.idx], scenario_names[s_idx_to], year =  input$year_to)
-    
+ 
     
     #### Transition matrix
     
-    csv_from = getCSV(fname_from, location = location_UK)
-    csv_to = getCSV(fname_to, location = location_UK)
+    csv_from = getCSV(fname_from, location = MODEL_INFO$location)
+    csv_to = getCSV(fname_to, location =  MODEL_INFO$location)
+ 
+    aft_old = reclassLabels(csv_from$LandUseIndex)
+    aft_new = reclassLabels(csv_to$LandUseIndex)
     
-    # already 1 km grid in projected space (for the UK model)
-    aft_old = csv_from$LandUseIndex
-    aft_new = csv_to$LandUseIndex
+    ### factor to include missing class labels
+    aft_old_f = factor(aft_old, levels = MODEL_INFO$AFT_LEVELS_TRANSITION)
+    aft_new_f = factor(aft_new, levels = MODEL_INFO$AFT_LEVELS_TRANSITION)
+   
+    aft_tr_df = cbind(aft_old_f, aft_new_f)
+     
+    aft_tr_df = aft_tr_df[!is.na(rowSums(aft_tr_df)),]
+    aft_tr_df = data.frame(cbind(1:nrow(aft_tr_df), aft_tr_df))
+    colnames(aft_tr_df)[1] = "rowid"
     
-    
-    # deal with -1 
-    aft_old[aft_old==-1] = 16
-    aft_new[aft_new==-1] = 16 
-    
-    # deal with zero
-    aft_old = aft_old + 1
-    aft_new = aft_new + 1
-    
-    # reclassify
-    aft_old[aft_old==6] = 5
-    aft_old[aft_old %in% c(12)] = 10
-    aft_old[aft_old %in% c(13)] = 11
-    
-    aft_new[aft_new==6] = 5
-    aft_new[aft_new %in% c(12)] = 10
-    aft_new[aft_new %in% c(13)] = 11
-    
-    
-    aft_tr.df = cbind(aft_old, aft_new)
-    
-    aft_tr.df = aft_tr.df[!is.na(rowSums(aft_tr.df)),]
-    aft_tr.df = data.frame(cbind(1:nrow(aft_tr.df), aft_tr.df))
-    colnames(aft_tr.df)[1] = "rowid"
-    # Create the transition matrix that
-    # is the basis for the transition plot
-    
-    # print( table(aft_old))
-    # print(table(aft_new))
-    
-    
-    # 
-    #     #### Choose the right intensity scaling
-    #     intens.year.scen<-subset(intens, intens$years==input$scenario_from)
-    #     if(input$scenario_from=="Baseline") {
-    #       intens.year.scen = intens[1, 3:6]
-    #     } else if (input$scenario_from=="RCP2_6-SSP1") {
-    #       intens.year.scen<-intens.year[,3:6]
-    #     } else if (input$scenario_from=="RCP4_5-SSP2" | input$scenario_from=="RCP8_5-SSP2") {
-    #       intens.year.scen<-intens.year[,7:10]
-    #     } else if (input$scenario_from=="RCP6_0-SSP3") {
-    #       intens.year.scen<-intens.year[,11:14]
-    #     } else if (input$scenario_from=="RCP4_5-SSP4") {
-    #       intens.year.scen<-intens.year[,15:18]
-    #     } else if (input$scenario_from=="RCP8_5-SSP5") {
-    #       intens.year.scen<-intens.year[,19:22]
-    #     }
-    #     # #### Choose the right intensity scaling
-    #     # intens.year.scen <-subset(intens, intens$years==input$scenario_to)
-    #     # if(input$scenario_to =="Baseline") {
-    #     #   intens.year.scen = intens[1, 3:6]
-    #     # } else if (input$scenario_to=="RCP2_6-SSP1") {
-    #     #   intens.year.scen<-intens.year[,3:6]
-    #     # } else if (input$scenario_to=="RCP4_5-SSP2" | input$scenario_to=="RCP8_5-SSP2") {
-    #     #   intens.year.scen<-intens.year[,7:10]
-    #     # } else if (input$scenario_to=="RCP6_0-SSP3") {
-    #     #   intens.year.scen<-intens.year[,11:14]
-    #     # } else if (input$scenario_to=="RCP4_5-SSP4") {
-    #     #   intens.year.scen<-intens.year[,15:18]
-    #     # } else if (input$scenario_to=="RCP8_5-SSP5") {
-    #     #   intens.year.scen<-intens.year[,19:22]
-    #     # }
-    #     # 
-    #     # 
-    # 
-    #     IA.scale<-as.numeric(intens.year.scen[1])
-    #     EA.scale<-as.numeric(intens.year.scen[2])
-    #     IP.scale<-as.numeric(intens.year.scen[3])
-    #     EP.scale<-as.numeric(intens.year.scen[4])
-    # 
-    #     IA.col<-lighten(A.col,amount=(0.9 - IA.scale))
-    #     EA.col<-lighten(A.col,amount=(0.9 - EA.scale))
-    #     IP.col<-lighten(P.col,amount=(0.9 - IP.scale))
-    #     EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
-    #     VEP.col<-lighten(P.col,amount=0.9)
-    # 
-    #     
-    #     aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
-    #     
-    #     aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
-    #      
-    #     
-    #     aft_names_legend =   aft_group_names_extended
-    #     aft_colours_legend = aft_shaded_colours_extended
-    #     
-    
-    ### continue from here
-    aft_old_f = factor(aft_old, levels = c(1:5, 7:11, 14:17))
-    aft_new_f = factor(aft_new, levels = c(1:5, 7:11, 14:17))
     
     aft_tb_oldandnew = table(aft_old_f, aft_new_f)
     
-    trn_mtrx <- with(aft_tr.df, aft_tb_oldandnew)
-    str(aft_tb_oldandnew)
+    trn_mtrx <- with(aft_tr_df, aft_tb_oldandnew)
+    # str(aft_tb_oldandnew)
     
-    # reduce 
-    tr.colors =  aft_group_colors
-    tr_names =  aft_group_shortnames
-    
-    
-    aft_old_tb = rowSums(trn_mtrx)
-    aft_new_tb = colSums(trn_mtrx)
-    
-    
-    aft_old_prop = paste0(round(aft_old_tb / sum(aft_old_tb, na.rm = T) * 100, 2  ), "%")
-    aft_new_prop = paste0(round(aft_new_tb / sum(aft_new_tb, na.rm = T) * 100, 2  ), "%")
-    
-    
-    
+    # composition
+    aft_old_prop = paste0( round(table(aft_old_f) / sum(table(aft_old_f), na.rm = T) * 100, 1  ), "%")
+    aft_new_prop = paste0(round(table(aft_new_f) / sum(table(aft_new_f), na.rm = T)* 100, 1   ), "%")
+     
     # Setup proportions
     box_prop <- cbind(aft_old_prop, aft_new_prop)
     # str(box_prop)
-    # par(mfrow=c(1,1), mar = c(5.1, 4.1, 4, 1))
+    
     par(mfrow=c(1,1))
     plot.new()
     
-    transitionPlot(trn_mtrx,new_page=T, fill_start_box =  tr.colors, arrow_clr =tr.colors, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop, overlap_add_width = 1, tot_spacing = 0.07, min_lwd = unit(0.005, "mm"), max_lwd = unit(10, "mm"),  box_label = c(input$year_from, input$year_to),)
+    transitionPlot(trn_mtrx, new_page=T,   fill_start_box =  TRANSITION_COLOURS, arrow_clr =TRANSITION_COLOURS, cex=1, color_bar = T, txt_start_clr = "black", txt_end_clr = "black", type_of_arrow = "simple", box_txt = box_prop,  overlap_add_width = 1, tot_spacing = 0.07, box_label = c(input$year_from, input$year_to)) # , min_lwd = unit(0.05, "mm"), max_lwd = unit(30, "mm"))
     
-    
-    legend("center", tr_names, col = tr.colors, pch=15, cex=0.9)
-    
-    
-    
+
+    legend("center", TRANSITION_NAMES, col = TRANSITION_COLOURS, pch=15, cex=0.8)
+
   })
-  
   
   
   
   output$Tab1_MapPane <- renderLeaflet({
     print("draw mappane 1")
     
-    
-    output_idx = match(input$outputlayer, indicator_names_full)
-    output_name_tmp = indicator_names[output_idx]
-    
-    input_idx = match(input$inputlayer, indicator_names_full)
-    input_name_tmp = indicator_names[input_idx]
-    
+    # output_idx = match(input$outputlayer, indicator_names_full)
+    # output_name_tmp = indicator_names[output_idx]
+    # 
+    # input_idx = match(input$inputlayer, indicator_names_full)
+    # input_name_tmp = indicator_names[input_idx]
     
     
     leaflet(
@@ -861,19 +767,20 @@ Please see the further details of the parameters in Table A4 of the following pa
       # boxZoom = T
       #                )
     ) %>%
-      clearImages() %>% #clearControls() %>%
+      # clearImages() %>% #clearControls() %>%
       #addTiles()
       addProviderTiles(providers$OpenStreetMap.Mapnik, # Esri.WorldImagery
                        options = providerTileOptions(noWrap = TRUE), group = "TileLayer"
-      ) %>%   
+      ) %>%
       addLayersControl(
-        baseGroups = c("ModelResult",  "Basemap"), 
+        baseGroups = c("ModelResult",  "Basemap"),
         options = layersControlOptions(collapsed = FALSE)
-      ) %>% 
-      fitBounds(ext[1], ext[3], ext[2], ext[4] ) %>%  
-      addRasterImage(r_default, project = FALSE, colors = pal_shaded_default, opacity = input$alpha, maxBytes = 4 * 1024 * 1024, group="ModelResult")  %>% 
-      addLegend(colors = col2hex(as.character(aft_shaded_colours_extended)), labels = aft_group_names_extended, title = paste0(input$outputlayer),group = "ModelResult", opacity = input$alpha) %>%  
+      ) %>%
+      fitBounds(lng1 = MODEL_INFO$extent[1],lat1 =  MODEL_INFO$extent[3], lng2 = MODEL_INFO$extent[2], lat2 = MODEL_INFO$extent[4] ) %>%
+      addRasterImage(r_default, project = FALSE, colors = aft_pal_default, opacity = TRANSPARENCY_DEFAULT, maxBytes = 4 * 1024 * 1024, group="ModelResult")  %>%
+      addLegend(colors = col2hex(as.character(aft_colours_default)), labels = aft_names_default, title = MAPTITLE_DEFAULT,group = "ModelResult", opacity = TRANSPARENCY_DEFAULT) %>%
       addMiniMap(position = "bottomleft", zoomAnimation = T, toggleDisplay = TRUE)  %>% addMeasure()
+    
     
   })
   
@@ -891,11 +798,12 @@ Please see the further details of the parameters in Table A4 of the following pa
   # should be managed in its own observer.
   observe({
     print("redraw Tab1_MapPane")
-    dt = rnew()
+    dt = rnew_output()
     # print(which (input$indicator == indicator_names))
     
     proxy <- leafletProxy("Tab1_MapPane", data =dt)
-    proxy %>% clearImages() %>% clearControls()
+    # proxy %>% clearImages()
+    proxy %>% clearControls()
     
     # touches
     input$background
@@ -924,66 +832,78 @@ Please see the further details of the parameters in Table A4 of the following pa
       
       if (output_name_tmp == "LandUseIndex") {  # land use index
         
-        if (input$colorsGroup == "Reduced (n=7)") { 
-          pal_out = aft_pal_group2
-          aft_names_legend = aft_group2_names
-          aft_colours_legend = aft_group2_colours
+        if (input$colorsGroup == "Default") { 
           
-        } else if (input$colorsGroup == "Shaded (n=14)") { 
+          # pal_out = aft_pal_default
+          # aft_names_legend = aft_names_default
+          # aft_colours_legend = aft_colours_default
+          # 
+          # } else if (input$colorsGroup == "Reduced (n=7)") { 
+          # pal_out = aft_pal_group2
+          # aft_names_legend = aft_group2_names
+          # aft_colours_legend = aft_group2_colours
           
-          
-          
-          #### Choose the right intensity scaling
-          intens.year<-subset(intens, intens$years==input$year)
-          if(input$scenario=="Baseline") {
-            intens.year.scen = intens[1, 3:6]
-          } else if (input$scenario=="RCP2.6-SSP1") {
-            intens.year.scen<-intens.year[,3:6]
-          } else if (input$scenario=="RCP4.5-SSP2" | input$scenario=="RCP8.5-SSP2") {
-            intens.year.scen<-intens.year[,7:10]
-          } else if (input$scenario=="RCP6.0-SSP3") {
-            intens.year.scen<-intens.year[,11:14]
-          } else if (input$scenario=="RCP4.5-SSP4") {
-            intens.year.scen<-intens.year[,15:18]
-          } else if (input$scenario=="RCP8.5-SSP5") {
-            intens.year.scen<-intens.year[,19:22]
-          }
-          
-          
-          
-          IA.scale<-as.numeric(intens.year.scen[1])
-          EA.scale<-as.numeric(intens.year.scen[2])
-          IP.scale<-as.numeric(intens.year.scen[3])
-          EP.scale<-as.numeric(intens.year.scen[4])
-          
-          IA.col<-lighten(A.col,amount=(0.9 - IA.scale))
-          EA.col<-lighten(A.col,amount=(0.9 - EA.scale))
-          IP.col<-lighten(P.col,amount=(0.9 - IP.scale))
-          EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
-          VEP.col<-lighten(P.col,amount=0.9)
-          
-          
-          aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
-          
-          aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
-          
-          pal_out = colorFactor(col2hex(as.character(aftColours_shaded_srt)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
-          
-          
-          aft_names_legend =   aft_group_names_extended
-          aft_colours_legend = aft_shaded_colours_extended
-          
+          # } else if (input$colorsGroup == "Shaded (n=14)") { 
+          #   
+          #   
+          #   
+          #   #### Choose the right intensity scaling
+          #   intens.year<-subset(intens, intens$years==input$year)
+          #   if(input$scenario=="Baseline") {
+          #     intens.year.scen = intens[1, 3:6]
+          #   } else if (input$scenario=="RCP2.6-SSP1") {
+          #     intens.year.scen<-intens.year[,3:6]
+          #   } else if (input$scenario=="RCP4.5-SSP2" | input$scenario=="RCP8.5-SSP2") {
+          #     intens.year.scen<-intens.year[,7:10]
+          #   } else if (input$scenario=="RCP6.0-SSP3") {
+          #     intens.year.scen<-intens.year[,11:14]
+          #   } else if (input$scenario=="RCP4.5-SSP4") {
+          #     intens.year.scen<-intens.year[,15:18]
+          #   } else if (input$scenario=="RCP8.5-SSP5") {
+          #     intens.year.scen<-intens.year[,19:22]
+          #   }
+          #   
+          #   
+          #   
+          #   IA.scale<-as.numeric(intens.year.scen[1])
+          #   EA.scale<-as.numeric(intens.year.scen[2])
+          #   IP.scale<-as.numeric(intens.year.scen[3])
+          #   EP.scale<-as.numeric(intens.year.scen[4])
+          #   
+          #   IA.col<-lighten(A.col,amount=(0.9 - IA.scale))
+          #   EA.col<-lighten(A.col,amount=(0.9 - EA.scale))
+          #   IP.col<-lighten(P.col,amount=(0.9 - IP.scale))
+          #   EP.col<-lighten(P.col,amount=(0.9 - EP.scale))
+          #   VEP.col<-lighten(P.col,amount=0.9)
+          #   
+          #   
+          #   aftColours_shaded <-c(IA.col,EA.col,"#d9abd3","#BDED50","#268c20","#215737","#0a1c01",IP.col,EP.col,VEP.col,"#28b1c9","#2432d1","#EE0F05","#fafaf7")
+          #   
+          #   aftColours_shaded_srt = aftColours_shaded[c(11, 12, 2, 9, 1, 1, 8, 6, 7, 4, 5, 4, 5, 3, 10, 13, 14)]
+          #   
+          #   pal_out = colorFactor(col2hex(as.character(aftColours_shaded_srt)),  levels = as.character(c(0:15, -1)), na.color = "transparent")
+          #   
+          #   
+          #   aft_names_legend =   aft_group_names_extended
+          #   aft_colours_legend = aft_shaded_colours_extended
+          #   
         } else {
-          pal_out = aft_pal 
+          pal_out = aft_pal_default
           
-          aft_names_legend = aft_colors_fromzero
-          aft_colours_legend = aft_colors_fromzero
+          aft_names_legend = aft_names_default
+          aft_colours_legend = aft_colours_default
         }
         
         proxy %>% addRasterImage(dt, project = FALSE, colors = pal_out, group = "ModelResult", opacity = input$alpha, maxBytes = 4 * 1024 * 1024)
+        
+        
+        
+        
+        
         if (input$legend) {
           
-          proxy %>% addLegend(colors = col2hex(as.character(aft_colours_legend)), labels = aft_names_legend  , title = paste0(input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          proxy %>% addLegend(colors = col2hex(as.character(aft_colours_legend)), labels = aft_names_legend, title = paste0(input$outputlayer),group = "ModelResult", opacity = input$alpha)
+          
         }
         
         
@@ -1028,8 +948,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     }
     
     
-    # add empty layer 
-    
+    # add empty layer to add measure 
     proxy %>% addRasterImage(r_dummy, project = FALSE, group = "Basemap", opacity = 0) %>% addMiniMap(position = "bottomleft", zoomAnimation = T, toggleDisplay = TRUE)  %>% addMeasure()
   })
   
@@ -1124,27 +1043,6 @@ Please see the further details of the parameters in Table A4 of the following pa
   
   
   
-  rnew <- reactive( {
-    print("Rnew called")
-    
-    
-    output_idx = match(input$outputlayer, indicator_names_full)
-    output_name_tmp = indicator_names[output_idx]
-    
-    
-    # input$background # touch
-    
-    # p_idx = which(input$paramset_full == paramsets_fullnames)
-    p_idx = p_idx_default
-    
-    s_idx = match(input$scenario, scenario_names_full)
-    
-    fname_changed =getFname(default_version_byscenario[s_idx], paramsets[p_idx], scenario_names[s_idx],input$year)   
-    
-    r_changed = getRaster(fname_changed, band.name = output_name_tmp, resolution = RESOLUTION_WEB, location = location_UK)
-    
-    return(r_changed)
-  })
   
   
   #    
