@@ -111,6 +111,7 @@ app_init()
 # does not work quite properly yet.. 
 if (!file.exists(drop_token_name)) { 
   
+  dir.create(dirname(drop_token_name),recursive = T)
   token <- drop_auth(cache=F)
   saveRDS(token, drop_token_name, version = 2)
 } else {
@@ -208,7 +209,7 @@ getSPDF_UK <- function(tmp_in_name, location = "Dropbox") {
   
   
   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-  result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = crs(proj4.OSGB1936)), data = data.frame(result_tmp))# , tolerance = 0.0011)
+  result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(uk_coords$xcoord_bng, uk_coords$ycoord_bng), proj4string = CRS(proj4.OSGB1936)), data = data.frame(result_tmp))# , tolerance = 0.0011)
   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
   return(result.spdf)
 }
