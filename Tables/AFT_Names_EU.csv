@@ -1,0 +1,20 @@
+,Name,Description,Group,Type
+1,AF,Agroforestry,Agroforestry,Extensive
+2,Ext_AF,Extensive Agroforestry,Extensive Agroforestry,Extensive
+3,EA,Extensive Agriculture,Extensive Agriculture,Extensive
+4,EP,Extensive Pastoral,Extensive Pastoral,Extensive
+5,IA,Intensive Arable,Intensive Arable,Intensive
+6,Int_AF,Intensive Agroforestry,Intensive Agroforestry,Intensive
+7,Int_Fa,Intensive Farming,Intensive Farming,Intensive
+7,IP,Intensive Pastoral,Intensive Pastoral,Intensive
+8,MF,Managed forest,Managed forest,Intensive
+9,Min_Man,Minimal management, Minimal management,Extensive
+10,Mix_Fa,Mixed farming, Mixed farming,Intensive
+11,Mix_For,Mixed forest,Mixed forest,Intensive
+12,Mix_P,Mixed pastoral, Mixed pastoral,Intensive
+13,Multifun,Multifunctional,Multifunctional,Extensive
+14,P-Ur, Peri-Urban, Peri-Urban,Extensive
+14,UMF, Unmanaged forest, Unmanaged forest,Extensive
+15,VEP,Very Extensive Pastoral,Very Extensive Pastoral,Extensive
+16,Ur,Urban,Urban, Intensive
+17,NOT_ASSIGNED,Unmanaged land, Unmanaged land,Extensive

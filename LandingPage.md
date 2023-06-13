@@ -1,4 +1,4 @@
-**CRAFTY-EU** is a spatially-explicit agent-based model of land use change in Great Britain. It is an application of the CRAFTY modelling framework [(https://landchange.earth/CRAFTY)](https://landchange.earth/CRAFTY).
+**CRAFTY-EU** is a spatially-explicit agent-based model of land use change in Europe. It is an application of the CRAFTY modelling framework [(https://landchange.earth/CRAFTY)](https://landchange.earth/CRAFTY).
 
 The model operates at 10-min resolution and includes agricultural, forestry, urban and conservation land uses at a range of intensities.  The model simulates the provision of a range of ecosystem services, and is linked to the global LandSyMM model [(https://landsymm.earth)](https://landsymm.earth) to account for global effects including trade of food commodities. 
 
