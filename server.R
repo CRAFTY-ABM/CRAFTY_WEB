@@ -905,7 +905,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     # print(which (input$indicator == indicator_names))
     
     proxy <- leafletProxy("Tab1_MapPane", data =dt)
-    # proxy %>% clearImages()
+    proxy %>% clearImages()
     proxy %>% clearControls()
     
     # touches
