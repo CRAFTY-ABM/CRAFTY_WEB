@@ -13,13 +13,18 @@ n_thread = 6
 
 region_names = c("England", "Scotland", "Wales")
 # 
-location_UK = "Local"
+# location_UK = "Local"
+location_UK = "Dropbox"
 
 # dropbox relative path 
-path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_UK_DATA/"
+path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY Web apps/CRAFTY_WEB_UK/CRAFTY_WEB_UK_DATA/"
 
 # local data archive
 path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
+
+
+# path_approot = "~/Dropbox/KIT_Modelling/CRAFTY/CRAFTY Web apps/CRAFTY_WEB_UK/CRAFTY_WEB/"
+path_approot = "./"
 
 # data version
 data_prefix = ""
@@ -41,7 +46,7 @@ path_data_local = paste0(path_localstorage, data_prefix)
 # relative path (for dropbox)
 path_data_dropbox = paste0(path_dropbox, data_prefix)
 
-path_shinywd = "~/shiny_tmp_dev"
+path_shinywd = "shiny_tmp"
 path_filecache = paste0(path_shinywd, "/filetmp/")
 path_rastercache = paste0(path_shinywd, "/rastertmp/")
 
@@ -74,7 +79,7 @@ selected_scenario_future = scenario_names_full[4]
 
 
 scenarioname.default = "Baseline"
-r_default = raster("GISData/UK_default.tif")
+r_default = raster(paste0(path_approot, "GISData/UK_default.tif"))
 
 # ext = extent(projectRaster(r.default, crs = proj4.LL))
 ext = c(-8.439121, 2.794859, 49.77235, 60.93977 )
@@ -88,7 +93,7 @@ drop_token_name = "Authentication/droptoken.rds"
 
 # Cell ID and cooridnates 
 
-CHESS_BNG_csv = read.csv(paste0("GISData/CHESS_1k_grid.csv")) # BNG perhaps
+CHESS_BNG_csv = read.csv(paste0(path_approot,"GISData/CHESS_1k_grid.csv")) # BNG perhaps
 
 CHESS_BNG_csv = CHESS_BNG_csv[, c("FID", "POINT_X", "POINT_Y")]
 # CHESS_BNG_sp = SpatialPixels(points = SpatialPoints(cbind(CHESS_BNG_csv$POINT_X, CHESS_BNG_csv$POINT_Y), proj4string =  crs(proj4.BNG)))
@@ -103,7 +108,7 @@ CHESS_BNG_csv = CHESS_BNG_csv[, c("FID", "POINT_X", "POINT_Y")]
 # CHESS_LL_coords = data.frame(coordinates(CHESS_LL_sp))
 # colnames(CHESS_LL_coords) = c("Longitude", "Latitude")
 
-uk_coords= read.csv("Tables/Cell_ID_XY_UK.csv")
+uk_coords= read.csv(paste0(path_approot,"Tables/Cell_ID_XY_UK.csv"))
 
 
 
@@ -119,7 +124,7 @@ n_paramset = length(paramsets_fullnames)
 paramsets =  c("Thresholds") # "BehaviouralBaseline", 
 p_idx_default = 1 
 
-service_tb = read.csv("Tables/Services.csv") %>% as.data.frame
+service_tb = read.csv(paste0(path_approot,"Tables/Services.csv")) %>% as.data.frame
 # serviceNames <- c("Food.crops", "Fodder.crops", "GF.redMeat", "Fuel", "Softwood", "Hardwood", "Biodiversity",
 # "Carbon", "Recreation", "Flood.reg", "Employment", "Ldiversity", "GF.milk")
 serviceNames = service_tb$Name
@@ -132,7 +137,7 @@ serviceNames_full = service_tb$Fullname
 serviceColours = c("Food.crops" = "coral1", "Fodder.crops" ="goldenrod1", "GF.redMeat" = "turquoise", "Fuel" = "tan4", "Softwood" = "black", "Hardwood" = "grey", "Biodiversity" = "dodgerblue2", "Carbon"="darkgreen", "Recreation" = "orange", "Flood.reg" = "lightblue", "Employment" = "purple", "Ldiversity" = "brown", "GF.milk" = "green", "Sus.Prod" = "pink")
 
 
-capital_tb = read.csv("Tables/Capitals.csv") %>% as.data.frame
+capital_tb = read.csv(paste0(path_approot,"Tables/Capitals.csv")) %>% as.data.frame
 capitalNames = capital_tb$Name
 capitalNames_full = capital_tb$Fullname
 
@@ -218,7 +223,7 @@ n_aft = length(aft_shortnames_fromzero)
 
 
 
-aft_tb = read.csv("Tables/AgentColors_v2.csv", strip.white = T, stringsAsFactors = F) %>% as.data.frame
+aft_tb = read.csv(paste0(path_approot, "Tables/AgentColors_v2.csv"), strip.white = T, stringsAsFactors = F) %>% as.data.frame
 
 aft_tb[aft_tb$Name == "Lazy FR", ]$Name = "Unmanaged"
 
@@ -248,6 +253,26 @@ aft_colors_fromzero_ts[17] = "black"
 aft_lty_ts = c(rep(1, 13), 2)
 
 n_cell_total = nrow(uk_coords)
+
+
+aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
+                       "#F3EF0C", #2 IP EP
+                       "#216E12", #3 PN
+                       "#7d7d47", #4 MW VEP AF
+                       "#0a1c01", #5 NW
+                       "#EE0F05", #6 Urban
+                       "#fafaf7") #7 Unmanaged
+
+
+aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
+                                             1,# Bio
+                                             1, # EA
+                                             2, # EP
+                                             1, # IA
+                                             1, # IA
+                                             2, # IP
+                                             4, 5, 3, 3, 3, 3, 1, 4, 6,7)]
+
 
 
 
@@ -312,7 +337,7 @@ aft_shaded_colours_default = c("#E9D3AA", "#EED8B0", "#d9abd3", "#BDED50", "#268
 
  
 #### 
-intens<-read.csv("Tables/Intensity levels.csv")
+intens<-read.csv(paste0(path_approot, "Tables/Intensity levels.csv"))
 
 
 
@@ -325,8 +350,8 @@ pastoral_max = max(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2])
 pastoral_avg = mean(sapply(intens[, c(3,4,7,8,11,12, 15,16,19, 20)+2], as.numeric))
 
 
-Arable_cols_extended =  lighten(A.col, amount = 0.9 - c(arable_max, arable_avg, arable_min))
-Pastoral_cols_extended = lighten(P.col, amount = 0.9 - c(pastoral_max, pastoral_avg, pastoral_min))
+Arable_cols_extended =  colorspace::lighten(A.col, amount = 0.9 - c(arable_max, arable_avg, arable_min))
+Pastoral_cols_extended = colorspace::lighten(P.col, amount = 0.9 - c(pastoral_max, pastoral_avg, pastoral_min))
 
 Arable_names_extended    =c("˥ intensive", "Arable", "˩ extensive")
 Pastoral_names_extended  =c("˥ intensive", "Pastoral", "˩ extensive")
@@ -361,26 +386,6 @@ aft_group2_tb =t( matrix( nrow = 2, c("IAfood",  "Arable",
                       "Lazy FR", "Unmanaged")))
 # aft_group2_names =  ( unique(aft_group2_tb[,2]))
 aft_group2_names =c("Arable","Pastoral","Forest","Very extensive/mixed","Conservation","Urban","Unmanaged")
-
-
-aft_group2_colours = c("#E3C16B", #1 IA EA Bio SusAr
-                       "#F3EF0C", #2 IP EP
-                       "#216E12", #3 PN
-                       "#7d7d47", #4 MW VEP AF
-                       "#0a1c01", #5 NW
-                       "#EE0F05", #6 Urban
-                       "#fafaf7") #7 Unmanaged
-
-
-aft_group2_colours_17 = aft_group2_colours[c(4,# AF 
-                                             1,# Bio
-                                             1, # EA
-                                             2, # EP
-                                             1, # IA
-                                             1, # IA
-                                             2, # IP
-                                             4, 5, 3, 3, 3, 3, 1, 4, 6,7)]
-
 
 
 
