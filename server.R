@@ -888,6 +888,7 @@ Please see the further details of the parameters in Table A4 of the following pa
   })
   
   
+  # observe tile layer
   observe({
     print("draw tile layer")
     
@@ -1012,7 +1013,7 @@ Please see the further details of the parameters in Table A4 of the following pa
         
         
       } else {
-        dt.v = getValues(dt)
+        dt.v = values(dt)
         dt.rng = range(dt.v, na.rm = T)
         print(dt.rng)
         pal = colorNumeric(input$colors,reverse = input$InvertColour, domain = dt.rng,  na.color = "transparent")
@@ -1030,7 +1031,7 @@ Please see the further details of the parameters in Table A4 of the following pa
     if (input$outputGroup == "print_in") { 
       # Add input layer
       dt_input = rnew_input()
-      dt_input.v = getValues(dt_input)
+      dt_input.v = values(dt_input)
       dt_input.rng = range(dt_input.v, na.rm = T)
       # print(dt_input.rng)
       

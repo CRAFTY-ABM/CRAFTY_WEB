@@ -1,5 +1,5 @@
 # dropbox relative path 
-path_dropbox <- "KIT_Modelling/CRAFTY/CRAFTY_WEB_EU_DATA/"
+path_dropbox <- "KIT_Modelling/CRAFTY/Backup/LRZ_BUNTU_BACKUP_Nov2023/DATA80G/Andrea-Madingley runs/"
 
 # local data archive
 # path_localstorage = paste0("~/CRAFTY_WEB_UK_DATA/")
@@ -10,15 +10,15 @@ node_name = Sys.info()["nodename"]
 if (node_name == "buntu") { 
   path_localstorage = paste0("/DATA80G/Andrea-Madingley runs/")
 } else { 
-  path_localstorage = paste0("/Users/seo-b/Nextcloud/AndreaS/CRAFTY results/Final runs/Andrea-Madingley runs/")
+  path_localstorage = path.expand("~/seo-b/Nextcloud/AndreaS/CRAFTY results/Final runs/Andrea-Madingley runs/")
 }
 
 
 
 
 # British National Grid
-# proj4.BNG = "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.1502,0.247,0.8421,-20.4894 +units=m +no_defs"
-# proj4.OSGB1936 ="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"  # proj4string(LAD2019_shp) # EPSG:27700
+# proj4_BNG = "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.1502,0.247,0.8421,-20.4894 +units=m +no_defs"
+# proj4_OSGB1936 ="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"  # proj4string(LAD2019_shp) # EPSG:27700
 # 
 
 MODEL_INFO = character()
@@ -27,8 +27,8 @@ MODEL_INFO$TITLE ="CRAFTY-EU interactive web-interface"
 MODEL_INFO$AFT_TB_NAME = "Tables/AFT_Names_EU.csv"
 MODEL_INFO$REGIONNAME = "EU"
 MODEL_INFO$PREFIX = "EU"
-MODEL_INFO$CRS = proj4.LL # proj4.OSGB1936 # UK
-MODEL_INFO$CRS_UI = proj4.UI
+MODEL_INFO$CRS = proj4_LL # proj4_OSGB1936 # UK
+MODEL_INFO$CRS_UI = proj4_UI
 
 MODEL_INFO$RESOLUTION_UI = 1.5E4 # 10/60
 
@@ -62,7 +62,7 @@ n_thread = 6
 
 MODEL_INFO$region_names = c("England", "Scotland", "Wales")
 # 
-MODEL_INFO$location = "Local"
+MODEL_INFO$location = "Dropbox"
 
 # AFT
 MODEL_INFO$AFT_TB = read.csv(MODEL_INFO$AFT_TB_NAME) 
@@ -76,14 +76,14 @@ MODEL_INFO$coords = read.csv("Tables/Cell_ID_XY_EU.csv")
 
 MODEL_COORDS_SPDF_LL =  readRDS("GISData/ctry.ids.Rds")[,c("Longitude", "Latitude")]
 
-MODEL_INFO$SP_LL = SpatialPoints(MODEL_COORDS_SPDF_LL, proj4string = proj4.LL)
+MODEL_INFO$SP_LL = SpatialPoints(MODEL_COORDS_SPDF_LL, proj4string = sp::CRS(proj4_LL))
 # MODEL_INFO$COORDS_SPDF = coordinates(spTransform(MODEL_INFO$COORDS_SP_LL, CRSobj = MODEL_INFO$CRS_SPDF))
 
 
 MODEL_INFO$n_cell_total = nrow(MODEL_INFO$coords)
 
-MODEL_SHP = readOGR("GISData/CLIMSAVE_EuropeRegions_for_SA.shp")
-MODEL_INFO$AREA_CELL = gArea(MODEL_SHP, byid = T)
+MODEL_SHP = read_sf("GISData/CLIMSAVE_EuropeRegions_for_SA.shp")  
+MODEL_INFO$AREA_CELL = st_area(MODEL_SHP) # , byid = T)
 
 # data version
 MODEL_INFO$data_prefix = ""
@@ -97,7 +97,7 @@ path_data_local = paste0(path_localstorage, MODEL_INFO$data_prefix)
 # relative path (for dropbox)
 path_data_dropbox = paste0(path_dropbox, MODEL_INFO$data_prefix)
 
-path_shinywd = "~/shiny_tmp_dev"
+path_shinywd = "shiny_tmp_dev"
 path_filecache = paste0(path_shinywd, "/filetmp/")
 path_rastercache = paste0(path_shinywd, "/rastertmp/")
 
@@ -151,9 +151,9 @@ MODEL_INFO$scenario_default = selected_scenario_current
 # scenarioname.default = "Baseline"
 # r_default = raster("GISData/UK_default.tif") # UK
 r_default_list = readRDS("GISData/Baseline - EPAs.Rds")   # EU
-r_default = projectRaster(r_default_list[[1]]$LandUseIndex, crs = proj4.UI, method = "ngb")
+r_default = project(rast(r_default_list[[1]]$LandUseIndex), y = proj4_UI, method = "near")
 
-# ext = extent(projectRaster(r_default, crs =proj4.LL))
+# ext = extent(projectRaster(r_default, crs =proj4_LL))
 # MODEL_INFO$extent = as.vector(ext)
 
 # MODEL_INFO$extent = c(-8.439121, 2.794859, 49.77235, 60.93977 ) # UK
@@ -197,7 +197,7 @@ getServiceCSVname = function(version, paramset, scenario ) {
 # CHESS_BNG_csv = read.csv(paste0("GISData/CHESS_1k_grid.csv")) # BNG perhaps
 
 # CHESS_BNG_csv = CHESS_BNG_csv[, c("FID", "POINT_X", "POINT_Y")]
-# CHESS_BNG_sp = SpatialPixels(points = SpatialPoints(cbind(CHESS_BNG_csv$POINT_X, CHESS_BNG_csv$POINT_Y), proj4string =  crs(proj4.BNG)))
+# CHESS_BNG_sp = SpatialPixels(points = SpatialPoints(cbind(CHESS_BNG_csv$POINT_X, CHESS_BNG_csv$POINT_Y), proj4string =  crs(proj4_BNG)))
 #  
 # CHESS_BNG_r  = raster(SpatialPixelsDataFrame(CHESS_BNG_sp, data =data.frame(CHESS_BNG_csv$FID)))
 # # plot(UK_BNG_r)
@@ -205,7 +205,7 @@ getServiceCSVname = function(version, paramset, scenario ) {
 # CHESS_mask_r = CHESS_BNG_r
 # CHESS_mask_r[!is.na(CHESS_mask_r)] = 1 
 # 
-# CHESS_LL_sp = spTransform(CHESS_BNG_sp, CRSobj = crs(proj4.LL))
+# CHESS_LL_sp = spTransform(CHESS_BNG_sp, CRSobj = crs(proj4_LL))
 # CHESS_LL_coords = data.frame(coordinates(CHESS_LL_sp))
 # colnames(CHESS_LL_coords) = c("Longitude", "Latitude")
 

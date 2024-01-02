@@ -9,8 +9,11 @@ library(grid)
 library(DT)
 
 library(raster)
-library(rgdal)
-library(rgeos)
+# library(rgdal)
+# library(rgeos)
+library(terra)
+library(sf)
+library(sp)
 
 library(stringr)
 
@@ -22,7 +25,7 @@ library(dplyr)    # reshaping data frame
 library(leaflet)  # leaflet.js
 library(leaflet.extras)
 library(shinyjs) # hidden function
-library(wesanderson)
+# library(wesanderson)
 library(markdown)
 
 library(colorspace) # lighten
@@ -63,26 +66,26 @@ LEGEND_MAR = -0.4
 LEGEND_CEX = 0.8
 
 # Lon-Lat projection 
-proj4.LL <- CRS("+proj=longlat +datum=WGS84")
+proj4_LL <- "+proj=longlat +datum=WGS84"
 
 # Proj4js.defs["EPSG:3035"] etrs89/etrs-laea
 # Scope: Single CRS for all Europe. Used for statistical mapping at all scales and other purposes where true area representation is required.
 # Reference: http://spatialreference.org/ref/epsg/3035/
-proj4.etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
+proj4_etrs_laea <- "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
 
 
 # WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI
-proj4.UI = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs" # EPSG:3857
+proj4_UI = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs" # EPSG:3857
 
 
 
 # source("RScripts/Data_UK.R")
 source("RScripts/Data_EU.R")
 
-r_dummy  = raster(extent(r_default))
+r_dummy  = rast(ext(r_default))
 r_dummy = setValues(r_dummy, values = 0)
-proj4string(r_dummy) = proj4string(r_default)
+crs(r_dummy) = crs(r_default)
 
 
 
@@ -182,8 +185,8 @@ getCSV = function(filename_in, location = "Dropbox") {
 #   result.tmp$lat = y.lon.v[result.tmp$Y]
 #   
 #   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-#   result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL), data = data.frame(result.tmp), tolerance = 0.0011)
-#   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
+#   result.spdf <- SpatialPixelsDataFrame(points = SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4_LL), data = data.frame(result.tmp), tolerance = 0.0011)
+#   # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4_LL))
 #   return(result.spdf)
 # }
 
@@ -205,11 +208,11 @@ getSPDF <- function(tmp_in_name, location = "Dropbox") {
   
   
   # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-  result.spdf <- SpatialPixelsDataFrame(points = MODEL_INFO$SP_LL, proj4string = proj4.LL, data = data.frame(result_tmp), tolerance =  0.0011)
+  result.spdf <- SpatialPixelsDataFrame(points = MODEL_INFO$SP_LL, proj4string = proj4_LL, data = data.frame(result_tmp), tolerance =  0.0011)
   
   plot(result.spdf)
   
-  # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4.LL))
+  # plot(SpatialPoints(cbind(result.tmp$lon, result.tmp$lat), proj4string = proj4_LL))
   return(result.spdf)
 }
 
@@ -240,7 +243,7 @@ getRaster<- function(fname, band_name, location = MODEL_INFO$location, resolutio
     
     
     # Create a spatial pixels data frame using the lon-lat table (Cell_ID_LatLong.csv) and the input data 
-    rs.LL <- stack(spdf.out)
+    rs.LL <- rast(spdf.out)
     # print(rs.LL)
     
     
@@ -251,14 +254,16 @@ getRaster<- function(fname, band_name, location = MODEL_INFO$location, resolutio
     # print(band_name_dot)
     # 
     
-    out.reproj = projectRaster(rs.LL[[band_name_dot]], crs = MODEL_INFO$CRS_UI, method = "ngb", res = resolution_in)
+    # out.reproj = terra::project(rs.LL[[band_name_dot]], crs = MODEL_INFO$CRS_UI, method = "ngb", res = resolution_in)
+    out.reproj = terra::project(rs.LL[[band_name_dot]], y = MODEL_INFO$CRS_UI, method = "near", res = resolution_in)
+    
     writeRaster(out.reproj, filename = localtif_path, overwrite=T)
     
     # plot(out.reproj)
     
     print("reprojection done")  
   } else {
-    out.reproj = raster(localtif_path) 
+    out.reproj = rast(localtif_path) 
   }
   
   
@@ -410,7 +415,7 @@ createTempFiles <- function() {
 #           
 #           res_rs=  stack(lapply(target_years_other, FUN = function(year) getRaster(paste0("Data/", price, "/", demand, "/",paramset, "/", scenario  , "/", scenario  , "-",runid_tmp, "-99-EU-Cell-", year, ".csv"), 20, location = "Local")))
 #           
-#           res_rs_LL = projectRaster(res_rs, crs = proj4.LL, res = RES_FRAG, method = "ngb") # 0.1 
+#           res_rs_LL = projectRaster(res_rs, crs = proj4_LL, res = RES_FRAG, method = "ngb") # 0.1 
 #           tmp_fragstat_m  = sapply(1:nlayers(res_rs_LL), FUN = function(x) ClassStat(res_rs_LL[[x]], cellsize = RESOLUTION_CRAFTY, bkgd = NA, latlon = T)$mean.frac.dim.index)
 #           
 #           

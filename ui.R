@@ -132,7 +132,7 @@ ui <- shinyUI(
                                                          , verbatimTextOutput("PaneRuninfo")
                                                          
                                                          , absolutePanel(
-                                                           top = 180, left = 20, width = 160,
+                                                           top = 180, left = "35%", width = 160,
                                                            draggable = TRUE,
                                                            
                                                            
